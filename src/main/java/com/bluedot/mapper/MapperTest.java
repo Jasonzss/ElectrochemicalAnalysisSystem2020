@@ -11,8 +11,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Test {
-    public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException {
+public class MapperTest {
+
+    @org.junit.Test
+    public  void testSelect() throws SQLException, IOException, ClassNotFoundException {
         //模拟根据条件生成select语句
         Condition condition = new Condition();
         //查询涉及表
