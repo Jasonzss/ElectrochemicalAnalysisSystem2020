@@ -1,8 +1,9 @@
 package com.bluedot.mapper;
 
+import com.bluedot.Quque.OutQueue.impl.MapperServiceQueue;
 import com.bluedot.mapper.callBack.MyCallback;
 import com.bluedot.mapper.info.*;
-import com.bluedot.mapper.queue.MSQueue;
+import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.StringUtil;
 
@@ -37,13 +38,12 @@ public class BaseMapper {
                 object = select(entityInfo.getCondition());
                 break;
         }
-        commonResult = new CommonResult.Builder<>().setData(object).build();
-        MSQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
+        commonResult = new CommonResult.Builder<>().data(object).build();
+        MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
     }
 
     private Object select(Condition condition) {
         List<Object> parameters = new ArrayList<>();
-        //生成sqL语句并得到填充后的参数数组
         String sql = generateSelectSqL(condition, parameters);
         MappedStatement mappedStatement = new MappedStatement();
         mappedStatement.setSql(sql);

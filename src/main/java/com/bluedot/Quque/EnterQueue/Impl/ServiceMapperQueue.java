@@ -1,7 +1,7 @@
 package com.bluedot.Quque.EnterQueue.Impl;
 
 import com.bluedot.Quque.EnterQueue.EnterQueue;
-import com.bluedot.mapper.bean.EntityInfo;
+import com.bluedot.mapper.info.EntityInfo;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
