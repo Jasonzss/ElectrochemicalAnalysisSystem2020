@@ -8,5 +8,7 @@ package com.bluedot.service;
 public class BaseService {
     public static void main(String[] args) {
         System.out.println("a");
+
+
     }
 }
