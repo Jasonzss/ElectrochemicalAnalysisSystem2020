@@ -2,14 +2,17 @@ package com.bluedot.mapper.bean;
 
 import java.util.List;
 
-public class PageInfo {
+public class PageInfo<T> {
     private Integer pageSize;
     private Integer currentPageNo;
     private Long totalDataSize;
     private Long totalPageSize;
-    private List dataList;
+    private List<T> dataList;
 
-    public PageInfo(Integer pageSize, Integer currentPageNo, Long totalDataSize, Long totalPageSize, List dataList) {
+    public PageInfo() {
+    }
+
+    public PageInfo(Integer pageSize, Integer currentPageNo, Long totalDataSize, Long totalPageSize, List<T> dataList) {
         this.pageSize = pageSize;
         this.currentPageNo = currentPageNo;
         this.totalDataSize = totalDataSize;
@@ -49,11 +52,11 @@ public class PageInfo {
         this.totalPageSize = totalPageSize;
     }
 
-    public List getDataList() {
+    public List<T> getDataList() {
         return dataList;
     }
 
-    public void setDataList(List dataList) {
+    public void setDataList(List<T> dataList) {
         this.dataList = dataList;
     }
 }
