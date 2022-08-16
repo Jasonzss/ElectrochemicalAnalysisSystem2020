@@ -6,5 +6,9 @@ package com.bluedot.service;
  * @Description ：
  */
 public class BaseService {
+    public static void main(String[] args) {
+        System.out.println("a");
 
+
+    }
 }
