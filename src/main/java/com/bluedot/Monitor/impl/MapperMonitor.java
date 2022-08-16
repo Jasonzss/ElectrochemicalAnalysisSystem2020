@@ -1,9 +1,9 @@
 package com.bluedot.Monitor.impl;
 
-import com.Mvc.Mapper.BaseMapper;
-import com.Mvc.Monitor.Monitor;
-import com.Mvc.Quque.EnterQueue.Impl.ServiceMapperQueue;
-import com.song.Test.EntityInfo;
+
+import com.bluedot.Monitor.Monitor;
+import com.bluedot.Quque.EnterQueue.Impl.ServiceMapperQueue;
+import com.bluedot.mapper.bean.EntityInfo;
 
 public class MapperMonitor extends Monitor<ServiceMapperQueue> {
     //懒汉单例
@@ -31,8 +31,8 @@ public class MapperMonitor extends Monitor<ServiceMapperQueue> {
      * @param entityInfo
      */
     private void MapperInstance(EntityInfo entityInfo){
-       BaseMapper basemapper = new BaseMapper(entityInfo);
-       basemapper=null;
+//       BaseMapper basemapper = new BaseMapper(entityInfo);
+//       basemapper=null;
     }
     @Override
     public void run() {

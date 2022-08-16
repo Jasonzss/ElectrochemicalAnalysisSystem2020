@@ -1,10 +1,12 @@
 package com.bluedot.Monitor.impl;
 
-import com.Mvc.Adapt.Adapt;
-import com.Mvc.Monitor.Monitor;
-import com.Mvc.Quque.EnterQueue.Impl.ControllerServiceQueue;
-import com.song.Test.BlockQueue;
-import com.song.Test.Data;
+
+
+import com.bluedot.Adapt.Adapt;
+import com.bluedot.Monitor.Monitor;
+import com.bluedot.Quque.BlockQueue;
+import com.bluedot.Quque.EnterQueue.Impl.ControllerServiceQueue;
+import com.bluedot.pojo.Dto.Data;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
