@@ -1,7 +1,7 @@
 package com.bluedot.Quque.EnterQueue.Impl;
 
-import com.Mvc.Quque.EnterQueue.EnterQueue;
-import com.song.Test.Data;
+import com.bluedot.Quque.EnterQueue.EnterQueue;
+import com.bluedot.pojo.Dto.Data;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;

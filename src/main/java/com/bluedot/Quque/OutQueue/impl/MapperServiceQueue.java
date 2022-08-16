@@ -1,6 +1,9 @@
 package com.bluedot.Quque.OutQueue.impl;
 
 
+import com.bluedot.Quque.OutQueue.OutQueue;
+import com.bluedot.pojo.vo.CommonResult;
+
 import java.util.LinkedHashMap;
 
 public class MapperServiceQueue extends OutQueue<CommonResult> {

@@ -1,6 +1,9 @@
 package com.bluedot.Quque.OutQueue.impl;
 
 
+import com.bluedot.Quque.OutQueue.OutQueue;
+import com.bluedot.pojo.vo.CommonResult;
+
 import java.util.LinkedHashMap;
 
 public class ServiceControllerQueue extends OutQueue<CommonResult> {
@@ -22,7 +25,7 @@ public class ServiceControllerQueue extends OutQueue<CommonResult> {
                 return instance;
             }
             instance = new ServiceControllerQueue();
-            instance.map=new LinkedHashMap<Long,CommonResult>();
+            instance.map=new LinkedHashMap<Long, CommonResult>();
             return instance;
         }
     }
