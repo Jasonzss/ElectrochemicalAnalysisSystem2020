@@ -12,6 +12,6 @@ public class MainRequestHandler {
     private ControllerServiceQueue queue;
 
     public CommonResult handleRequest(HttpServletRequest request, HttpServletRequest response){
-
+        return null;
     }
 }
