@@ -13,6 +13,8 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <!--  log.version 对log框架做版本控制  -->
+        <log.version>2.12.1</log.version>
     </properties>
 
     <dependencies>
@@ -44,16 +46,55 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.9.8</version>
         </dependency>
+        <!--java web token 依赖-->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.19.1</version>
+        </dependency>
+        <!--servlet依赖-->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>4.0.1</version>
             <scope>provided</scope>
         </dependency>
+        <!--junit测试依赖-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
         </dependency>
+        <!-- 引入 slf4j-api 依赖-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+        <!-- 引入 slf4j 与 log4j2 的桥接-->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log.version}</version>
+        </dependency>
+        <!--web工程需要包含log4j-web -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-web</artifactId>
+            <version>${log.version}</version>
+        </dependency>
+        <!-- 引入 log4j-api 依赖 -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log.version}</version>
+        </dependency>
+        <!-- 引入 log4j-core 依赖 -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log.version}</version>
+        </dependency>
+
     </dependencies>
 </project>
