@@ -2,6 +2,8 @@ package com.bluedot.Adapt;
 
 
 
+import com.bluedot.pojo.Dto.Data;
+
 import java.lang.reflect.InvocationTargetException;
 
 public class Adapt extends Thread {
