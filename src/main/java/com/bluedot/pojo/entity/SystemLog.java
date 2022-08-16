@@ -1,4 +1,4 @@
-package com.fuck.pojo.entity;
+package com.bluedot.pojo.entity;
 
 import java.util.Date;
 
