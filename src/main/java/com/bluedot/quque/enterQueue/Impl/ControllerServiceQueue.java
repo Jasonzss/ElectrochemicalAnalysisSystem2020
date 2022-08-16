@@ -1,6 +1,6 @@
-package com.bluedot.Quque.EnterQueue.Impl;
+package com.bluedot.quque.enterQueue.Impl;
 
-import com.bluedot.Quque.EnterQueue.EnterQueue;
+import com.bluedot.quque.enterQueue.EnterQueue;
 import com.bluedot.pojo.Dto.Data;
 
 import java.util.Comparator;

@@ -1,7 +1,7 @@
-package com.bluedot.Quque.OutQueue.impl;
+package com.bluedot.quque.outQueue.impl;
 
 
-import com.bluedot.Quque.OutQueue.OutQueue;
+import com.bluedot.quque.outQueue.OutQueue;
 import com.bluedot.pojo.vo.CommonResult;
 
 import java.util.LinkedHashMap;

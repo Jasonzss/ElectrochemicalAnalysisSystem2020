@@ -1,4 +1,4 @@
-package com.bluedot.Monitor;
+package com.bluedot.monitor;
 
 
 public abstract class Monitor<T> implements  Runnable{

@@ -1,4 +1,4 @@
-package com.bluedot.Quque.OutQueue;
+package com.bluedot.quque.outQueue;
 
 
 import java.util.LinkedHashMap;

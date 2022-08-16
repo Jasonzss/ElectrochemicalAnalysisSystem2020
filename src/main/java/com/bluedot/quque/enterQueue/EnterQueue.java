@@ -1,4 +1,4 @@
-package com.bluedot.Quque.EnterQueue;
+package com.bluedot.quque.enterQueue;
 
 
 import java.util.PriorityQueue;

@@ -1,4 +1,4 @@
-package com.bluedot.Adapt;
+package com.bluedot.adapt;
 
 
 
@@ -8,10 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class Adapt extends Thread {
     private Data data;
-    //继续执行线程
-//    public synchronized void resume(){
-//        notify();
-//    }
+
 
     public Adapt(Data data) {
         this.data=data;
