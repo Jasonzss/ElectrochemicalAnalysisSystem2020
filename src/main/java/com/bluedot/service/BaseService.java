@@ -7,4 +7,6 @@ package com.bluedot.service;
  */
 public class BaseService {
 
+
+
 }
