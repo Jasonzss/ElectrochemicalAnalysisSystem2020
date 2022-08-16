@@ -1,8 +1,8 @@
-package com.bluedot.Monitor.impl;
+package com.bluedot.monitor.impl;
 
 
-import com.bluedot.Monitor.Monitor;
-import com.bluedot.Quque.EnterQueue.Impl.ServiceMapperQueue;
+import com.bluedot.monitor.Monitor;
+import com.bluedot.quque.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.mapper.bean.EntityInfo;
 
 public class MapperMonitor extends Monitor<ServiceMapperQueue> {

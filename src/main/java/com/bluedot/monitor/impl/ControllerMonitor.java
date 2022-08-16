@@ -1,7 +1,7 @@
-package com.bluedot.Monitor.impl;
+package com.bluedot.monitor.impl;
 
-import com.bluedot.Monitor.Monitor;
-import com.bluedot.Quque.OutQueue.impl.ServiceControllerQueue;
+import com.bluedot.monitor.Monitor;
+import com.bluedot.quque.outQueue.impl.ServiceControllerQueue;
 
 import java.util.HashMap;
 import java.util.Map;
