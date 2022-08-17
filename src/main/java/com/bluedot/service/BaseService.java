@@ -5,9 +5,9 @@ import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.PageInfo;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.vo.CommonResult;
-import com.bluedot.quque.enterQueue.Impl.ServiceMapperQueue;
-import com.bluedot.quque.outQueue.impl.MapperServiceQueue;
-import com.bluedot.quque.outQueue.impl.ServiceControllerQueue;
+import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
+import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
+import com.bluedot.queue.outQueue.impl.ServiceControllerQueue;
 
 import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;

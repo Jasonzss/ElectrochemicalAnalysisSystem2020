@@ -2,7 +2,7 @@ package com.bluedot.monitor.impl;
 
 
 import com.bluedot.monitor.Monitor;
-import com.bluedot.quque.outQueue.impl.MapperServiceQueue;
+import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
 
 import java.util.HashMap;
 import java.util.Map;
