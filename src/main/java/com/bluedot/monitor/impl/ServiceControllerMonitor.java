@@ -4,8 +4,8 @@ package com.bluedot.monitor.impl;
 
 import com.bluedot.adapt.Adapt;
 import com.bluedot.monitor.Monitor;
-import com.bluedot.quque.BlockQueue;
-import com.bluedot.quque.enterQueue.Impl.ControllerServiceQueue;
+import com.bluedot.queue.BlockQueue;
+import com.bluedot.queue.enterQueue.Impl.ControllerServiceQueue;
 import com.bluedot.pojo.Dto.Data;
 
 import java.util.concurrent.ExecutorService;

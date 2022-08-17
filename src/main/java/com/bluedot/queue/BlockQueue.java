@@ -1,4 +1,4 @@
-package com.bluedot.quque;
+package com.bluedot.queue;
 
 import com.bluedot.utils.LogUtil;
 import org.slf4j.Logger;
