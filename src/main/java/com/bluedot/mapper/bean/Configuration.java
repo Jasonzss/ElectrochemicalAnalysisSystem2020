@@ -23,11 +23,11 @@ public class Configuration {
         dataSource = MyDataSourceImpl.getInstance();
     }
     public void addMappedStatement(String sqlId, MappedStatement mappedStatement) {
-        this.mappedStatementMap.put(sqlId, mappedStatement);
+        mappedStatementMap.put(sqlId, mappedStatement);
     }
 
     public MappedStatement getMappedStatement(String sqlId) {
-        return this.mappedStatementMap.get(sqlId);
+        return mappedStatementMap.get(sqlId);
     }
 
     public MyDataSource getDataSource() {
@@ -45,6 +45,6 @@ public class Configuration {
         return classToTableInfoMap;
     }
     public void setClassToTableInfoMap(Map<Class<?>, TableInfo> classToTableInfoMap) {
-        this.classToTableInfoMap = classToTableInfoMap;
+        Configuration.classToTableInfoMap = classToTableInfoMap;
     }
 }
