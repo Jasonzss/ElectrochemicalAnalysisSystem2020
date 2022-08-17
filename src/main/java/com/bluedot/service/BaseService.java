@@ -1,5 +1,7 @@
 package com.bluedot.service;
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.ErrorException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.PageInfo;
@@ -107,17 +109,16 @@ public abstract class BaseService<T> {
             try {
                 Method method = obj.getClass().getMethod(methodName);
                 method.invoke(obj);
-            } catch (NoSuchMethodException e) {
-                System.out.println("找不到此成员方法");
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                System.out.println("反射调用方法异常!");
                 e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                System.out.println("私有方法无法调用");
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
+            } catch (ErrorException e){
+                // 处理service层抛出的自定义异常 封装到commonResult中
+                commonResult = CommonResult.commonErrorCode(e.getErrorCode());
             }
         }else {
-            commonResult = CommonResult.errorResult(200,"您没有此操作的权限");
+            // 没有权限，则设置枚举异常结果
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_3001);
         }
     }
 

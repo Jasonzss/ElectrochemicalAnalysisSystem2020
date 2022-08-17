@@ -1,5 +1,7 @@
 package com.bluedot.service;
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.ErrorException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
