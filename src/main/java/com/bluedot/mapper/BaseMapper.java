@@ -62,7 +62,7 @@ public class BaseMapper {
         //结果封装
         commonResult = new CommonResult.Builder<>().data(object).build();
         //将结果通过队列  返回给service层
-        com.bluedot.quque.outQueue.impl.MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
+        com.bluedot.queue.outQueue.impl.MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
     }
     /**
      * @description:mapper层查询数据
