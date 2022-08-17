@@ -1,6 +1,9 @@
 package com.buledot.exception;
 
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.ErrorException;
+
 /**
  * @author FireRain
  * @version 1.0
@@ -11,7 +14,8 @@ public class Test {
 
     @org.junit.Test
     public void test(){
-        
+        // 抛出自定义异常示范
+        throw new ErrorException(CommonErrorCode.E_3001);
     }
 
 }
