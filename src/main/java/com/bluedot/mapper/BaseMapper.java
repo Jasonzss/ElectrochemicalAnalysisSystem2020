@@ -62,7 +62,7 @@ public class BaseMapper {
         //结果封装
         commonResult = new CommonResult.Builder<>().data(object).build();
         //将结果通过队列  返回给service层
-        com.bluedot.quque.outQueue.impl.MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
+        com.bluedot.queue.outQueue.impl.MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
     }
     /**
      * @description:mapper层查询数据
@@ -236,7 +236,8 @@ public class BaseMapper {
                             list.add(o);
                         }
                     }
-                    else list.add(orTerm.getValue());                    select.append(orTerm.getViewName() + "." + orTerm.getFieldName());
+                    else {list.add(orTerm.getValue());    }
+                    select.append(orTerm.getViewName() + "." + orTerm.getFieldName());
                     switch (orTerm.getTermType()) {
                         case EQUAL:
                             select.append("= ? or ");
@@ -248,8 +249,9 @@ public class BaseMapper {
                             select.append("in (");
                             List<Object> value = (List<Object>) orTerm.getValue();
                             int size = value.size();
-                            for (int i = 0; i < size; i++)
+                            for (int i = 0; i < size; i++) {
                                 select.append("'?' ,");
+                            }
                             select.delete(select.length() - 1, select.length());
                             select.append(") or ");
                             break;
@@ -275,7 +277,9 @@ public class BaseMapper {
                         list.add(o);
                     }
                 }
-                else list.add(andTerm.getValue());
+                else {
+                    list.add(andTerm.getValue());
+                }
                 select.append(andTerm.getViewName() + "." + andTerm.getFieldName() + " ");
                 switch (andTerm.getTermType()) {
                     case EQUAL:
@@ -288,8 +292,9 @@ public class BaseMapper {
                         select.append("in (");
                         List<Object> value = (List<Object>) andTerm.getValue();
                         int size = value.size();
-                        for (int i = 0; i < size; i++)
+                        for (int i = 0; i < size; i++) {
                             select.append(" '?' ,");
+                        }
                         select.delete(select.length() - 1, select.length());
                         select.append(") and ");
                         break;
@@ -313,7 +318,9 @@ public class BaseMapper {
                             list.add(o);
                         }
                     }
-                    else list.add(orTerm.getValue());
+                    else {
+                        list.add(orTerm.getValue());
+                    }
                     select.append("or " + orTerm.getViewName() + "." + orTerm.getFieldName()+" ");
                     switch (orTerm.getTermType()) {
                         case EQUAL:
@@ -326,8 +333,9 @@ public class BaseMapper {
                             select.append("in (");
                             List<Object> value = (List<Object>) orTerm.getValue();
                             int size = value.size();
-                            for (int i = 0; i < size; i++)
+                            for (int i = 0; i < size; i++) {
                                 select.append("'?' ,");
+                            }
                             select.delete(select.length() - 1, select.length());
                             select.append(") ");
                             break;

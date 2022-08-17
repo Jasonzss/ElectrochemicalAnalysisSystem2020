@@ -1,4 +1,4 @@
-package com.bluedot.quque;
+package com.bluedot.queue;
 
 import com.bluedot.utils.LogUtil;
 import org.slf4j.Logger;
@@ -47,8 +47,9 @@ public class BlockQueue<E> extends AbstractQueue<E>
     }
 
     public BlockQueue(Integer capacity, long frequency) {
-        if (capacity <= 0)
+        if (capacity <= 0) {
             throw new IllegalArgumentException();
+        }
         this.items = new Object[capacity];
         lock = new ReentrantLock(false);
         notEmpty = lock.newCondition();
@@ -123,8 +124,9 @@ public class BlockQueue<E> extends AbstractQueue<E>
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
-            while (count == items.length)
+            while (count == items.length) {
                 notFull.await();
+            }
             logger.info("数据 ---> 放入队列: {}",e);
             enqueue(e);
         } finally {
@@ -133,8 +135,9 @@ public class BlockQueue<E> extends AbstractQueue<E>
     }
 
     private void checkSort() {
-        if (count >= threshold)
+        if (count >= threshold) {
             sort();
+        }
     }
 
     @Override
@@ -145,8 +148,9 @@ public class BlockQueue<E> extends AbstractQueue<E>
             lock.lockInterruptibly();
             try {
                 while (count == items.length) {
-                    if (nanos <= 0)
+                    if (nanos <= 0) {
                         return false;
+                    }
                     nanos = notFull.awaitNanos(nanos);
                 }
                 enqueue(e);
@@ -161,12 +165,14 @@ public class BlockQueue<E> extends AbstractQueue<E>
      * @return
      * @throws InterruptedException
      */
+    @Override
     public E take() throws InterruptedException {
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
-            while (count == 0)
+            while (count == 0) {
                 notEmpty.await();
+            }
             logger.info("数据 ---> 取出队列");
             return dequeue();
         } finally {
@@ -181,8 +187,9 @@ public class BlockQueue<E> extends AbstractQueue<E>
         lock.lockInterruptibly();
         try {
             while (count == 0) {
-                if (nanos <= 0)
+                if (nanos <= 0) {
                     return null;
+                }
                 nanos = notEmpty.awaitNanos(nanos);
             }
             return dequeue();
@@ -219,8 +226,9 @@ public class BlockQueue<E> extends AbstractQueue<E>
     private void enqueue(E x) {
         final Object[] items = this.items;
         items[putIndex] = x;
-        if (++putIndex == items.length)
+        if (++putIndex == items.length) {
             putIndex = 0;
+        }
         count++;
         notEmpty.signal();
     }
@@ -236,8 +244,9 @@ public class BlockQueue<E> extends AbstractQueue<E>
         @SuppressWarnings("unchecked")
         E x = (E) items[takeIndex];
         items[takeIndex] = null;
-        if (++takeIndex == items.length)
+        if (++takeIndex == items.length) {
             takeIndex = 0;
+        }
         count--;
         notFull.signal();
         return x;
@@ -267,6 +276,7 @@ public class BlockQueue<E> extends AbstractQueue<E>
      * 队列大小
      * @return
      */
+    @Override
     public int size() {
         return this.count;
     }

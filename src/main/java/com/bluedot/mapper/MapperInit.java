@@ -35,7 +35,7 @@ public class MapperInit {
     private void loadTableInfo(Connection connection) throws SQLException {
         try {
             DatabaseMetaData databaseMetaData = connection.getMetaData();
-            String database = configuration.getProperty("database");
+            String database = Configuration.getProperty("database");
             ResultSet tableResultSet = databaseMetaData.getTables(database, "%", "%", new String[]{"TABLE"});
             List<TableInfo> tableInfos = new ArrayList<>();
             Map<Class<?>, TableInfo> map = new HashMap<>();
@@ -67,7 +67,7 @@ public class MapperInit {
                     ColumnInfo foreignColumnInfo = tableInfo.getColumnInfoMap().get(foreignKeyResultSet.getString("FKCOLUMN_NAME"));
                     tableInfo.getForeignKeys().add(foreignColumnInfo);
                 }
-                Class<?> clazz = Class.forName(configuration.getProperty("po.location") + "." + StringUtil.tableNameToClassName(tableName));
+                Class<?> clazz = Class.forName(Configuration.getProperty("po.location") + "." + StringUtil.tableNameToClassName(tableName));
                 map.put(clazz, tableInfo);
             }
             configuration.setClassToTableInfoMap(map);

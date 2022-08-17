@@ -7,8 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.LinkedList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 
 public class MyDataSourceImpl implements MyDataSource {
@@ -26,7 +25,10 @@ public class MyDataSourceImpl implements MyDataSource {
     private static int maxIdleTime = 20000;
     private LinkedList<Connection> conns = new LinkedList<>();
     private static final Object MONITOR = new Object();
-    private ExecutorService returnConnectionThreadPool = Executors.newFixedThreadPool(maxCount);
+//    private ExecutorService returnConnectionThreadPool = Executors.newFixedThreadPool(maxCount);
+    private ExecutorService returnConnectionThreadPool = new ThreadPoolExecutor(maxCount, maxCount,
+                                      0L,TimeUnit.MILLISECONDS,
+                                      new LinkedBlockingQueue<Runnable>());
 
 
 
