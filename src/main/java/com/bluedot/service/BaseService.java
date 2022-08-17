@@ -74,7 +74,7 @@ public abstract class BaseService<T> {
 
         Condition condition = entityInfo.getCondition();
         // 设置pageInfo，并将查询到的数据填入
-        PageInfo<T> pageInfo = new PageInfo<>();
+        PageInfo<T> pageInfo = new PageInfo<T>();
         pageInfo.setDataList((List<T>) commonResult.mapValue().get("data"));
         pageInfo.setPageSize(condition.getSize());
         // 调用getCount查询数据总数量

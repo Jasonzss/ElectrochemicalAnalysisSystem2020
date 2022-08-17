@@ -1,10 +1,5 @@
 package com.bluedot.mapper.bean;
 
-/**
- * @Author Jason
- * @CreationDate 2022/08/02 - 19:43
- * @Description ：
- */
 public class EntityInfo<T> {
     //优先级
     private Integer priority = 1;
@@ -59,7 +54,7 @@ public class EntityInfo<T> {
 
     @Override
     public String toString() {
-        return "EntityInfo{" +
+        return "pojo.EntityInfo{" +
                 "\npriority=" + priority +
                 "\nkey=" + key +
                 "\nentity=" + entity +
