@@ -3,6 +3,7 @@ package com.bluedot.utils;
 
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 
 public class ReflectUtil {
@@ -33,6 +34,18 @@ public class ReflectUtil {
                     "com.xxbb.smybatis.utils.ReflectUtils" + "--->" + "value=" +
                     value.getClass());
         }
+    }
 
+    /**
+     * 调用obj中的set方法注入map中对应的数值
+     * @param map 装有属性名和对应的属性值
+     * @param obj 执行set方法的对象
+     */
+    public static Object invokeSetters(Map<String,Object> map, Object obj){
+        map.forEach((k,v)->{
+            invokeSet(obj,k,v);
+        });
+
+        return obj;
     }
 }
