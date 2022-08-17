@@ -1,5 +1,7 @@
 package com.bluedot.pojo.vo;
 
+import com.bluedot.exception.ErrorCode;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +10,7 @@ import java.util.Map;
  * @author FireMan
  * @version 1.0
  * @date 2022/8/16 10:23
- * @created: 返回结果封装
+ * @created: 通常结果类
  */
 public class CommonResult<T> implements Serializable {
 
@@ -18,6 +20,7 @@ public class CommonResult<T> implements Serializable {
 
     private T data;
 
+    // 成功封装
     public static <E> CommonResult<E> successResult(String msg, E data){
         return CommonResult.<E>builder()
                 .code(200)
@@ -26,10 +29,21 @@ public class CommonResult<T> implements Serializable {
                 .build();
     }
 
+    // 错误封装
     public static CommonResult<Void> errorResult(int code, String msg){
         return CommonResult.<Void>builder()
                 .code(code)
                 .msg(msg)
+                .build();
+    }
+
+    /**
+     * 异常结果封装
+     */
+    public static CommonResult<Void> commonErrorCode(ErrorCode errorCode){
+        return CommonResult.<Void>builder()
+                .code(errorCode.getCode())
+                .msg(errorCode.getMsg())
                 .build();
     }
 
