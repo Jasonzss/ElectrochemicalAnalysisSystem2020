@@ -19,29 +19,6 @@ public class StringUtil {
 
     }
 
-    /**
-     * 字符串首字母大写
-     * @param original 原始字符串
-     * @return 首字母大写后的字符串
-     */
-    public static String firstCharUpper(String original){
-        char[] chars = original.toCharArray();
-        chars[0] -= 32;
-        return String.valueOf(chars);
-    }
-
-    /**
-     * 字符串首字母小写
-     * @param original 原始字符串
-     * @return 首字母小写后的字符串
-     */
-    public static String firstCharLower(String original){
-        char[] chars = original.toCharArray();
-        chars[0] += 32;
-        return String.valueOf(chars);
-    }
-
-
     public static String columnNameToMethodName(String str) {
         return firstCharToUpperCase(lineToHump(str));
     }
