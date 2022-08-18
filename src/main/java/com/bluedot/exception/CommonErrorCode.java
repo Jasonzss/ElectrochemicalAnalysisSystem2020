@@ -4,9 +4,9 @@ package com.bluedot.exception;
  * @author FireRain
  * @version 1.0
  * @date 2022/8/17 11:47
- * @created: 自定义异常信息枚举类
+ * @created: 用户异常信息枚举类
  */
-public enum CommonErrorCode implements ErrorCode{
+public enum CommonErrorCode implements ErrorCode {
 
     /**
      * 登录模块错误:E_1xxx

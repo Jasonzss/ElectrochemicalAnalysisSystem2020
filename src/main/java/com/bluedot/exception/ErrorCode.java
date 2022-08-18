@@ -4,7 +4,7 @@ package com.bluedot.exception;
  * @author FireRain
  * @version 1.0
  * @date 2022/8/17 11:37
- * @created:  自定义异常信息规定方法接口
+ * @created:  用户异常信息规定方法接口
  */
 public interface ErrorCode {
 

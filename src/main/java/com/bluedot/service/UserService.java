@@ -1,7 +1,7 @@
 package com.bluedot.service;
 
 import com.bluedot.exception.CommonErrorCode;
-import com.bluedot.exception.ErrorException;
+import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
@@ -116,10 +116,14 @@ public class UserService extends BaseService<User> {
             }
         }
 
-        // 判断是否有用户状态
-        if (map.containsKey("userStatus")){
-            commonResult = CommonResult.errorResult(200,"用户状态无法自行修改");
-            return;
+        try {
+            // 判断是否有用户状态
+            if (map.containsKey("userStatus")){
+                commonResult = CommonResult.errorResult(200,"用户状态无法自行修改");
+                return;
+            }
+        } catch (Exception e) {
+            throw new UserException(CommonErrorCode.E_3001);
         }
 
         // 判断是否有图片

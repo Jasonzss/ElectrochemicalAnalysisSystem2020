@@ -1,7 +1,7 @@
 package com.bluedot.service;
 
 import com.bluedot.exception.CommonErrorCode;
-import com.bluedot.exception.ErrorException;
+import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.PageInfo;
@@ -112,7 +112,7 @@ public abstract class BaseService<T> {
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 System.out.println("反射调用方法异常!");
                 e.printStackTrace();
-            } catch (ErrorException e){
+            } catch (UserException e){
                 // 处理service层抛出的自定义异常 封装到commonResult中
                 commonResult = CommonResult.commonErrorCode(e.getErrorCode());
             }
