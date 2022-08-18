@@ -2,7 +2,7 @@ package com.buledot.exception;
 
 
 import com.bluedot.exception.CommonErrorCode;
-import com.bluedot.exception.ErrorException;
+import com.bluedot.exception.UserException;
 
 /**
  * @author FireRain
@@ -15,7 +15,7 @@ public class Test {
     @org.junit.Test
     public void test(){
         // 抛出自定义异常示范
-        throw new ErrorException(CommonErrorCode.E_3001);
+        throw new UserException(CommonErrorCode.E_3001);
     }
 
 }
