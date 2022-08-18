@@ -1,5 +1,6 @@
 package com.bluedot.pojo.Dto;
 
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 
 public class Data {
@@ -13,6 +14,25 @@ public class Data {
     private String serviceName;
     //请求的操作类型
     private String operation;
+
+    private HttpSession session;
+
+    public HttpSession getSession() {
+        return session;
+    }
+
+    public void setSession(HttpSession session) {
+        this.session = session;
+    }
+
+    public Data(Integer priority, HashMap<String, Object> map, Long key, String serviceName, String operation, HttpSession session) {
+        this.priority = priority;
+        this.map = map;
+        this.key = key;
+        this.serviceName = serviceName;
+        this.operation = operation;
+        this.session = session;
+    }
 
     public Long getKey() {
         return key;
