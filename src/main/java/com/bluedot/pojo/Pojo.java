@@ -38,4 +38,6 @@ public class Pojo {
         }
     }
 
+    public Pojo(){};
+
 }

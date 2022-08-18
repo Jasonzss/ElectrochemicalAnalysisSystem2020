@@ -22,6 +22,9 @@ public class Algorithm extends Pojo {
     private Date algorithmUpdateTime;
     private Integer algorithmStatus;
 
+    public Algorithm() {
+        super();
+    };
     /**
      * 通过map的key和实体类的属性名匹配的原则注入值
      *
