@@ -1,5 +1,6 @@
 package com.bluedot.mapper.bean;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Condition {
@@ -18,56 +19,91 @@ public class Condition {
     private Integer size;
 
     public Condition() {
+        views = new ArrayList<>();
+        viewCondition = new ArrayList<>();
+        fields = new ArrayList<>();
+        andCondition = new ArrayList<>();
+        orCondition = new ArrayList<>();
     }
 
+    /**
+     * 添加查询字段
+     * @param field 需要在物理表查询的字段
+     */
+    public void addFields(String field) {
+        this.fields.add(field);
+    }
+
+    /**
+     * 添加查询表
+     * @param view 查询的表名
+     */
+    private void addView(String view) {
+        if (!this.views.contains(view)){
+            //当views列表中无此表则加入此表
+            this.views.add(view);
+        }
+    }
+
+    /**
+     * 添加多表查询的连接条件
+     * @param viewCondition 多表的连接字段
+     * @param viewName 与主表连接的表名
+     */
+    public void addViewCondition(String viewCondition,String viewName) {
+        if (views.contains(viewName)){
+            //尚不存在此表,添加这个表
+            addView(viewName);
+        }
+
+        //获得此表在列表中的位置
+        int i = views.indexOf(viewName);
+        if (i != 0){
+            //非主表
+            //设置此表与主表的连接条件
+            this.viewCondition.set(i-1,viewCondition);
+        }
+    }
+
+    /**
+     * 添加用and连接的查询条件
+     * @param andCondition 查询条件
+     */
+    public void addAndCondition(Term andCondition) {
+        this.andCondition.add(andCondition);
+        addView(andCondition.getViewName());
+    }
+
+    /**
+     * 添加用or连接的查询条件
+     * @param orCondition 查询条件
+     */
+    public void addOrCondition(Term orCondition) {
+        this.orCondition.add(orCondition);
+        addView(orCondition.getViewName());
+    }
+
+    /**
+     * 以下全是get和set方法
+     */
     public List<String> getFields() {
         return fields;
-    }
-
-    public void setFields(List<String> fields) {
-        this.fields = fields;
-    }
-
-    public Condition(List<String> views, List<String> viewCondition, List<String> fields, List<Term> andCondition, List<Term> orCondition, Long startIndex, Integer size) {
-        this.views = views;
-        this.viewCondition = viewCondition;
-        this.fields = fields;
-        this.andCondition = andCondition;
-        this.orCondition = orCondition;
-        this.startIndex = startIndex;
-        this.size = size;
     }
 
     public List<String> getViews() {
         return views;
     }
 
-    public void setViews(List<String> views) {
-        this.views = views;
-    }
-
     public List<String> getViewCondition() {
         return viewCondition;
-    }
-
-    public void setViewCondition(List<String> viewCondition) {
-        this.viewCondition = viewCondition;
     }
 
     public List<Term> getAndCondition() {
         return andCondition;
     }
 
-    public void setAndCondition(List<Term> andCondition) {
-        this.andCondition = andCondition;
-    }
-
     public List<Term> getOrCondition() {
         return orCondition;
-    }
-
-    public void setOrCondition(List<Term> orCondition) {
-        this.orCondition = orCondition;
     }
 
     public Long getStartIndex() {
