@@ -1,6 +1,6 @@
 package com.bluedot.pojo.entity;
 
-import com.bluedot.pojo.Entity;
+import com.bluedot.pojo.Pojo;
 
 import java.util.Date;
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.Map;
  * @CreationDate 2022/07/29 - 0:56
  * @Description ：
  */
-public class Algorithm extends Entity {
+public class Algorithm extends Pojo {
     private Integer algorithmId;
     private String algorithmName;
     private Integer algorithmType;
