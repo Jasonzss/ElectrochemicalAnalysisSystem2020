@@ -2,26 +2,34 @@ package com.bluedot.monitor.impl;
 
 
 import com.bluedot.monitor.Monitor;
-import com.bluedot.quque.outQueue.impl.MapperServiceQueue;
+import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.LockSupport;
-
+/**
+ * @Author SDJin
+ * @CreationDate 2022/08/16 - 11:54
+ * @Description
+ */
 public class ServiceMapperMonitor extends Monitor<MapperServiceQueue> {
-    //懒汉单例
+    /**
+     * 单例线程安全ServiceMapperMonitor对象
+     */
     private static volatile ServiceMapperMonitor instance;
-    //线程集合
+    /**
+     *线程集合
+     */
     private Map<Long, Thread> map;
-    //私有构造
+
     private ServiceMapperMonitor() {
 
     }
 
     /**
      * 实例化Controller监听器
-     * @return
+     * @return 返回ServiceMapperMonitor对象
      */
     public static ServiceMapperMonitor getInstance() {
         if(instance != null) {
@@ -53,8 +61,8 @@ public class ServiceMapperMonitor extends Monitor<MapperServiceQueue> {
 
     /**
      * 添加线程到线程map中
-     * @param key
-     * @param value
+     * @param key 线程对应的唯一键
+     * @param value 线程对象
      */
     public void addThread(Long key,Thread value){
          map.put(key, value);
@@ -64,7 +72,7 @@ public class ServiceMapperMonitor extends Monitor<MapperServiceQueue> {
 
     /**
      * 根据key获取线程map中对应线程并唤醒
-     * @param key
+     * @param key 线程key
      */
     private void notice(Long key){
        LockSupport.unpark(map.remove(key));

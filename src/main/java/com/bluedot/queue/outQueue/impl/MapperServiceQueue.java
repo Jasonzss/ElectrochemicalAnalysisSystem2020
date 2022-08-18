@@ -1,20 +1,26 @@
-package com.bluedot.quque.outQueue.impl;
+package com.bluedot.queue.outQueue.impl;
 
 
-import com.bluedot.quque.outQueue.OutQueue;
+import com.bluedot.queue.outQueue.OutQueue;
 import com.bluedot.pojo.vo.CommonResult;
 
 import java.util.LinkedHashMap;
-
+/**
+ * @Author SDJin
+ * @CreationDate 2022/08/16 - 11:54
+ * @Description ：
+ */
 public class MapperServiceQueue extends OutQueue<CommonResult> {
-    //单例懒汉
+    /**
+     * 单例线程安全MapperServiceQueue对象
+     */
     private static volatile MapperServiceQueue instance;
     private MapperServiceQueue(){
     }
 
     /**
      * 实例化队列
-     * @return
+     * @return MapperServiceQueue对象
      */
     public static MapperServiceQueue getInstance() {
         if(instance != null) {

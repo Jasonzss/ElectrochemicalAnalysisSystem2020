@@ -1,32 +1,43 @@
-package com.bluedot.quque.enterQueue.Impl;
+package com.bluedot.queue.enterQueue.Impl;
 
-import com.bluedot.quque.enterQueue.EnterQueue;
+import com.bluedot.queue.enterQueue.EnterQueue;
 import com.bluedot.mapper.bean.EntityInfo;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
+/**
+ * @Author SDJin
+ * @CreationDate 2022/08/16 - 11:54
+ * @Description ：
+ */
 public class ServiceMapperQueue extends EnterQueue<EntityInfo> {
+    /**
+     * 单例线程安全ServiceMapperQueue对象
+     */
     private static volatile ServiceMapperQueue instance;
-    private ServiceMapperQueue(){
+
+    private ServiceMapperQueue() {
     }
+
     /***
      * 实例化队列
-     * @return
+     * @return ServiceMapperQueue对象
      */
     public static ServiceMapperQueue getInstance() {
-        if(instance != null) {
+        if (instance != null) {
             return instance;
         }
         synchronized (ServiceMapperQueue.class) {
-            if(instance != null) {
+            if (instance != null) {
                 return instance;
             }
             instance = new ServiceMapperQueue();
-            instance.queue=new PriorityQueue<EntityInfo>(new Comparator<EntityInfo>() {
+            instance.capacity = 10;
+            instance.queue = new PriorityQueue<EntityInfo>(new Comparator<EntityInfo>() {
                 @Override
                 public int compare(EntityInfo o1, EntityInfo o2) {
-                    return o1.getPriority()-o2.getPriority();
+                    return o1.getPriority() - o2.getPriority();
                 }
             });
             return instance;
