@@ -2,11 +2,6 @@ package com.bluedot.mapper.bean;
 
 import java.util.List;
 
-/**
- * @Author Jason
- * @CreationDate 2022/08/02 - 19:42
- * @Description ：
- */
 public class Condition {
     //查询涉及表,无论查几个表，第一个表为主表，也就是其他表都与第一个表有外键关联
     private List<String> views;

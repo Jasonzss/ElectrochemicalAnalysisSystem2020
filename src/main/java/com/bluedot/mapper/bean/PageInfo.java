@@ -2,12 +2,15 @@ package com.bluedot.mapper.bean;
 
 import java.util.List;
 
-public class PageInfo {
+public class PageInfo<T> {
     private Integer pageSize;
     private Integer currentPageNo;
     private Long totalDataSize;
     private Long totalPageSize;
-    private List dataList;
+    private List<T> dataList;
+
+    public PageInfo() {
+    }
 
     public PageInfo(Integer pageSize, Integer currentPageNo, Long totalDataSize, Long totalPageSize, List dataList) {
         this.pageSize = pageSize;
