@@ -12,9 +12,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @author JDsen99
- * @description 枷锁 阻塞数组队列
- * @createDate 2021/9/6-18:25
+ * @Author SDJin
+ * @CreationDate 2022/08/16 - 11:54
+ * @Description ：
  */
 public class BlockQueue<E> extends AbstractQueue<E>
         implements BlockingQueue<E> {
@@ -24,7 +24,7 @@ public class BlockQueue<E> extends AbstractQueue<E>
      */
     private final int threshold;
 
-    private Logger logger = LogUtil.getLogger();
+    private final Logger logger = LogUtil.getLogger();
 
     private Object[] items;
 

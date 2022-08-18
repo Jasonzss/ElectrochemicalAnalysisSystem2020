@@ -35,7 +35,7 @@ public class JwtUtil {
 
         //token过期时间设置
         Calendar instance = Calendar.getInstance();
-        instance.add(Calendar.HOUR,100);
+        instance.add(Calendar.MILLISECOND,1000);
 
         //创建token
         return builder.withExpiresAt(instance.getTime())
@@ -70,7 +70,6 @@ public class JwtUtil {
 
         // 解码token，获取到token解码后的对象
         DecodedJWT decodedJWT = JWT.decode(token);
-
         // 获取token负载信息
         return decodedJWT.getClaims();
     }
