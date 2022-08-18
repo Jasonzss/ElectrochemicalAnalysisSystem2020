@@ -17,15 +17,8 @@ public class Data {
     //操作者的Session
     private HttpSession session;
 
-    private HttpSession session;
 
-    public HttpSession getSession() {
-        return session;
-    }
 
-    public void setSession(HttpSession session) {
-        this.session = session;
-    }
 
     public Data(Integer priority, HashMap<String, Object> map, Long key, String serviceName, String operation, HttpSession session) {
         this.priority = priority;
