@@ -6,7 +6,7 @@ package com.bluedot.exception;
  * @date 2022/8/17 11:36
  * @created: 用户异常类
  */
-public class UserException extends RuntimeException {
+public class ErrorException extends RuntimeException {
 
     /**
      * 附加自定义的错误信息到异常中
@@ -25,26 +25,26 @@ public class UserException extends RuntimeException {
 
     //五种本异常类的构造方法
 
-    public UserException(ErrorCode errorCode) {
+    public ErrorException(ErrorCode errorCode) {
         this.errorCode = errorCode;
     }
 
-    public UserException(String message, ErrorCode errorCode) {
+    public ErrorException(String message, ErrorCode errorCode) {
         super(message);
         this.errorCode = errorCode;
     }
 
-    public UserException(String message, Throwable cause, ErrorCode errorCode) {
+    public ErrorException(String message, Throwable cause, ErrorCode errorCode) {
         super(message, cause);
         this.errorCode = errorCode;
     }
 
-    public UserException(Throwable cause, ErrorCode errorCode) {
+    public ErrorException(Throwable cause, ErrorCode errorCode) {
         super(cause);
         this.errorCode = errorCode;
     }
 
-    public UserException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace, ErrorCode errorCode) {
+    public ErrorException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace, ErrorCode errorCode) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.errorCode = errorCode;
     }

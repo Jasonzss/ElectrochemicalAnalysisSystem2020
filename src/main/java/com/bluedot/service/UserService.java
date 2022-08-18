@@ -1,11 +1,11 @@
 package com.bluedot.service;
 
 import com.bluedot.exception.CommonErrorCode;
-import com.bluedot.exception.UserException;
+import com.bluedot.exception.ErrorException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
-import com.bluedot.pojo.Dto.Data;
+import com.bluedot.pojo.dto.Data;
 import com.bluedot.pojo.entity.User;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.ImageUtil;
@@ -29,7 +29,6 @@ public class UserService extends BaseService<User> {
 
     @Override
     protected void doService() {
-        List<String> permissionList = (List<String>) session.getAttribute("permissionList");
         String userEmail = (String) session.getAttribute("userEmail");
         Map<String,Object> map = (Map<String, Object>) paramList.get("user");
 
@@ -123,7 +122,7 @@ public class UserService extends BaseService<User> {
                 return;
             }
         } catch (Exception e) {
-            throw new UserException(CommonErrorCode.E_3001);
+            throw new ErrorException(CommonErrorCode.E_3001);
         }
 
         // 判断是否有图片

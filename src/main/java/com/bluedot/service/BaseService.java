@@ -1,11 +1,11 @@
 package com.bluedot.service;
 
 import com.bluedot.exception.CommonErrorCode;
-import com.bluedot.exception.UserException;
+import com.bluedot.exception.ErrorException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.PageInfo;
-import com.bluedot.pojo.Dto.Data;
+import com.bluedot.pojo.dto.Data;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
@@ -28,7 +28,7 @@ public abstract class BaseService<T> {
     protected Map<String, Object> paramList;
     protected String operation;
     protected EntityInfo<T> entityInfo;
-    protected CommonResult commonResult;
+    protected CommonResult<?> commonResult;
 
     public BaseService(Data data) {
         fillAttribute(data);
@@ -47,6 +47,24 @@ public abstract class BaseService<T> {
      * 负责在具体Service中分析调用哪些方法来解决请求
      */
     abstract protected void doService();
+
+
+    protected void invokeMethod(String methodName,Object obj){
+        List<String> permissionList = (List<String>) session.getAttribute("permissionList");
+        if (permissionList.contains(methodName)){
+            //存在此权限，执行响应方法
+            try {
+                Method method = obj.getClass().getMethod(methodName);
+                method.invoke(obj);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+                throw new ErrorException(CommonErrorCode.E_3001);
+            }
+        }else {
+            // 没有权限，则设置枚举异常结果
+            throw new ErrorException(CommonErrorCode.E_3001);
+        }
+    }
 
     protected void update(){
         entityInfo.setKey(1L);
@@ -102,25 +120,7 @@ public abstract class BaseService<T> {
         return (long) commonResult.mapValue().get("data");
     }
 
-    protected void invokeMethod(String methodName,Object obj){
-        List<String> permissionList = (List<String>) session.getAttribute("permissionList");
-        if (permissionList.contains(methodName)){
-            //存在此权限，执行响应方法
-            try {
-                Method method = obj.getClass().getMethod(methodName);
-                method.invoke(obj);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                System.out.println("反射调用方法异常!");
-                e.printStackTrace();
-            } catch (UserException e){
-                // 处理service层抛出的自定义异常 封装到commonResult中
-                commonResult = CommonResult.commonErrorCode(e.getErrorCode());
-            }
-        }else {
-            // 没有权限，则设置枚举异常结果
-            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_3001);
-        }
-    }
+
 
     private CommonResult doMapper(){
         //将待BaseMapper处理的数据加入到SMQueue中

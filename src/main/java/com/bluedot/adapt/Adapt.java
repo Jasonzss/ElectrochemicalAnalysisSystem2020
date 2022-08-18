@@ -2,7 +2,7 @@ package com.bluedot.adapt;
 
 
 
-import com.bluedot.pojo.Dto.Data;
+import com.bluedot.pojo.dto.Data;
 
 import java.lang.reflect.InvocationTargetException;
 /**

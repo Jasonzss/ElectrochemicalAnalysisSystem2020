@@ -1,9 +1,8 @@
 package com.bluedot.queue.enterQueue.Impl;
 
 import com.bluedot.queue.enterQueue.EnterQueue;
-import com.bluedot.pojo.Dto.Data;
+import com.bluedot.pojo.dto.Data;
 
-import java.util.Comparator;
 import java.util.PriorityQueue;
 
 /**

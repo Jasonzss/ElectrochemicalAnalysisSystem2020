@@ -1,4 +1,4 @@
-package com.bluedot.pojo.Dto;
+package com.bluedot.pojo.dto;
 
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;

@@ -5,7 +5,7 @@ import com.bluedot.adapt.Adapt;
 import com.bluedot.monitor.Monitor;
 import com.bluedot.queue.BlockQueue;
 import com.bluedot.queue.enterQueue.Impl.ControllerServiceQueue;
-import com.bluedot.pojo.Dto.Data;
+import com.bluedot.pojo.dto.Data;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
