@@ -53,21 +53,25 @@ public abstract class BaseService<T> {
         entityInfo.setOperation("update");
         commonResult = doMapper();
     }
+
     protected void delete(){
         entityInfo.setKey(1L);
         entityInfo.setOperation("delete");
         commonResult = doMapper();
     }
+
     protected void insert(){
         entityInfo.setKey(1L);
         entityInfo.setOperation("insert");
         commonResult = doMapper();
     }
+
     protected void select(){
         entityInfo.setKey(1L);
         entityInfo.setOperation("select");
         commonResult = doMapper();
     }
+
     protected void selectPage(){
         // 查询当前页的对应数据
         entityInfo.setKey(1L);
@@ -89,16 +93,15 @@ public abstract class BaseService<T> {
 
     private long getCount(){
         // 设置查询条件
-        List<String> list = new ArrayList<>();
-        list.add("count(*)");
         Condition condition = new Condition();
-        condition.setFields(list);
-        condition.setViews(entityInfo.getCondition().getViews());
+        condition.addFields("count(*)");
+        condition.addView(entityInfo.getCondition().getViews().get(0));
 
         entityInfo.setKey(1L);
         entityInfo.setCondition(condition);
         entityInfo.setOperation("select");
         CommonResult commonResult = doMapper();
+
         return (long) commonResult.mapValue().get("data");
     }
 

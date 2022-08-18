@@ -38,7 +38,7 @@ public class Condition {
      * 添加查询表
      * @param view 查询的表名
      */
-    private void addView(String view) {
+    public void addView(String view) {
         if (!this.views.contains(view)){
             //当views列表中无此表则加入此表
             this.views.add(view);
@@ -69,7 +69,7 @@ public class Condition {
      * 添加用and连接的查询条件
      * @param andCondition 查询条件
      */
-    public void addAndCondition(Term andCondition) {
+    public void addAndConditionWithView(Term andCondition) {
         this.andCondition.add(andCondition);
         addView(andCondition.getViewName());
     }
@@ -78,7 +78,7 @@ public class Condition {
      * 添加用or连接的查询条件
      * @param orCondition 查询条件
      */
-    public void addOrCondition(Term orCondition) {
+    public void addOrConditionWithView(Term orCondition) {
         this.orCondition.add(orCondition);
         addView(orCondition.getViewName());
     }
