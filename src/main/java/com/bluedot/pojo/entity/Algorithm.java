@@ -1,13 +1,16 @@
 package com.bluedot.pojo.entity;
 
+import com.bluedot.pojo.Pojo;
+
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @Author Jason
  * @CreationDate 2022/07/29 - 0:56
  * @Description ：
  */
-public class Algorithm {
+public class Algorithm extends Pojo {
     private Integer algorithmId;
     private String algorithmName;
     private Integer algorithmType;
@@ -18,6 +21,15 @@ public class Algorithm {
     private Date algorithmCreateTime;
     private Date algorithmUpdateTime;
     private Integer algorithmStatus;
+
+    /**
+     * 通过map的key和实体类的属性名匹配的原则注入值
+     *
+     * @param map 将要填充到实体类的map
+     */
+    public Algorithm(Map<String, Object> map) {
+        super(map);
+    }
 
     public Integer getAlgorithmId() {
         return algorithmId;
