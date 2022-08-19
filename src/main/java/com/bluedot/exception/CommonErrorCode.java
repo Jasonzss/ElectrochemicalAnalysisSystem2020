@@ -4,7 +4,7 @@ package com.bluedot.exception;
  * @author FireRain
  * @version 1.0
  * @date 2022/8/17 11:47
- * @created: 用户异常信息枚举类
+ * @created: 自定义异常信息枚举类
  */
 public enum CommonErrorCode implements ErrorCode {
 
@@ -31,7 +31,7 @@ public enum CommonErrorCode implements ErrorCode {
     ;
 
     private final int code;
-    private final String msg;
+    private String msg;
 
     CommonErrorCode(int code, String msg) {
         this.code = code;
@@ -46,5 +46,10 @@ public enum CommonErrorCode implements ErrorCode {
     @Override
     public String getMsg() {
         return msg;
+    }
+
+    @Override
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 }
