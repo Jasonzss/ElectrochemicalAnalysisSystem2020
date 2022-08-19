@@ -1,7 +1,7 @@
 package com.bluedot.service;
 
 import com.bluedot.exception.CommonErrorCode;
-import com.bluedot.exception.ErrorException;
+import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
@@ -121,7 +121,7 @@ public class UserService extends BaseService<User> {
                 return;
             }
         } catch (Exception e) {
-            throw new ErrorException(CommonErrorCode.E_3001);
+            throw new UserException(CommonErrorCode.E_3001);
         }
 
         // 判断是否有图片

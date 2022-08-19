@@ -1,7 +1,7 @@
 package com.bluedot.service;
 
 import com.bluedot.exception.CommonErrorCode;
-import com.bluedot.exception.ErrorException;
+import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.PageInfo;
@@ -27,7 +27,7 @@ public abstract class BaseService<T> {
     protected Map<String, Object> paramList;
     protected String operation;
     protected EntityInfo<T> entityInfo;
-    protected CommonResult<?> commonResult;
+    protected CommonResult commonResult;
 
     public BaseService(Data data) {
         fillAttribute(data);
@@ -57,11 +57,11 @@ public abstract class BaseService<T> {
                 method.invoke(obj);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
-                throw new ErrorException(CommonErrorCode.E_3001);
+                throw new UserException(CommonErrorCode.E_3001);
             }
         }else {
             // 没有权限，则设置枚举异常结果
-            throw new ErrorException(CommonErrorCode.E_3001);
+            throw new UserException(CommonErrorCode.E_3001);
         }
     }
 
