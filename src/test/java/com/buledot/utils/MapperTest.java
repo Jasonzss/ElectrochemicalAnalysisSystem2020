@@ -3,6 +3,7 @@ package com.buledot.utils;
 
 
 import com.bluedot.mapper.BaseMapper;
+import com.bluedot.mapper.MapperInit;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
@@ -16,6 +17,7 @@ public class MapperTest {
 
     @org.junit.Test
     public  void testSelect() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
         //模拟根据条件生成select语句
         Condition condition = new Condition();
         //查询涉及表

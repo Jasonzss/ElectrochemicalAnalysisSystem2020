@@ -4,6 +4,8 @@ import com.bluedot.controller.handler.RequestHandler;
 import com.bluedot.controller.handler.impl.MainRequestHandler;
 import com.bluedot.controller.render.DataRender;
 import com.bluedot.controller.render.impl.JsonDataRender;
+import com.bluedot.mapper.MapperInit;
+import com.bluedot.mapper.dataSource.impl.MyDataSourceImpl;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.LogUtil;
 import org.slf4j.Logger;
@@ -13,13 +15,16 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * @Author SDJin
  * @CreationDate 2022/08/16 - 11:54
  * @Description ：
  */
-@WebServlet(name = "DispatcherServlet",urlPatterns = "/*",loadOnStartup = 1)
+@WebServlet(name = "DispatcherServlet", urlPatterns = "/*", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     /**
      * 请求处理器
@@ -39,6 +44,16 @@ public class DispatcherServlet extends HttpServlet {
         //初始化日志对象
         log = LogUtil.getLogger();
         log.debug("初始化日志对象");
+        //初始化数据库连接池
+        try {
+            log.debug("初始化数据库连接池");
+            MapperInit mapperInit = new MapperInit("database.properties");
+            log.error("错误");
+
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
         //初始化请求处理器
         requestHandler = new MainRequestHandler();
         log.debug("初始化请求处理器：" + requestHandler);
@@ -49,11 +64,11 @@ public class DispatcherServlet extends HttpServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp)  {
+    protected void service(HttpServletRequest req, HttpServletResponse resp) {
         //处理请求
         CommonResult commonResult = requestHandler.handlerRequest(req, resp);
         //渲染结果并返回给前端
-        LogUtil.getLogger().debug("开始渲染结果数据--请求用户:{}",req.getSession().getAttribute("userEmail")==null?"游客":req.getSession().getAttribute("userEmail"));
+        LogUtil.getLogger().debug("开始渲染结果数据--请求用户:{}", req.getSession().getAttribute("userEmail") == null ? "游客" : req.getSession().getAttribute("userEmail"));
         dataRender.renderData(resp, commonResult);
     }
 
