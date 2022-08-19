@@ -62,6 +62,9 @@ public class MyDataSourceImpl implements MyDataSource {
         return instance;
     }
 
+    public static Connection getDataBaseConnection(){
+        return MyDataSourceImpl.getInstance().getConnection();
+    }
     private void init() {
 
         for (int i = 0; i < initCount; i++) {
