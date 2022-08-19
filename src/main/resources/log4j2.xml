@@ -1,18 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Configuration status="info">
 
-    <!--集中配置属性进行管理-->
-    <properties>
-        <property name="LOG_HOME">/logs</property>
-    </properties>
 
     <!--日志处理-->
     <Appenders>
-
         <!--控制台输出 appender-->
         <Console name="Console" target="SYSTEM_ERR">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] [%-5level] %class{36}:%L --- %m%n"/>
-
         </Console>
 
         <JDBC name="database" tableName="system_log">
@@ -25,24 +19,20 @@
             </LevelRangeFilter>
         </JDBC>
 
-        <!--异步database日志-->
-        <Async name="AsyncJDBC">
-            <AppenderRef ref="database"/>
-        </Async>
+<!--        &lt;!&ndash;异步database日志&ndash;&gt;-->
+<!--        <Async name="AsyncJDBC">-->
+<!--            <AppenderRef ref="database"/>-->
+<!--        </Async>-->
     </Appenders>
 
     <!--logger定义-->
     <Loggers>
-        <!--自定义异步日志配置-->
-        <Logger name="com.bluedot" level="debug" includeLocation="false" additivity="false">
-            <Appender ref="Console"/>
-            <Appender ref="AsyncFile"/>
-            <Appender ref="AsyncJDBC"/>
-        </Logger>
+
 
         <!--rootLogger配置-->
-        <Root level="trace">
+        <root level="debug">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="database"/>
         </root>
 
     </Loggers>
