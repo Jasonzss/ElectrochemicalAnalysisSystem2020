@@ -5,12 +5,23 @@ import com.bluedot.monitor.Monitor;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.mapper.bean.EntityInfo;
 
+/**
+ * @Author SDJin
+ * @CreationDate 2022/08/16 - 11:54
+ * @Description ：
+ */
 public class MapperMonitor extends Monitor<ServiceMapperQueue> {
-    //懒汉单例
+    /**
+     * 单例线程安全MapperMonitor对象
+     */
     private static volatile MapperMonitor instance;
     private MapperMonitor(){
     }
-    //实例化Mapper监听器
+
+    /**
+     * 实例化MapperMonitor监听器
+     * @return 返回MapperMonitor对象
+     */
     public static MapperMonitor getInstance() {
         if(instance != null) {
             return instance;

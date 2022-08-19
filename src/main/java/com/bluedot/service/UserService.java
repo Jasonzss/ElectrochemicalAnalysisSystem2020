@@ -1,5 +1,7 @@
 package com.bluedot.service;
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
@@ -19,7 +21,7 @@ import java.util.Map;
  * @CreationDate 2022/08/16 - 21:45
  * @Description ：
  */
-public class UserService extends BaseService {
+public class UserService extends BaseService<User> {
 
     public UserService(Data data) {
         super(data);
@@ -32,33 +34,43 @@ public class UserService extends BaseService {
         Map<String,Object> map = (Map<String, Object>) paramList.get("user");
 
         String methodName = null;
-        switch (operation){
-            case "insert":methodName = "insertUser";break;
-            case "delete":if(userEmail.equals(map.get("userEmail"))){
-                methodName = "deletePersonalUser";
-            }else {
-                methodName = "deleteUser";
-            }break;
-            case "update":if (userEmail.equals(map.get("userEmail"))){
-                methodName = "updatePersonalUser";
-            }else {
-                methodName = "updateUser";
-            }break;
-            case "select":if (userEmail.equals(map.get("userEmail"))){
-                if (map.get("password") != null){
-                    methodName = "login";
-                }else {
-                    methodName = "getPersonalUser";
+        switch (operation) {
+            case "insert":
+                methodName = "insertUser";
+                break;
+            case "delete":
+                if (userEmail.equals(map.get("userEmail"))) {
+                    methodName = "deletePersonalUser";
+                } else {
+                    methodName = "deleteUser";
                 }
-            }else {
-                methodName = "listUsers";
-            }break;
-            case "other":if (map.get("userEmail") != null){
-                methodName = "sendAuthEmail";
-            }break;
+                break;
+            case "update":
+                if (userEmail.equals(map.get("userEmail"))) {
+                    methodName = "updatePersonalUser";
+                } else {
+                    methodName = "updateUser";
+                }
+                break;
+            case "select":
+                if (userEmail.equals(map.get("userEmail"))) {
+                    if (map.get("password") != null) {
+                        methodName = "login";
+                    } else {
+                        methodName = "getPersonalUser";
+                    }
+                } else {
+                    methodName = "listUsers";
+                }
+                break;
+            case "other":
+                if (map.get("userEmail") != null) {
+                    methodName = "sendAuthEmail";
+                }
+                break;
             default:
                 System.out.println("错误的请求参数！");
-                commonResult = CommonResult.errorResult(200,"错误的请求参数");
+                commonResult = CommonResult.errorResult(200, "错误的请求参数");
                 return;
         }
 
@@ -83,12 +95,12 @@ public class UserService extends BaseService {
 
             // 封装User实体
             User user = new User();
-            userList.add((User) ReflectUtil.invokeSetters(map,user));
+            ReflectUtil.invokeSetters(map, user);
+
+            // 执行修改逻辑
+            update();
         });
 
-        // 执行修改逻辑
-        entityInfo.setEntity(userList);
-        update();
     }
 
     private void updatePersonalUser(){
@@ -104,10 +116,14 @@ public class UserService extends BaseService {
             }
         }
 
-        // 判断是否有用户状态
-        if (map.containsKey("userStatus")){
-            commonResult = CommonResult.errorResult(200,"用户状态无法自行修改");
-            return;
+        try {
+            // 判断是否有用户状态
+            if (map.containsKey("userStatus")){
+                commonResult = CommonResult.errorResult(200,"用户状态无法自行修改");
+                return;
+            }
+        } catch (Exception e) {
+            throw new UserException(CommonErrorCode.E_3001);
         }
 
         // 判断是否有图片

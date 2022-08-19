@@ -18,17 +18,25 @@ import static com.bluedot.utils.JwtUtil.*;
 public class JwtUtilTest {
 
     @Test
-    public void test(){
-
+    public void test() throws InterruptedException {
         //放入token负载的自定义信息
         HashMap<String, String> map = new HashMap<>();
         map.put("id","2");
         map.put("email","xxx@qq.com");
         map.put("identity","管理员");
+        HashMap<String, String> map2 = new HashMap<>();
+        map.put("id","2");
+        map.put("email","xxx@qq.com");
+        map.put("identity","管理员");
         String token = generateToken(map);
-        System.out.println("生成token:"+token);
-
+        String token2 = generateToken(map2);
+        System.out.println("生成token1:"+token);
+        System.out.println("生成token1:"+token2);
         boolean verify = verify(token);
+        System.out.println(verify);
+        Thread.sleep(2000);
+        boolean verify1 = verify(token2);
+        System.out.println(verify1);
         if (verify){
             System.out.println("token验证成功");
         }else {

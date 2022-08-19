@@ -19,8 +19,6 @@ public class StringUtil {
 
     }
 
-
-
     public static String columnNameToMethodName(String str) {
         return firstCharToUpperCase(lineToHump(str));
     }

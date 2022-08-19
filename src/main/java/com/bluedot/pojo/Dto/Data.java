@@ -17,6 +17,18 @@ public class Data {
     //操作者的Session
     private HttpSession session;
 
+
+
+
+    public Data(Integer priority, HashMap<String, Object> map, Long key, String serviceName, String operation, HttpSession session) {
+        this.priority = priority;
+        this.map = map;
+        this.key = key;
+        this.serviceName = serviceName;
+        this.operation = operation;
+        this.session = session;
+    }
+
     public Long getKey() {
         return key;
     }

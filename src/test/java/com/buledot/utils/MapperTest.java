@@ -1,7 +1,8 @@
-package com.bluedot.mapper;
+package com.buledot.utils;
 
 
 
+import com.bluedot.mapper.BaseMapper;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;

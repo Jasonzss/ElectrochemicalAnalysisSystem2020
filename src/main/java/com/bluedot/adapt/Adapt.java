@@ -5,7 +5,11 @@ package com.bluedot.adapt;
 import com.bluedot.pojo.Dto.Data;
 
 import java.lang.reflect.InvocationTargetException;
-
+/**
+ * @Author SDJin
+ * @CreationDate 2022/08/16 - 11:54
+ * @Description ：
+ */
 public class Adapt extends Thread {
     private Data data;
 
