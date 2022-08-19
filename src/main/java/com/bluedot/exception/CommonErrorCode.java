@@ -9,9 +9,13 @@ package com.bluedot.exception;
 public enum CommonErrorCode implements ErrorCode {
 
     /**
-     * 登录模块错误:E_1xxx
+     * 用户模块错误:E_1xxx
      */
     E_1001(1001,"登录失败!"),
+    E_1002(1002,"该邮箱已注册"),
+    E_1003(1003,"非法邮箱"),
+    E_1004(1004,"验证码错误"),
+    E_1005(1005,"该用户邮箱不存在"),
 
     /**
      * 数据管理模块错误:E_2xxx
