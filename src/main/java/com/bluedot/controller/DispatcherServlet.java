@@ -44,11 +44,12 @@ public class DispatcherServlet extends HttpServlet {
         //初始化日志对象
         log = LogUtil.getLogger();
         log.debug("初始化日志对象");
-        log.error("错误");
         //初始化数据库连接池
         try {
             log.debug("初始化数据库连接池");
             MapperInit mapperInit = new MapperInit("database.properties");
+            log.error("错误");
+
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
