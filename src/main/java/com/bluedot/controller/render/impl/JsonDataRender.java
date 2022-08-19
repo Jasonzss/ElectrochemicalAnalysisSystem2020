@@ -4,7 +4,6 @@ import com.bluedot.controller.render.DataRender;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.JsonUtil;
 import com.bluedot.utils.LogUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;

@@ -8,8 +8,10 @@ import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.dto.Data;
 import com.bluedot.pojo.entity.User;
 import com.bluedot.pojo.vo.CommonResult;
+import com.bluedot.utils.EmailUtil;
 import com.bluedot.utils.ImageUtil;
 import com.bluedot.utils.ReflectUtil;
+import com.bluedot.utils.constants.SessionConstants;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -76,9 +78,6 @@ public class UserService extends BaseService<User> {
         invokeMethod(methodName,this);
     }
 
-
-
-
     private void updateUser(){
         // 先将paramList中的参数取出
         List<Map<String,Object>> objectList = (List<Map<String, Object>>) paramList.get("user");
@@ -136,19 +135,62 @@ public class UserService extends BaseService<User> {
         ReflectUtil.invokeSetters(map, user);
 
         // 执行修改逻辑
-        entityInfo.setEntity(user);
+        entityInfo.addEntity(user);
         update();
     }
 
     private void insertUser(){
+        //获取新增用户的信息
+        Map<String,Object> userMap = (Map<String, Object>) paramList.get("user");
+        String authCode = (String) paramList.get("authCode");
+
+        //判断邮箱验证码是否正确
+        if (authCode.equalsIgnoreCase((String) session.getAttribute(SessionConstants.AUTH_CODE))){
+            //验证码不正确
+            throw new UserException(CommonErrorCode.E_1004);
+        }
+
+        //判断邮箱是否可用
+
+        //执行插入操作
+
+        //返回逻辑
 
     }
 
     private void deleteUser(){
+        //获取需要删除的用户信息
+        List<Map<String,Object>> userMapList = (List<Map<String, Object>>) paramList.get("user");
+
+        //包装需要删除的实体类
+        for (Map<String,Object> map:userMapList) {
+            User user = new User();
+            user.setUserEmail((String) map.get("userEmail"));
+            entityInfo.addEntity(user);
+        }
+
+        //执行删除逻辑
+        delete();
+
+        //返回逻辑
 
     }
 
     private void deletePersonalUser(){
+        //获取需要删除的用户信息
+        Map<String,Object> userMap = (Map<String, Object>) paramList.get("user");
+
+        //包装需要删除的实体类
+
+            User user = new User();
+            user.setUserEmail((String) userMap.get("userEmail"));
+            entityInfo.addEntity(user);
+
+
+        //执行删除逻辑
+        delete();
+
+        //返回逻辑
 
     }
 
@@ -158,12 +200,8 @@ public class UserService extends BaseService<User> {
 
         // 封装Condition
         Condition condition = new Condition();
-
         // 判断搜索用户的各项属性
-        Term term = new Term("user", "userEmail", map.get("userEmail"), TermType.EQUAL);
-        List<Term> list = new ArrayList<>();
-        list.add(term);
-        condition.setAndCondition(list);
+        condition.addAndConditionWithView(new Term("user","userEmail",map.get("userEmail"),TermType.EQUAL));
 
         // 执行修改逻辑
         entityInfo.setCondition(condition);
@@ -183,19 +221,14 @@ public class UserService extends BaseService<User> {
         if (map.size() != 0){
             List<Term> list = new ArrayList<>();
             if (map.containsKey("userName")){
-                Term term = new Term("user","userName",map.get("userName"), TermType.LIKE);
-                list.add(term);
+                condition.addOrConditionWithView(new Term("user","userName",map.get("userName"), TermType.LIKE));
             }
             if (map.containsKey("roleId")){
-                Term term = new Term("user_role","roleId",map.get("roleId"),TermType.EQUAL);
-                list.add(term);
+                condition.addOrConditionWithView(new Term("user_role","roleId",map.get("roleId"),TermType.EQUAL));
             }
             if (map.containsKey("userEmail")){
-                Term term = new Term("user", "userEmail", map.get("userEmail"), TermType.EQUAL);
-                list.add(term);
+                condition.addOrConditionWithView(new Term("user", "userEmail", map.get("userEmail"), TermType.EQUAL));
             }
-            // 封装进Condition
-            condition.setOrCondition(list);
         }
 
         // 执行修改逻辑
@@ -204,14 +237,62 @@ public class UserService extends BaseService<User> {
     }
 
     private void login(){
+        //获取登录的参数
 
+        //判断图片验证码是否正确
+
+        //session中移除图片验证码
+
+        //根据邮箱查询用户
+
+        //是否存在此用户
+
+        //判断密码是否正确
+
+        //登录通过
+
+        //查询权限列表放入session
+
+        //将userEmail放入session
+
+        //返回token回前端
     }
 
     private void sendAuthEmail(){
+        getPersonalUser();
+        List<User> userList = (List<User>) commonResult.getData();
+        User user = userList.get(0);
+        if(user == null){
+            //邮箱未注册
+            throw new UserException(CommonErrorCode.E_1005);
+        }
 
+        
     }
 
     private void isAvailableEmail(){
+        // 先将paramList中的参数取出
+        Map<String,Object> userMap = (Map<String, Object>) paramList.get("user");
+        //判断邮箱是否合法
+        if (!EmailUtil.isLegalEmail((String) userMap.get("userEmail"))){
+            throw new UserException(CommonErrorCode.E_1003);
+        }
 
+        //查询用户
+        getPersonalUser();
+        //获得查询结果
+        List<User> user = (List<User>) commonResult.getData();
+
+        //判断用户是否注册
+        if (user != null){
+            throw new UserException(CommonErrorCode.E_1002);
+        }
+
+        //此邮箱为可用邮箱
+        commonResult = CommonResult.successResult("此邮箱可用",true);
+    }
+
+    private void logout(){
+        //移除session和token
     }
 }

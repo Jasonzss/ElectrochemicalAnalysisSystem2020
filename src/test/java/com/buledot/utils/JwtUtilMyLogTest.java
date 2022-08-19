@@ -1,9 +1,13 @@
 package com.buledot.utils;
 
 import com.auth0.jwt.interfaces.Claim;
+import com.bluedot.mapper.dataSource.MyDataSource;
+import com.bluedot.mapper.dataSource.impl.MyDataSourceImpl;
 import com.bluedot.pojo.vo.CommonResult;
+import com.mysql.cj.jdbc.MysqlDataSourceFactory;
 import org.junit.Test;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +23,8 @@ public class JwtUtilMyLogTest {
 
     @Test
     public void test() throws InterruptedException {
+        Connection connection = MyDataSourceImpl.getInstance().getConnection();
+        System.out.println(connection);
         //放入token负载的自定义信息
         HashMap<String, String> map = new HashMap<>();
         map.put("id","2");

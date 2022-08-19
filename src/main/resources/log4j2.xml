@@ -1,50 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Configuration status="debug" monitorInterval="5">
+<Configuration status="info">
 
-    <!--集中配置属性进行管理-->
-    <properties>
-        <property name="LOG_HOME">logs</property>
-    </properties>
 
     <!--日志处理-->
     <Appenders>
-
         <!--控制台输出 appender-->
         <Console name="Console" target="SYSTEM_ERR">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] [%-5level] %c{36}:%L --- %m%n" />
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] [%-5level] %class{36}:%L --- %m%n"/>
         </Console>
 
-        <!--使用随机读写流的日志文件输出 appender，性能提高-->
-        <RandomAccessFile name="accessFile" fileName="${LOG_HOME}/myAcclog.log">
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %l %c{36} - %m%n" />
-        </RandomAccessFile>
-
-        <!--JDBC输出 appender-->
         <JDBC name="database" tableName="system_log">
-            <ConnectionFactory class="com.buledot.log.MyLogTest" method="getConnection" />
-            <!--数据库字段名，pattern 要显示的格式-->
-<!--            <Column name="system_log_id" literal="LOGGING.APPLICATION_LOG_SEQUENCE.NEXTVAL" />-->
-<!--            <Column name="EVENT_DATE" isEventTimestamp="true" />-->
-<!--            <Column name="system_log_class" pattern="%C" />-->
-<!--            <Column name="system_log_function" pattern="%M" />-->
-            <Column name="system_log_details" pattern="%m" />
-            <Column name="system_log_level" pattern="%level" />
-            <Column name="system_log_time" pattern="%d{yyyy-MM-dd HH:mm:ss.SSS}" />
+            <ConnectionFactory class="com.bluedot.mapper.dataSource.impl.MyDataSourceImpl" method="getDataBaseConnection"/>
+            <Column name="system_log_details" pattern="%m"/>
+            <Column name="system_log_level" pattern="%level"/>
+            <Column name="system_log_time" pattern="%d{yyyy-MM-dd HH:mm:ss.SSS}"/>
+            <LevelRangeFilter minLevel="ERROR" maxLevel="INFO"
+                              onMatch="ACCEPT">
+            </LevelRangeFilter>
         </JDBC>
 
+<!--        &lt;!&ndash;异步database日志&ndash;&gt;-->
+<!--        <Async name="AsyncJDBC">-->
+<!--            <AppenderRef ref="database"/>-->
+<!--        </Async>-->
     </Appenders>
 
     <!--logger定义-->
     <Loggers>
-        <Logger name="com.bluedot" level="debug" includeLocation="false" additivity="false">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="accessFile"/>
-            <AppenderRef ref="database"/>
-        </Logger>
 
-        <Root level="debug">
+
+        <!--rootLogger配置-->
+        <root level="debug">
             <AppenderRef ref="Console"/>
-        </Root>
+            <AppenderRef ref="database"/>
+        </root>
+
     </Loggers>
 
 </Configuration>

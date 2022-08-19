@@ -4,7 +4,7 @@ package com.bluedot.exception;
  * @author FireRain
  * @version 1.0
  * @date 2022/8/17 11:36
- * @created: 用户异常类
+ * @created: 自定义异常类
  */
 public class ErrorException extends RuntimeException {
 

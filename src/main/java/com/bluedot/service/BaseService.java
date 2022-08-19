@@ -14,7 +14,6 @@ import com.bluedot.queue.outQueue.impl.ServiceControllerQueue;
 import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -71,21 +70,25 @@ public abstract class BaseService<T> {
         entityInfo.setOperation("update");
         commonResult = doMapper();
     }
+
     protected void delete(){
         entityInfo.setKey(1L);
         entityInfo.setOperation("delete");
         commonResult = doMapper();
     }
+
     protected void insert(){
         entityInfo.setKey(1L);
         entityInfo.setOperation("insert");
         commonResult = doMapper();
     }
+
     protected void select(){
         entityInfo.setKey(1L);
         entityInfo.setOperation("select");
         commonResult = doMapper();
     }
+
     protected void selectPage(){
         // 查询当前页的对应数据
         entityInfo.setKey(1L);
@@ -95,7 +98,7 @@ public abstract class BaseService<T> {
         Condition condition = entityInfo.getCondition();
         // 设置pageInfo，并将查询到的数据填入
         PageInfo<T> pageInfo = new PageInfo<T>();
-        pageInfo.setDataList((List<T>) commonResult.mapValue().get("data"));
+        pageInfo.setDataList((List<T>) commonResult.getData());
         pageInfo.setPageSize(condition.getSize());
         // 调用getCount查询数据总数量
         pageInfo.setTotalDataSize(getCount());
@@ -107,17 +110,16 @@ public abstract class BaseService<T> {
 
     private long getCount(){
         // 设置查询条件
-        List<String> list = new ArrayList<>();
-        list.add("count(*)");
         Condition condition = new Condition();
-        condition.setFields(list);
-        condition.setViews(entityInfo.getCondition().getViews());
+        condition.addFields("count(*)");
+        condition.addView(entityInfo.getCondition().getViews().get(0));
 
         entityInfo.setKey(1L);
         entityInfo.setCondition(condition);
         entityInfo.setOperation("select");
         CommonResult commonResult = doMapper();
-        return (long) commonResult.mapValue().get("data");
+
+        return (long) commonResult.getData();
     }
 
 
