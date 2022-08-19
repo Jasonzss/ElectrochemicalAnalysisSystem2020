@@ -81,7 +81,7 @@ public abstract class BaseService<T> {
         Condition condition = entityInfo.getCondition();
         // 设置pageInfo，并将查询到的数据填入
         PageInfo<T> pageInfo = new PageInfo<T>();
-        pageInfo.setDataList((List<T>) commonResult.mapValue().get("data"));
+        pageInfo.setDataList((List<T>) commonResult.getData());
         pageInfo.setPageSize(condition.getSize());
         // 调用getCount查询数据总数量
         pageInfo.setTotalDataSize(getCount());
@@ -102,7 +102,7 @@ public abstract class BaseService<T> {
         entityInfo.setOperation("select");
         CommonResult commonResult = doMapper();
 
-        return (long) commonResult.mapValue().get("data");
+        return (long) commonResult.getData();
     }
 
     protected void invokeMethod(String methodName,Object obj){
