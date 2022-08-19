@@ -11,44 +11,18 @@
 
         <!--控制台输出 appender-->
         <Console name="Console" target="SYSTEM_ERR">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] [%-5level] %c{36}:%L --- %m%n" />
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] [%-5level] %class{36}:%L --- %m%n"/>
+
         </Console>
 
-        <!--文件输出的 按照一定规则拆分的日志文件的 appender-->
-        <RollingFile name="rollingFile" fileName="${LOG_HOME}/myrollog.log"
-                     filePattern="/logs/$${requestAdapter:yyyy-MM-dd}/myrollog-%d{yyyy-MM-dd-HH-mm}-%i.log">
-            <!--日志级别过滤器-->
-            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY" />
-            <!--日志消息格式-->
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %l %c{36} - %msg%n" />
-            <Policies>
-                <!--在系统启动时，出发拆分规则，生产一个新的日志文件-->
-                <OnStartupTriggeringPolicy />
-                <!--按照文件大小拆分，10MB -->
-                <SizeBasedTriggeringPolicy size="10 MB" />
-                <!--按照时间节点拆分，规则根据filePattern定义的-->
-                <TimeBasedTriggeringPolicy />
-            </Policies>
-            <!--在同一个目录下，文件的个数限定为 30 个，超过进行覆盖-->
-            <DefaultRolloverStrategy max="30" />
-        </RollingFile>
-
-        <!--异步rollingFile日志-->
-        <Async name="AsyncFile">
-            <AppenderRef ref="rollingFile"/>
-        </Async>
-
-        <!--JDBC输出 appender-->
         <JDBC name="database" tableName="system_log">
-            <ConnectionFactory class="com.bluedot.mapper.dataSource.MyDataSource" method="getConnection" />
-            <Column name="EVENT_ID" literal="LOGGING.APPLICATION_LOG_SEQUENCE.NEXTVAL" />
-            <Column name="EVENT_DATE" isEventTimestamp="true" />
-            <!--数据库字段名，pattern 要显示的格式-->
-            <Column name="CLASS" pattern="%C" />
-            <Column name="FUNCTION" pattern="%M" />
-            <Column name="MESSAGE" pattern="%m" />
-            <Column name="LEVEL" pattern="%level" />
-            <Column name="TIME" pattern="%d{yyyy-MM-dd HH:mm:ss.SSS}" />
+            <ConnectionFactory class="com.bluedot.mapper.dataSource.impl.MyDataSourceImpl" method="getDataBaseConnection"/>
+            <Column name="system_log_details" pattern="%m"/>
+            <Column name="system_log_level" pattern="%level"/>
+            <Column name="system_log_time" pattern="%d{yyyy-MM-dd HH:mm:ss.SSS}"/>
+            <LevelRangeFilter minLevel="ERROR" maxLevel="INFO"
+                              onMatch="ACCEPT">
+            </LevelRangeFilter>
         </JDBC>
 
         <!--异步database日志-->
@@ -69,7 +43,8 @@
         <!--rootLogger配置-->
         <Root level="trace">
             <AppenderRef ref="Console"/>
-        </Root>
+        </root>
+
     </Loggers>
 
 </Configuration>
