@@ -12,7 +12,7 @@ public class PageInfo<T> {
     public PageInfo() {
     }
 
-    public PageInfo(Integer pageSize, Integer currentPageNo, Long totalDataSize, Long totalPageSize, List dataList) {
+    public PageInfo(Integer pageSize, Integer currentPageNo, Long totalDataSize, Long totalPageSize, List<T> dataList) {
         this.pageSize = pageSize;
         this.currentPageNo = currentPageNo;
         this.totalDataSize = totalDataSize;
@@ -52,11 +52,11 @@ public class PageInfo<T> {
         this.totalPageSize = totalPageSize;
     }
 
-    public List getDataList() {
+    public List<T> getDataList() {
         return dataList;
     }
 
-    public void setDataList(List dataList) {
+    public void setDataList(List<T> dataList) {
         this.dataList = dataList;
     }
 }
