@@ -1,12 +1,15 @@
 package com.bluedot.mapper.bean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EntityInfo<T> {
     //优先级
     private Integer priority = 1;
     //生成的随机key
     private Long key;
     //实体类
-    private T entity;
+    private List<T> entity;
     //操作类型
     private String operation;
     //查询条件
@@ -28,11 +31,17 @@ public class EntityInfo<T> {
         this.key = key;
     }
 
-    public T getEntity() {
+    public List<T> getEntity() {
         return entity;
     }
 
-    public void setEntity(T entity) {
+    public void addEntity(T e){
+        if (entity == null){
+            entity = new ArrayList<>();
+        }
+        entity.add(e);
+    }
+    public void setEntity(List<T> entity) {
         this.entity = entity;
     }
 
