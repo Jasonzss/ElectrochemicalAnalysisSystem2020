@@ -67,8 +67,10 @@ public class MapperInit {
                     ColumnInfo foreignColumnInfo = tableInfo.getColumnInfoMap().get(foreignKeyResultSet.getString("FKCOLUMN_NAME"));
                     tableInfo.getForeignKeys().add(foreignColumnInfo);
                 }
-                Class<?> clazz = Class.forName(Configuration.getProperty("po.location") + "." + StringUtil.tableNameToClassName(tableName));
-                map.put(clazz, tableInfo);
+                if(!tableInfo.getTableName().equals("user_role") && !tableInfo.getTableName().equals("role_permission")){
+                    Class<?> clazz = Class.forName(Configuration.getProperty("po.location") + "." + StringUtil.tableNameToClassName(tableName));
+                    map.put(clazz, tableInfo);
+                }
             }
             configuration.setClassToTableInfoMap(map);
         } catch (SQLException | ClassNotFoundException e) {
