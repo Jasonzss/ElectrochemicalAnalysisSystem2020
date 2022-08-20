@@ -5,7 +5,8 @@ import com.bluedot.adapt.Adapt;
 import com.bluedot.monitor.Monitor;
 import com.bluedot.queue.BlockQueue;
 import com.bluedot.queue.enterQueue.Impl.ControllerServiceQueue;
-import com.bluedot.pojo.dto.Data;
+import com.bluedot.pojo.Dto.Data;
+import com.bluedot.utils.LogUtil;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,7 +27,9 @@ public class ServiceControllerMonitor extends Monitor<ControllerServiceQueue> {
      * 当前运行环境的可用处理器数量
      */
     private final static int POLLER_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
-
+    /**
+     * 线程池
+     */
     private ExecutorService executors;
 
     private ServiceControllerMonitor() {
@@ -46,7 +49,7 @@ public class ServiceControllerMonitor extends Monitor<ControllerServiceQueue> {
             if (instance != null) {
                 return instance;
             }
-            System.out.println("ServiceControllerMonitor初始化");
+            LogUtil.getLogger().debug("ServiceControllerMonitor初始化");
             instance = new ServiceControllerMonitor();
             instance.queue = ControllerServiceQueue.getInstance();
             instance.executors = new ThreadPoolExecutor(4,
@@ -62,7 +65,6 @@ public class ServiceControllerMonitor extends Monitor<ControllerServiceQueue> {
 
     @Override
     public void run() {
-        System.out.println("serviceController监听中");
         while (!queue.isEmpty()) {
             Data poll = queue.take();
             Adapt adapt = new Adapt(poll);

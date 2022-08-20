@@ -19,7 +19,7 @@ import static com.bluedot.utils.JwtUtil.*;
  * @date 2022/8/16 15:22
  * @created:
  */
-public class JwtUtilMyLogTest {
+public class JwtUtilTest {
 
     @Test
     public void test() throws InterruptedException {
@@ -54,6 +54,9 @@ public class JwtUtilMyLogTest {
             System.out.print("key:"+k+",");
             System.out.println("value:"+v);
         });
+
+
+
 
         //前端设置，并每次请求携带
         //"Authorization":"Bearer "+token

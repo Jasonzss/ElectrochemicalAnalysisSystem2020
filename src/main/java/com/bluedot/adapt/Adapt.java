@@ -2,7 +2,8 @@ package com.bluedot.adapt;
 
 
 
-import com.bluedot.pojo.dto.Data;
+import com.bluedot.pojo.Dto.Data;
+import com.bluedot.utils.LogUtil;
 
 import java.lang.reflect.InvocationTargetException;
 /**
@@ -25,6 +26,7 @@ public class Adapt extends Thread {
             Class<?> aClass = Class.forName(serViceName);
             aClass.getConstructor(Data.class).newInstance(data);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            LogUtil.getLogger().error(e.getMessage());
             e.printStackTrace();
         }
     }
