@@ -3,6 +3,7 @@ package com.bluedot.monitor.impl;
 
 import com.bluedot.monitor.Monitor;
 import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
+import com.bluedot.utils.LogUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class ServiceMapperMonitor extends Monitor<MapperServiceQueue> {
             if(instance != null) {
                 return instance;
             }
-            System.out.println("ServiceMapperMonitor初始化");
+            LogUtil.getLogger().debug("ServiceMapperMonitor初始化");
             instance = new ServiceMapperMonitor();
             instance.map= new HashMap<>();
             instance.queue=MapperServiceQueue.getInstance();
@@ -49,7 +50,6 @@ public class ServiceMapperMonitor extends Monitor<MapperServiceQueue> {
 
     @Override
     public void run() {
-        System.out.println("ServiceMapper监听中");
         if(!queue.isEmpty()){
             Set<Long> keys = queue.getKeys();
             for (Long key : keys) {
