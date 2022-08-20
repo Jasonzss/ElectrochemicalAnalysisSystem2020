@@ -34,12 +34,7 @@ public class ServiceMapperQueue extends EnterQueue<EntityInfo> {
             }
             instance = new ServiceMapperQueue();
             instance.capacity = 10;
-            instance.queue = new PriorityQueue<EntityInfo>(new Comparator<EntityInfo>() {
-                @Override
-                public int compare(EntityInfo o1, EntityInfo o2) {
-                    return o1.getPriority() - o2.getPriority();
-                }
-            });
+            instance.queue = new PriorityQueue<EntityInfo>((o1, o2) -> o1.getPriority() - o2.getPriority());
             return instance;
         }
     }

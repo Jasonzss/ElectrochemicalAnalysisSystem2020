@@ -1,6 +1,5 @@
-package com.bluedot.controller.render.impl;
+package com.bluedot.controller.render;
 
-import com.bluedot.controller.render.DataRender;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.JsonUtil;
 import com.bluedot.utils.LogUtil;
@@ -13,15 +12,13 @@ import java.io.IOException;
  * @CreationDate 2022/08/16 - 11:54
  * @Description ：
  */
-public class JsonDataRender implements DataRender {
-    @Override
-    public void renderData(HttpServletResponse response, CommonResult commonResult) {
+public class JsonDataRender {
+    public static void renderData(HttpServletResponse response, CommonResult commonResult) {
         try {
             //将结果数据转化为Json格式
-            String json = JsonUtil.getObjectMapper().writeValueAsString(commonResult);
+            String json = JsonUtil.getObjectMapper().writeValueAsString(commonResult.mapValue());
             //设置响应头
             response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
             //将json数据写入响应字符输出流
             response.getWriter().write(json);
             response.getWriter().flush();

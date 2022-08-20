@@ -12,7 +12,7 @@ import java.util.Map;
  * @date 2022/8/16 10:23
  * @created: 通常结果类
  */
-public class CommonResult{
+public class CommonResult {
 
     private int code;
 
@@ -21,17 +21,17 @@ public class CommonResult{
     private Object data;
 
     // 成功封装
-    public static CommonResult successResult(String msg, Object data){
-        return new CommonResult(200,msg,data);
+    public static CommonResult successResult(String msg, Object data) {
+        return new CommonResult(200, msg, data);
     }
 
     // 错误封装
-    public static CommonResult errorResult(int code, String msg){
-        return new CommonResult(code,msg,null);
+    public static CommonResult errorResult(int code, String msg) {
+        return new CommonResult(code, msg, null);
     }
 
     // errorCode封装
-    public static CommonResult commonErrorCode(ErrorCode errorCode){
+    public static CommonResult commonErrorCode(ErrorCode errorCode) {
         return CommonResult.errorResult(errorCode.getCode(), errorCode.getMsg());
     }
 
@@ -41,6 +41,14 @@ public class CommonResult{
 
     public Object getData() {
         return data;
+    }
+
+    public Map<String, Object> mapValue() {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("code", code);
+        map.put("msg", msg);
+        map.put("data", data);
+        return map;
     }
 
     public CommonResult() {

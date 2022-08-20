@@ -91,13 +91,9 @@ public class Data {
 
     @Override
     public String toString() {
-        return "Data{" +
-                "priority=" + priority +
-                ", map=" + map +
-                ", key=" + key +
-                ", serviceName='" + serviceName + '\'' +
-                ", operation='" + operation + '\'' +
-                '}';
+        return "Data" +
+                " key=" + key ;
+
     }
 }
 
