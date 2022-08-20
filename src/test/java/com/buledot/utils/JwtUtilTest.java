@@ -56,12 +56,7 @@ public class JwtUtilTest {
         });
 
 
-        System.out.println("前端收到信息:"+ CommonResult.<String>builder()
-                .code(200)
-                .msg("登录成功")
-                .data(token)
-                .build()
-                .mapValue());
+
 
         //前端设置，并每次请求携带
         //"Authorization":"Bearer "+token
