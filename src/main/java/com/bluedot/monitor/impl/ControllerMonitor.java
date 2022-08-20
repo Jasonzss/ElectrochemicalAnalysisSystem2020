@@ -2,6 +2,7 @@ package com.bluedot.monitor.impl;
 
 import com.bluedot.monitor.Monitor;
 import com.bluedot.queue.outQueue.impl.ServiceControllerQueue;
+import com.bluedot.utils.LogUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class ControllerMonitor extends Monitor<ServiceControllerQueue> {
             if(instance != null) {
                 return instance;
             }
-            System.out.println("ControllerMonitor初始化");
+            LogUtil.getLogger().debug("ControllerMonitor初始化");
             instance = new ControllerMonitor();
             instance.map= new HashMap<>();
             instance.queue=ServiceControllerQueue.getInstance();
@@ -48,7 +49,6 @@ public class ControllerMonitor extends Monitor<ServiceControllerQueue> {
 
     @Override
     public void run() {
-        System.out.println("controller监听中");
         if(!queue.isEmpty()){
             Set<Long> keys = queue.getKeys();
             for (Long key : keys) {
