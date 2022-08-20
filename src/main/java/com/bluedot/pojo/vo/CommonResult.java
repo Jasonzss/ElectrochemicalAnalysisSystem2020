@@ -12,93 +12,44 @@ import java.util.Map;
  * @date 2022/8/16 10:23
  * @created: 通常结果类
  */
-public class CommonResult<T> implements Serializable {
+public class CommonResult{
 
     private int code;
 
     private String msg;
 
-    private T data;
+    private Object data;
 
     // 成功封装
-    public static <E> CommonResult<E> successResult(String msg, E data){
-        return CommonResult.<E>builder()
-                .code(200)
-                .msg(msg)
-                .data(data)
-                .build();
+    public static CommonResult successResult(String msg, Object data){
+        return new CommonResult(200,msg,data);
     }
 
     // 错误封装
-    public static CommonResult<Void> errorResult(int code, String msg){
-        return CommonResult.<Void>builder()
-                .code(code)
-                .msg(msg)
-                .build();
+    public static CommonResult errorResult(int code, String msg){
+        return new CommonResult(code,msg,null);
     }
 
-    /**
-     * 异常结果封装
-     */
-    public static CommonResult<Void> commonErrorCode(ErrorCode errorCode){
-        return CommonResult.<Void>builder()
-                .code(errorCode.getCode())
-                .msg(errorCode.getMsg())
-                .build();
+    // errorCode封装
+    public static CommonResult commonErrorCode(ErrorCode errorCode){
+        return CommonResult.errorResult(errorCode.getCode(), errorCode.getMsg());
     }
 
-    public static <E> Builder<E> builder(){
-        return new Builder<E>();
+    public void setData(Object data) {
+        this.data = data;
     }
 
-    public Map<String, Object> mapValue(){
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("code",code);
-        map.put("msg",msg);
-        map.put("data",data);
-        return map;
+    public Object getData() {
+        return data;
     }
 
-    private CommonResult() {
+    public CommonResult() {
     }
 
-    private CommonResult(CommonResult<T> target) {
-        this.code = target.code;
-        this.msg = target.msg;
-        this.data = target.data;
-    }
-
-    /**
-     * Builder构建CommonResult
-     */
-    public static class Builder<T>{
-        //构建目标
-        private final CommonResult<T> target;
-
-        public Builder(){
-            this.target = new CommonResult<T>();
-        }
-
-        public Builder<T> code(Integer code){
-            target.code = code;
-            return this;
-        }
-
-        public Builder<T> msg(String msg){
-            target.msg = msg;
-            return this;
-        }
-
-        public Builder<T> data(T data){
-            target.data = data;
-            return this;
-        }
-
-        //创建
-        public CommonResult<T> build(){
-            return new CommonResult<T>(target);
-        }
-
+    public CommonResult(int code, String msg, Object data) {
+        this.code = code;
+        this.msg = msg;
+        this.data = data;
     }
 
     @Override
