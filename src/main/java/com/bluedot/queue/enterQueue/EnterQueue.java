@@ -1,6 +1,8 @@
 package com.bluedot.queue.enterQueue;
 
 
+import com.bluedot.utils.LogUtil;
+
 import java.util.PriorityQueue;
 
 /**
@@ -48,7 +50,7 @@ public abstract class EnterQueue<T> {
     public void put(T data) {
         synchronized (queue) {
             while (queue.size() == capacity) {
-                System.out.println(this + "队列已满，wait");
+                LogUtil.getLogger().debug(this + "队列已满，wait");
                 try {
                     //队列已满，将当前线程加入等待queue对象的等待队列中等待
                     queue.wait();
@@ -56,7 +58,7 @@ public abstract class EnterQueue<T> {
                     e.printStackTrace();
                 }
             }
-            System.out.println(data.hashCode() + "加入到" + this.getClass() + "队列中");
+            LogUtil.getLogger().debug(data.toString() + "加入到" + this.getClass() + "队列中");
             queue.add(data);
         }
     }

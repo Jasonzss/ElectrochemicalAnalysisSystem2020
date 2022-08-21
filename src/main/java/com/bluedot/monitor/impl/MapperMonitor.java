@@ -1,9 +1,11 @@
 package com.bluedot.monitor.impl;
 
 
+import com.bluedot.mapper.BaseMapper;
 import com.bluedot.monitor.Monitor;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.mapper.bean.EntityInfo;
+import com.bluedot.utils.LogUtil;
 
 /**
  * @Author SDJin
@@ -30,7 +32,7 @@ public class MapperMonitor extends Monitor<ServiceMapperQueue> {
             if(instance != null) {
                 return instance;
             }
-            System.out.println("MapperMonitor初始化");
+            LogUtil.getLogger().debug("MapperMonitor初始化");
             instance = new MapperMonitor();
             instance.queue=ServiceMapperQueue.getInstance();
             return instance;
@@ -42,12 +44,11 @@ public class MapperMonitor extends Monitor<ServiceMapperQueue> {
      * @param entityInfo
      */
     private void MapperInstance(EntityInfo entityInfo){
-//       BaseMapper basemapper = new BaseMapper(entityInfo);
-//       basemapper=null;
+       BaseMapper basemapper = new BaseMapper(entityInfo);
+       basemapper=null;
     }
     @Override
     public void run() {
-        System.out.println("mapper监听中");
         while (!queue.isEmpty()){
             EntityInfo poll = queue.take();
             MapperInstance(poll);

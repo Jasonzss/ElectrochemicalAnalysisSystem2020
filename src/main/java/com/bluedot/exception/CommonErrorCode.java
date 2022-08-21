@@ -31,19 +31,26 @@ public enum CommonErrorCode implements ErrorCode {
     E_3001(3001,"您没有此操作的权限"),
 
     /**
+     * 算法执行方面的异常:E_4xxx
+     */
+    E_4001(4001, "数据不能为空"),
+    E_4002(4002, "编译错误"),
+    E_4003(4003, "运行错误"),
+
+    /**
      * 通用异常
      */
-    E_4001(4001,"错误的请求参数"),
+    E_5001(5001,"错误的请求参数"),
 
     /**
      * 系统异常
      */
-    E_5001(5001,"系统出现异常"),
+    E_6001(6001,"系统出现异常"),
 
     ;
 
     private final int code;
-    private final String msg;
+    private String msg;
 
     CommonErrorCode(int code, String msg) {
         this.code = code;
