@@ -8,6 +8,7 @@ import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
+import com.bluedot.pojo.entity.User;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -16,6 +17,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MapperTest {
+
+    @Test
+    public void testUpdate() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+        User user = new User();
+        user.setUserEmail("1571864304@qq.com");
+        user.setUserPassword("111");
+        user.setUserStatus(0);
+//        user.setUserSalt("654321");
+//        user.setUserAge(1);
+//        user.setUserName("da");
+        User user1 = new User();
+        user1.setUserEmail("1571864305@qq.com");
+        user1.setUserPassword("111");
+        user1.setUserStatus(1);
+//        user.setUserSalt("654321");
+//        user.setUserAge(1);
+//        user.setUserName("da");
+        ArrayList<User> userArrayList = new ArrayList<>();
+        userArrayList.add(user);
+        userArrayList.add(user1);
+
+        EntityInfo<User> userEntityInfo = new EntityInfo<>();
+        userEntityInfo.setEntity(userArrayList);
+        userEntityInfo.setOperation("delete");
+        new BaseMapper(userEntityInfo);
+    }
 
     @Test
     public void testTablesSelect() throws SQLException, IOException, ClassNotFoundException {

@@ -21,7 +21,7 @@ public class BaseMapper {
     //mapper执行器
     private Executor executor = new Executor(MapperInit.getConfiguration());
     //mapper实体类属性
-    private Object entity;
+    private List entityList;
     //mapper层返回结果
     private CommonResult commonResult;
     /**
@@ -32,7 +32,7 @@ public class BaseMapper {
      * @return:
      **/
     public BaseMapper(EntityInfo entityInfo) {
-        entity = entityInfo.getEntity();
+        entityList = entityInfo.getEntity();
         doMapper(entityInfo);
     }
     /**
@@ -47,13 +47,13 @@ public class BaseMapper {
 //        根据查询类型，调用方法
         switch (entityInfo.getOperation()) {
             case "insert":
-                object = insert(entity);
+                object = insert(entityList);
                 break;
             case "delete":
-                object = delete(entity);
+                object = delete(entityList);
                 break;
             case "update":
-                object = update(entity);
+                object = update(entityList);
                 break;
             case "select":
                 object = select(entityInfo.getCondition());
@@ -97,15 +97,16 @@ public class BaseMapper {
      * @param: [entityInfo]
      * @return:
      **/
-    private <T> int insert(T type) {
-        return (int) generateSqlTemplate(type, new MyCallback() {
+    private <T> int insert(List typeList) {
+        return (int) generateSqlTemplate(typeList, new MyCallback() {
            //回调接口，insert类型sql语句生成模板
             @Override
             public void generateSqlExecutor(Field[] fields, TableInfo tableInfo, List<ColumnInfo> primaryKeys, StringBuilder sql, MappedStatement mappedStatement, List<Object> params) {
+                Object entity = typeList.get(0);
                 sql.append("insert into ").append(tableInfo.getTableName()).append("(");
                 for (Field field : fields) {
                     String fieldName = field.getName();
-                    Object fieldValue = ReflectUtil.invokeGet(type, fieldName);
+                    Object fieldValue = ReflectUtil.invokeGet(entity, fieldName);
                     if (null != fieldValue) {
                         sql.append(StringUtil.humpToLine(fieldName)).append(",");
                         params.add(fieldValue);
@@ -118,6 +119,21 @@ public class BaseMapper {
                 }
                 sql.setCharAt(sql.length() - 1, ' ');
                 sql.append("),");
+                if (typeList.size()>1) {
+                    for (int i = 1; i <= typeList.size()-1; i++) {
+                        sql.append("( ");
+                        for (Field field : fields) {
+                            String fieldName = field.getName();
+                            Object fieldValue = ReflectUtil.invokeGet(typeList.get(i), fieldName);
+                            if (null != fieldValue) {
+                                sql.append("?,");
+                                params.add(fieldValue);
+                            }
+                        }
+                        sql.setCharAt(sql.length() - 1, ' ');
+                        sql.append("),");
+                    }
+                }
             }
         });
 
@@ -129,15 +145,23 @@ public class BaseMapper {
      * @param: [entityInfo]
      * @return:
      **/
-    private <T> int delete(T type) {
-        return (int) generateSqlTemplate(type, new MyCallback() {
+    private <T> int delete(List typeList) {
+        return (int) generateSqlTemplate(typeList, new MyCallback() {
             //回调接口，delete类型sql语句生成模板
             @Override
             public void generateSqlExecutor(Field[] fields, TableInfo tableInfo, List<ColumnInfo> primaryKeys, StringBuilder sql, MappedStatement mappedStatement, List<Object> params) {
+
                 sql.append("delete from ").append(tableInfo.getTableName()).append(" where ");
                 for (ColumnInfo columnInfo : primaryKeys) {
-                    sql.append(StringUtil.humpToLine(columnInfo.getName())).append("=?,");
-                    params.add(ReflectUtil.invokeGet(type, StringUtil.lineToHump(columnInfo.getName())));
+                    sql.append(StringUtil.humpToLine(columnInfo.getName())).append(" in( ");
+                    for (Object o : typeList) {
+                        if (ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName()))!=null){
+                            sql.append(" ?,");
+                            params.add(ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName())));
+                        }
+                    }
+                    sql.setCharAt(sql.length()-1,')');
+                    sql.append(" ");
                 }
             }
         });
@@ -148,39 +172,79 @@ public class BaseMapper {
      * @date: 2022/8/16 16:15
      * @param: [entityInfo]
      * @return:
-     **/
-    private <T> int update(T type) {
+     *
+     * @param typeList*/
+    private  int update(List typeList) {
         //回调接口，update类型sql语句生成模板
-        return (int) generateSqlTemplate(type, new MyCallback() {
+        return (int) generateSqlTemplate(typeList, new MyCallback() {
             @Override
             public void generateSqlExecutor(Field[] fields, TableInfo tableInfo, List<ColumnInfo> primaryKeys, StringBuilder sql, MappedStatement mappedStatement, List<Object> params) {
-                sql.append("update").append(tableInfo.getTableName()).append(" set ");
-                for (Field field : fields) {
-                    String fieldName = field.getName();
-                    Object fieldValue = ReflectUtil.invokeGet(type, fieldName);
-                    if (null != fieldValue) {
+                Object entity = typeList.get(0);
+                if (typeList.size()>1){
+                    sql.append("update ").append(tableInfo.getTableName()).append(" set ");
+                    for (Field field : fields) {
+                        String fieldName = field.getName();
+                        Object fieldValue = ReflectUtil.invokeGet(entity, fieldName);
+                        if (null != fieldValue) {
 
-                        for (ColumnInfo columnInfo : primaryKeys) {
-                            if (!fieldName.equals(columnInfo.getName())) {
+                            for (ColumnInfo columnInfo : primaryKeys) {
+                                if (ReflectUtil.invokeGet(entity, StringUtil.lineToHump(columnInfo.getName()))!=null&&!fieldName.equals(StringUtil.lineToHump(columnInfo.getName()))) {
 
-                                sql.append(StringUtil.humpToLine(fieldName)).append("=?,");
-
-                                params.add(fieldValue);
+                                    sql.append(StringUtil.humpToLine(fieldName)).append("=(case ").append(columnInfo.getName());
+                                    for (Object o : typeList) {
+                                        if (ReflectUtil.invokeGet(o, fieldName)!=null){
+                                            sql.append(" when ? then ? ");
+                                            params.add(ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName())));
+                                            params.add(ReflectUtil.invokeGet(o, fieldName));
+                                        }
+                                    }
+                                    sql.append(" end),");
+                                }
                             }
                         }
                     }
+                    sql.setCharAt(sql.length() - 1, ' ');
+                    sql.append("where ");
+                    for (ColumnInfo columnInfo : primaryKeys) {
+                        if (ReflectUtil.invokeGet(entity, StringUtil.lineToHump(columnInfo.getName()))!=null){
+                            sql.append(StringUtil.humpToLine(columnInfo.getName())).append(" in( ");
+                            for (Object o : typeList) {
+                                sql.append(" ? ,");
+                                params.add(ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName())));
+                            }
+                            sql.setCharAt(sql.length() - 1, ')');
+                            sql.append(" ");
+                        }
+                    }
                 }
+                else {
+                    sql.append("update ").append(tableInfo.getTableName()).append(" set ");
+                    for (Field field : fields) {
+                        String fieldName = field.getName();
+                        Object fieldValue = ReflectUtil.invokeGet(entity, fieldName);
+                        if (null != fieldValue) {
 
-                sql.setCharAt(sql.length() - 1, ' ');
+                            for (ColumnInfo columnInfo : primaryKeys) {
+                                if (!fieldName.equals(StringUtil.lineToHump(columnInfo.getName()))) {
 
-                sql.append("where ");
-                for (ColumnInfo columnInfo : primaryKeys) {
+                                    sql.append(StringUtil.humpToLine(fieldName)).append("=?,");
 
-                    sql.append(StringUtil.humpToLine(columnInfo.getName())).append("=?,");
+                                    params.add(fieldValue);
+                                }
+                            }
+                        }
+                    }
 
-                    params.add(ReflectUtil.invokeGet(type, StringUtil.lineToHump(columnInfo.getName())));
+                    sql.setCharAt(sql.length() - 1, ' ');
+
+                    sql.append("where ");
+                    for (ColumnInfo columnInfo : primaryKeys) {
+
+                        sql.append(StringUtil.humpToLine(columnInfo.getName())).append("=?,");
+
+                        params.add(ReflectUtil.invokeGet(entity, StringUtil.lineToHump(columnInfo.getName())));
+                    }
                 }
-
             }
         });
 
@@ -192,8 +256,9 @@ public class BaseMapper {
      * @param: [entityInfo]
      * @return:
      **/
-    private <T> Object generateSqlTemplate(T type, MyCallback callback) {
-        Class<?> clazz = type.getClass();
+    private <T> Object generateSqlTemplate(List typeList, MyCallback callback) {
+        Object entity = ((ArrayList) typeList).get(0);
+        Class<?> clazz = entity.getClass();
         Field[] fields = clazz.getDeclaredFields();
         TableInfo tableInfo = MapperInit.getConfiguration().getClassToTableInfoMap().get(clazz);
         List<ColumnInfo> primaryKeys = tableInfo.getPrimaryKeys();
@@ -202,6 +267,7 @@ public class BaseMapper {
         StringBuilder sql = new StringBuilder();
         callback.generateSqlExecutor(fields, tableInfo, primaryKeys, sql, mappedStatement, params);
         sql.setCharAt(sql.length() - 1, ' ');
+        System.out.println(sql.toString());
         mappedStatement.setSql(sql.toString());
         return this.executor.doUpdate(mappedStatement, params.toArray());
     }
