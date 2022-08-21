@@ -19,24 +19,24 @@ public class AlgoUtil extends ClassLoader{
     /**
      * 运行时的错误
      */
-    private static final CommonErrorCode e4001 = CommonErrorCode.E_4001;
-    private static final CommonErrorCode e4002 = CommonErrorCode.E_4002;
-    private static final CommonErrorCode e4003 = CommonErrorCode.E_4003;
+    private static final CommonErrorCode E4001 = CommonErrorCode.E_4001;
+    private static final CommonErrorCode E4002 = CommonErrorCode.E_4002;
+    private static final CommonErrorCode E4003 = CommonErrorCode.E_4003;
 
     //获取资源文件目录的绝对路径
-    private static final String resPath =
+    private static final String RESPATH =
             Thread.currentThread().getContextClassLoader().getResource("").getPath();
 
     //算法的类名
-    private static final String algoClassName = "Main";
+    private static final String ALGOCLASSNAME = "Main";
 
     //算法的入口（方法）
-    private static final String algoEntry = "run";
+    private static final String ALGOENTRY = "run";
 
     //算法文件后缀名
-    private static final String algoTxtSuffix = "java";
+    private static final String ALGOTXTSUFFIX = "java";
     //编译后的算法文件后缀名
-    private static final String algoBinSuffix = "class";
+    private static final String ALGOBINSUFFIX = "class";
 
     //class文件所在的根目录
     //为target/algo/算法id
@@ -55,14 +55,14 @@ public class AlgoUtil extends ClassLoader{
      * @return
      * 平滑处理算法的返回值为Double[]类型。
      */
-    public static Double[][] smooth(Algorithm algo, Double[][] data) {
+    public static Double[] smooth(Algorithm algo, Double[] data) {
         if (algo == null || data == null) {
             //参数不能为空
-            throw new UserException(e4001);
+            throw new UserException(E4001);
         }
         Object run = run(algo, data);
-        if (run instanceof Double[][]) {
-            return (Double[][]) run;
+        if (run instanceof Double[]) {
+            return (Double[]) run;
         }
         return null;
     }
@@ -77,7 +77,7 @@ public class AlgoUtil extends ClassLoader{
     public static Double[][] preprocess(Algorithm algo, Double[][] data) {
         if (algo == null || data == null) {
             //参数不能为空
-            throw new UserException(e4001);
+            throw new UserException(E4001);
         }
         Object run = run(algo, data);
         if (run instanceof Double[][]) {
@@ -93,10 +93,10 @@ public class AlgoUtil extends ClassLoader{
     public static Map<String, Double[][]> divideDataSet(Double[][] data) {
         if (data == null || data.length == 0) {
             //参数不能为空
-            throw new UserException(e4001);
+            throw new UserException(E4001);
         }
         //返回变量
-        Map<String, Double[][]> ret = new HashMap<>();
+        Map<String, Double[][]> ret = new HashMap<>(2);
         //训练集
         List<Double[]> train = new ArrayList<>();
         //测试集
@@ -140,12 +140,13 @@ public class AlgoUtil extends ClassLoader{
     public static Double[] modeling(Algorithm algo, Double[][] data) {
         if (data == null) {
             //参数不能为空
-            throw new UserException(e4001);
+            throw new UserException(E4001);
         }
         Object run = run(algo, data);
         if (run instanceof Double[]) {
             return (Double[]) run;
         }
+        System.out.println();
         return null;
     }
 
@@ -155,22 +156,22 @@ public class AlgoUtil extends ClassLoader{
      * @param data 需要算法处理的数据
      * @return 得到的处理结果
      */
-    private static Object run(Algorithm algo, Object ... data) {
+    private static Object run(Algorithm algo, Object data) {
 
         if (algo == null || data == null) {
             //参数不能为空
-            throw new UserException(e4001);
+            throw new UserException(E4001);
         }
 
         //算法文件的父路径
-        String algoParentPath = resPath + "algo/" + algo.getAlgorithmId();
+        String algoParentPath = RESPATH + "algo/" + algo.getAlgorithmId();
 
         //算法文件所在位置
         String algoFilePath =
-                algoParentPath + "/" + algoClassName + "." + algoTxtSuffix;
+                algoParentPath + "/" + ALGOCLASSNAME + "." + ALGOTXTSUFFIX;
 
         //返回的结果
-        Object ret = null;
+        Object ret;
 
         try {
             //编译文件，以utf-8编译
@@ -180,51 +181,36 @@ public class AlgoUtil extends ClassLoader{
             classLoader.setRoot(algoParentPath);
 
             //加载算法类
-            Class<?> algoClass = Class.forName(algoClassName, true, classLoader);
+            Class<?> algoClass = Class.forName(ALGOCLASSNAME, true, classLoader);
             //获得方法并执行
             System.out.println(data.getClass().toGenericString());
-            if (data.getClass().toString().contains("Object")) {
-                //如果data是Object数组也就是传了多个参数才执行
-                Class[] argClass = new Class[data.length];
-                for (int i = 0; i < argClass.length; i ++) {
-                    argClass[i] = data[i].getClass();
-                }
-                Method runMethod = algoClass.getDeclaredMethod(algoEntry, argClass);
-                ret = runMethod.invoke(algoClass.newInstance(), data);
+            Method runMethod = algoClass.getDeclaredMethod(ALGOENTRY,
+                    data.getClass());
+            ret = runMethod.invoke(algoClass.newInstance(), data);
 
-            }else {
-                Method runMethod = algoClass.getDeclaredMethod(algoEntry,
-                        data.getClass());
-                ret = runMethod.invoke(algoClass.newInstance(), (Object) data);
-            }
-
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.getCause().printStackTrace(pw);
-            e4003.setMsg("语法错误：\n" + sw);
+            E4003.setMsg("语法错误：\n" + sw);
             pw.close();
             try {
                 sw.close();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
-            throw new UserException(e4003);
+            throw new UserException(E4003);
 
         } catch (NoSuchMethodException e) {
-            e4003.setMsg("没有" + e.getMessage() + "方法");
-            throw new UserException(e4003);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
+            E4003.setMsg("没有" + e.getMessage() + "方法");
+            throw new UserException(E4003);
         } finally {
             //删除生成的class文件
             File algoClassFile =
-                    new File(algoFilePath.replace("." + algoTxtSuffix,
-                            "." + algoBinSuffix));
+                    new File(algoFilePath.replace("." + ALGOTXTSUFFIX,
+                            "." + ALGOBINSUFFIX));
             if (algoClassFile.exists()) {
                 algoClassFile.delete();
             }
@@ -237,10 +223,9 @@ public class AlgoUtil extends ClassLoader{
      * 执行应用程序
      * 这里只是用于编译java文件
      * @param command 应用程序名
-     * @throws Exception 抛出异常
      */
     private static void runProcess(String command) {
-        Process pro = null;
+        Process pro;
         try {
             pro = Runtime.getRuntime().exec(command);
             pro.waitFor();
@@ -250,16 +235,16 @@ public class AlgoUtil extends ClassLoader{
                 //获取错误信息
                 String errorMsg = getErrorMsg(pro.getErrorStream());
                 String ableOutMsg = errorMsg.substring(errorMsg.indexOf("algo"));
-                e4002.setMsg("编译错误：\n" + ableOutMsg);
-                throw new UserException(e4002);
+                E4002.setMsg("编译错误：\n" + ableOutMsg);
+                throw new UserException(E4002);
             }
 
         } catch (InterruptedException e) {
-            e4002.setMsg("编译中断");
-            throw new UserException(e4002);
+            E4002.setMsg("编译中断");
+            throw new UserException(E4002);
         } catch (IOException e) {
-            e4002.setMsg("找不到javac");
-            throw new UserException(e4002);
+            E4002.setMsg("找不到javac");
+            throw new UserException(E4002);
         }
 
 
@@ -270,18 +255,16 @@ public class AlgoUtil extends ClassLoader{
      * @param ins 结果流
      */
     private static String getErrorMsg(InputStream ins) {
-        String line = null;
+        String line;
         StringBuilder builder = new StringBuilder();
 
-        BufferedReader in = null;
+        BufferedReader in;
         try {
             in = new BufferedReader(
                     new InputStreamReader(ins, "GBK"));
             while ((line = in.readLine()) != null) {
                 builder.append(line + "\n");
             }
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -294,7 +277,7 @@ public class AlgoUtil extends ClassLoader{
      * 自定义类加载过程，实现加载用户上传的算法文件
      * @param name 全限定类名
      * @return 创建的Class对象
-     * @throws ClassNotFoundException
+     * @throws ClassNotFoundException 找不到class文件
      */
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
@@ -310,14 +293,15 @@ public class AlgoUtil extends ClassLoader{
 
     /**
      * 得到class文件的二进制（字节）数据
-     * @param className
-     * @return
+     * @param className 类的全限定名
+     * @return class文件的二进制数组
      */
     private byte[] loadClassData(String className) {
         String fileName = root + File.separatorChar +
                 className.replace('.', File.separatorChar) + ".class";
         InputStream ins = null;
         ByteArrayOutputStream baos = null;
+        byte[] ret = null;
         try {
             ins = new FileInputStream(fileName);
 
@@ -327,7 +311,7 @@ public class AlgoUtil extends ClassLoader{
 
             byte[] buffer = new byte[bufferSize];
 
-            int length = 0;
+            int length;
 
             while ((length = ins.read(buffer)) != -1) {
                 baos.write(buffer, 0, length);
@@ -348,8 +332,10 @@ public class AlgoUtil extends ClassLoader{
                 throw new RuntimeException(e);
             }
         }
-
-        return baos.toByteArray();
+        if (baos != null) {
+            ret = baos.toByteArray();
+        }
+        return ret;
     }
 
 }
