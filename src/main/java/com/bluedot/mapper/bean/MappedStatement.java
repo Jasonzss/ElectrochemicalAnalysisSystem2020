@@ -4,6 +4,8 @@ public class MappedStatement {
 
     private String returnType;
     private String sql;
+    private String view;
+
 
 
     public MappedStatement() {
@@ -26,4 +28,12 @@ public class MappedStatement {
         this.sql = sql;
     }
 
+    public String getView() {
+        return view;
+    }
+
+    public void setView(String view) {
+        this.view = view;
+    }
 }
+

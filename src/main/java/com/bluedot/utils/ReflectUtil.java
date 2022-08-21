@@ -48,4 +48,18 @@ public class ReflectUtil {
 
         return obj;
     }
+    public static void invokeSetAttribute(Object obj, String columnName, Object value) {
+        Class<?> clazz = obj.getClass();
+        Method method;
+        try {
+            method = clazz.getDeclaredMethod("set" + StringUtil.firstCharToUpperCase(columnName), value.getClass());
+            method.setAccessible(true);
+            method.invoke(obj, value);
+        } catch (Exception e) {
+            throw new RuntimeException("[" + Thread.currentThread().getName() + "]" +
+                    "com.xxbb.smybatis.utils.ReflectUtils" + "--->" + "value=" +
+                    value.getClass());
+        }
+
+    }
 }
