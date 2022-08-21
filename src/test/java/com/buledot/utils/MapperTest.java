@@ -44,13 +44,13 @@ public class MapperTest {
         orCondition.add(new Term("user","name","zhangSan", TermType.LIKE));
         orCondition.add(new Term("user","age","12", TermType.EQUAL));
 
-        condition.setViews(views);
-        condition.setFields(fields);
-        condition.setAndCondition(andCondition);
-        condition.setOrCondition(orCondition);
-        condition.setViewCondition(viewCondition);
-        condition.setStartIndex(2L);
-        condition.setSize(2);
+//        condition.setViews(views);
+//        condition.setFields(fields);
+//        condition.setAndCondition(andCondition);
+//        condition.setOrCondition(orCondition);
+//        condition.setViewCondition(viewCondition);
+//        condition.setStartIndex(2L);
+//        condition.setSize(2);
         //参数数组
         List<Object> list = new ArrayList<>();
         String s = BaseMapper.generateSelectSqL(condition, list);
