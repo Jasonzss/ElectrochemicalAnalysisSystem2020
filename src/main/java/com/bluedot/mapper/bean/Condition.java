@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Condition {
+    //返回值类型
+    private String returnType;
     //查询涉及表,无论查几个表，第一个表为主表，也就是其他表都与第一个表有外键关联
     private List<String> views;
     //连接表条件，为主表与其他表连接的字段,第i个条件为第i+1个表与主表关联的外键字段，size为views.size()-1，
@@ -90,6 +92,10 @@ public class Condition {
         return fields;
     }
 
+    public String getReturnType() {
+        return returnType;
+    }
+
     public List<String> getViews() {
         return views;
     }
@@ -120,5 +126,29 @@ public class Condition {
 
     public void setSize(Integer size) {
         this.size = size;
+    }
+
+    public void setReturnType(String returnType) {
+        this.returnType = returnType;
+    }
+
+    public void setViews(List<String> views) {
+        this.views = views;
+    }
+
+    public void setViewCondition(List<String> viewCondition) {
+        this.viewCondition = viewCondition;
+    }
+
+    public void setFields(List<String> fields) {
+        this.fields = fields;
+    }
+
+    public void setAndCondition(List<Term> andCondition) {
+        this.andCondition = andCondition;
+    }
+
+    public void setOrCondition(List<Term> orCondition) {
+        this.orCondition = orCondition;
     }
 }
