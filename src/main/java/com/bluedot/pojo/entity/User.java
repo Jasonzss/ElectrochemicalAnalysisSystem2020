@@ -15,7 +15,6 @@ public class User {
     private Integer userAge;
     private Long userTel;
     private Byte[] userImg;
-    private Role[] roles;
 
     public String getUserEmail() {
         return userEmail;
@@ -87,13 +86,5 @@ public class User {
 
     public void setUserImg(Byte[] userImg) {
         this.userImg = userImg;
-    }
-
-    public Role[] getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Role[] roles) {
-        this.roles = roles;
     }
 }
