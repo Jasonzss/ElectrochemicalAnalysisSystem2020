@@ -5,15 +5,17 @@ import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
-import com.bluedot.pojo.dto.Data;
+import com.bluedot.pojo.Dto.Data;
+import com.bluedot.pojo.entity.Permission;
 import com.bluedot.pojo.entity.User;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.EmailUtil;
 import com.bluedot.utils.ImageUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.constants.SessionConstants;
+import org.apache.commons.fileupload.FileItem;
 
-import java.io.File;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,33 +31,44 @@ public class UserService extends BaseService<User> {
         super(data);
     }
 
+    /**
+     * 负责在UserService中个根据父类属性分析调用哪些方法来解决请求
+     */
     @Override
     protected void doService() {
         String userEmail = (String) session.getAttribute("userEmail");
-        Map<String,Object> map = (Map<String, Object>) paramList.get("user");
+        List<Map<String,Object>> userList = null;
+        User user = null;
 
-        String methodName = null;
+        if (paramList.get("user") instanceof List){
+            userList = (List<Map<String, Object>>) paramList.get("user");
+        }else {
+            ReflectUtil.invokeSetters(paramList,user);
+        }
+
+        String methodName;
         switch (operation) {
-            case "insert":
-                methodName = "insertUser";
-                break;
             case "delete":
-                if (userEmail.equals(map.get("userEmail"))) {
-                    methodName = "deletePersonalUser";
+                if (user == null && userList == null){
+                    methodName = "logout";
                 } else {
-                    methodName = "deleteUser";
+                    if (user != null) {
+                        methodName = "deletePersonalUser";
+                    } else {
+                        methodName = "deleteUser";
+                    }
                 }
                 break;
             case "update":
-                if (userEmail.equals(map.get("userEmail"))) {
+                if (userEmail.equals(paramList.get("userEmail"))) {
                     methodName = "updatePersonalUser";
                 } else {
                     methodName = "updateUser";
                 }
                 break;
             case "select":
-                if (userEmail.equals(map.get("userEmail"))) {
-                    if (map.get("password") != null) {
+                if (paramList.get("pageNo") == null && paramList.get("pageSize") == null) {
+                    if (paramList.get("password") != null) {
                         methodName = "login";
                     } else {
                         methodName = "getPersonalUser";
@@ -64,86 +77,84 @@ public class UserService extends BaseService<User> {
                     methodName = "listUsers";
                 }
                 break;
-            case "other":
-                if (map.get("userEmail") != null) {
+            case "login":
+                if (paramList.size() == 0){
+                    methodName = "getLoginImg";
+                }else if (paramList.get("authCode") != null){
+                    methodName = "insertUser";
+                }else if (paramList.get("imgAuthCode") != null){
+                    methodName = "login";
+                }else if (paramList.get("userEmail") != null){
                     methodName = "sendAuthEmail";
+                }else {
+                    throw new UserException(CommonErrorCode.E_4001);
                 }
                 break;
             default:
-                System.out.println("错误的请求参数！");
-                commonResult = CommonResult.errorResult(200, "错误的请求参数");
-                return;
+                throw new UserException(CommonErrorCode.E_4001);
         }
 
         invokeMethod(methodName,this);
     }
 
+    /**
+     * 管理员权限的修改用户信息
+     */
     private void updateUser(){
-        // 先将paramList中的参数取出
-        List<Map<String,Object>> objectList = (List<Map<String, Object>>) paramList.get("user");
-        List<User> userList = new ArrayList<>();
+        //判断是否修改了图片
+        if (paramList.containsKey("userImg")){
+            FileItem userImg = (FileItem) paramList.get("userImg");
+            //将图片转换为二进制数组
+            Byte[][] bytes = ImageUtil.imgToBinary(userImg);
+            paramList.put("userImg",bytes);
+        }
+        
+        User user = new User();
+        ReflectUtil.invokeSetters(paramList,user);
 
-
-        // 遍历每个map对象，将其封装到指定对象中
-        objectList.forEach(map->{
-            if (map.containsKey("userImg")){
-                // 将图片转换为数组放入
-                map.put("userImg", ImageUtil.imgToBinary((File) map.get("userImg")));
-            }
-
-            // 封装User实体
-            User user = new User();
-            ReflectUtil.invokeSetters(map, user);
-
-            // 执行修改逻辑
-            update();
-        });
-
+        //执行更新逻辑
+        entityInfo.addEntity(user);
+        update();
     }
 
+    /**
+     * 个人权限修改用户信息
+     */
     private void updatePersonalUser(){
         // 先将paramList中的参数取出
-        List<Map<String,Object>> userList = (List<Map<String,Object>>) paramList.get("user");
-        Map<String,Object> map = userList.get(0);
 
         // 判断是否有密码
-        if (map.containsKey("userPassword")){
+        if (paramList.containsKey("userPassword")){
             if (!session.getAttribute("passwordAuth").equals(true) && !session.getAttribute("emailAuth").equals(true)) {
-                commonResult = CommonResult.errorResult(200,"禁止未经验证的修改密码");
-                return;
+                throw new UserException(CommonErrorCode.E_1007);
             }
         }
 
-        try {
-            // 判断是否有用户状态
-            if (map.containsKey("userStatus")){
-                commonResult = CommonResult.errorResult(200,"用户状态无法自行修改");
-                return;
-            }
-        } catch (Exception e) {
-            throw new UserException(CommonErrorCode.E_3001);
+        // 判断是否有用户状态
+        if (paramList.containsKey("userStatus")){
+            throw new UserException(CommonErrorCode.E_1006);
         }
 
         // 判断是否有图片
-        if (map.containsKey("userImg")){
+        if (paramList.containsKey("userImg")){
             // 将图片转换为数组放入
-            map.put("userImg", ImageUtil.imgToBinary((File) map.get("userImg")));
+            paramList.put("userImg", ImageUtil.imgToBinary((FileItem) paramList.get("userImg")));
         }
 
         // 封装User实体
         User user = new User();
-        ReflectUtil.invokeSetters(map, user);
+        ReflectUtil.invokeSetters(paramList, user);
 
         // 执行修改逻辑
         entityInfo.addEntity(user);
         update();
     }
 
+    /**
+     * 注册新用户
+     */
     private void insertUser(){
-        //获取新增用户的信息
-        Map<String,Object> userMap = (Map<String, Object>) paramList.get("user");
         String authCode = (String) paramList.get("authCode");
-
         //判断邮箱验证码是否正确
         if (authCode.equalsIgnoreCase((String) session.getAttribute(SessionConstants.AUTH_CODE))){
             //验证码不正确
@@ -151,13 +162,22 @@ public class UserService extends BaseService<User> {
         }
 
         //判断邮箱是否可用
+        getPersonalUser();
+        User user = (User) commonResult.getData();
+        if (user != null){
+            //邮箱已注册，无法再注册
+            throw new UserException(CommonErrorCode.E_1002);
+        }
 
         //执行插入操作
-
-        //返回逻辑
-
+        ReflectUtil.invokeSetters(paramList,user);
+        entityInfo.addEntity(user);
+        insert();
     }
 
+    /**
+     * 管理员权限的删除用户
+     */
     private void deleteUser(){
         //获取需要删除的用户信息
         List<Map<String,Object>> userMapList = (List<Map<String, Object>>) paramList.get("user");
@@ -171,63 +191,62 @@ public class UserService extends BaseService<User> {
 
         //执行删除逻辑
         delete();
-
-        //返回逻辑
-
     }
 
+    /**
+     * 个人权限的删除用户
+     */
     private void deletePersonalUser(){
-        //获取需要删除的用户信息
-        Map<String,Object> userMap = (Map<String, Object>) paramList.get("user");
-
         //包装需要删除的实体类
-
-            User user = new User();
-            user.setUserEmail((String) userMap.get("userEmail"));
-            entityInfo.addEntity(user);
-
+        User user = new User();
+        user.setUserEmail((String) paramList.get("userEmail"));
+        entityInfo.addEntity(user);
 
         //执行删除逻辑
         delete();
-
-        //返回逻辑
-
     }
 
+    /**
+     * 个人权限的查询用户
+     */
     private void getPersonalUser(){
-        // 先将paramList中的参数取出
-        Map<String,Object> map = (Map<String, Object>) paramList.get("user");
+        String userEmail = (String) paramList.get("userEmail");
 
         // 封装Condition
         Condition condition = new Condition();
         // 判断搜索用户的各项属性
-        condition.addAndConditionWithView(new Term("user","userEmail",map.get("userEmail"),TermType.EQUAL));
+        condition.addAndConditionWithView(new Term("user","userEmail",userEmail,TermType.EQUAL));
 
         // 执行修改逻辑
         entityInfo.setCondition(condition);
         select();
+
+        //重新封装数据
+        List<User> userList = (List<User>) commonResult.getData();
+        User user = userList.get(0);
+        commonResult.setData(user);
     }
 
+    /**
+     * 管理员权限的查询用户
+     */
     private void listUsers(){
-        // 先将paramList中的参数取出
-        Map<String,Object> map = (Map<String, Object>) paramList.get("user");
-
         // 封装Condition
         Condition condition = new Condition();
         condition.setStartIndex((Long) paramList.get("startIndex"));
         condition.setSize((Integer) paramList.get("pageSize"));
 
         // 判断搜索用户的各项属性
-        if (map.size() != 0){
+        if (paramList.size() != 0){
             List<Term> list = new ArrayList<>();
-            if (map.containsKey("userName")){
-                condition.addOrConditionWithView(new Term("user","userName",map.get("userName"), TermType.LIKE));
+            if (paramList.containsKey("userName")){
+                condition.addOrConditionWithView(new Term("user","userName",paramList.get("userName"), TermType.LIKE));
             }
-            if (map.containsKey("roleId")){
-                condition.addOrConditionWithView(new Term("user_role","roleId",map.get("roleId"),TermType.EQUAL));
+            if (paramList.containsKey("roleId")){
+                condition.addOrConditionWithView(new Term("user_role","roleId",paramList.get("roleId"),TermType.EQUAL));
             }
-            if (map.containsKey("userEmail")){
-                condition.addOrConditionWithView(new Term("user", "userEmail", map.get("userEmail"), TermType.EQUAL));
+            if (paramList.containsKey("userEmail")){
+                condition.addOrConditionWithView(new Term("user", "userEmail", paramList.get("userEmail"), TermType.EQUAL));
             }
         }
 
@@ -236,63 +255,112 @@ public class UserService extends BaseService<User> {
         select();
     }
 
+    /**
+     * 登录
+     */
     private void login(){
         //获取登录的参数
+        String authCode = (String) session.getAttribute("imgAuthCode");
 
         //判断图片验证码是否正确
+        if (!authCode.equalsIgnoreCase((String) paramList.get("imgAuthCode"))){
+            throw new UserException(CommonErrorCode.E_1004);
+        }
 
         //session中移除图片验证码
+        session.removeAttribute("imgAuthCode");
 
         //根据邮箱查询用户
+        getPersonalUser();
 
         //是否存在此用户
+        User user = (User) commonResult.getData();
+        if (user == null){
+            throw new UserException(CommonErrorCode.E_1008);
+        }
 
         //判断密码是否正确
+        if (!user.getUserPassword().equals(paramList.get("userPassword"))){
+            throw new UserException(CommonErrorCode.E_1008);
+        }
 
         //登录通过
-
         //查询权限列表放入session
+        //编写查询逻辑
+//        SELECT permission_name FROM user_role
+//          LEFT JOIN role_permission ON user_role.role_id=role_permission.`role_id`
+//          LEFT JOIN permission ON role_permission.`permission_id` = permission.`permission_id`
+//        WHERE user_role.user_email = "2418972236@qq.com"
+        Condition condition = new Condition();
+        condition.addAndConditionWithView(new Term("user_role", "user_email", paramList.get("userEmail"), TermType.EQUAL));
+        condition.addViewCondition("role_id","role_permission");
+        condition.addViewCondition("permission_id","permission");
+        condition.addFields("permission_name");
+
+        //执行查询逻辑
+        entityInfo.setCondition(condition);
+//        entityInfo.setEntityName("Permission");
+        select();
+
+        //得到查询结果
+        List<String> permissionList = new ArrayList<>();
+        List<Permission> list = (List<Permission>) commonResult.getData();
+        list.forEach((p) -> {
+            permissionList.add(p.getPermissionName());
+        });
+        //将权限名集合放入session中
+        session.setAttribute(SessionConstants.PERMISSION_LIST,permissionList);
 
         //将userEmail放入session
+        session.setAttribute(SessionConstants.USER_EMAIL,paramList.get("userEmail"));
 
         //返回token回前端
+        //?
     }
 
+    /**
+     * 发送邮箱验证码，包括注册验证码，找回密码验证码
+     */
     private void sendAuthEmail(){
         getPersonalUser();
-        List<User> userList = (List<User>) commonResult.getData();
-        User user = userList.get(0);
+        User user = (User) commonResult.getData();
+        EmailUtil emailUtil = new EmailUtil((String) paramList.get("userEmail"));
+
         if(user == null){
-            //邮箱未注册
-            throw new UserException(CommonErrorCode.E_1005);
+            //邮箱未注册,发送注册验证码
+            emailUtil.sendEmail(EmailUtil.MessageType.SIGN_IN);
+        }else {
+            //邮箱已注册，发送找回密码验证码
+            emailUtil.sendEmail(EmailUtil.MessageType.FIND_PASSWORD);
         }
 
-        
+        //返回消息
+        commonResult = CommonResult.successResult("消息已发送，请及时接收",true);
     }
 
-    private void isAvailableEmail(){
-        // 先将paramList中的参数取出
-        Map<String,Object> userMap = (Map<String, Object>) paramList.get("user");
-        //判断邮箱是否合法
-        if (!EmailUtil.isLegalEmail((String) userMap.get("userEmail"))){
-            throw new UserException(CommonErrorCode.E_1003);
-        }
-
-        //查询用户
-        getPersonalUser();
-        //获得查询结果
-        List<User> user = (List<User>) commonResult.getData();
-
-        //判断用户是否注册
-        if (user != null){
-            throw new UserException(CommonErrorCode.E_1002);
-        }
-
-        //此邮箱为可用邮箱
-        commonResult = CommonResult.successResult("此邮箱可用",true);
-    }
-
+    /**
+     * 用户账号登出
+     */
     private void logout(){
         //移除session和token
+
+    }
+
+    /**
+     * 获得登录的图片验证码
+     */
+    private void getLoginImg(){
+        //创建随机六位由数字字母组成的字符串
+        String imgAuthCode = EmailUtil.makeCode(6);
+        //创建对应的图片文件
+        BufferedImage authImg = ImageUtil.createAuthImg(imgAuthCode);
+        //将验证码记录到session中
+        session.setAttribute("imgAuthCode",imgAuthCode);
+
+        //将图片包装返回前端
+        commonResult.setData(authImg);
+
+        //设置60秒后从session里移除验证码
+
     }
 }

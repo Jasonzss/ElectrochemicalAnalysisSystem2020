@@ -5,7 +5,7 @@ import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.PageInfo;
-import com.bluedot.pojo.dto.Data;
+import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
@@ -46,24 +46,6 @@ public abstract class BaseService<T> {
      * 负责在具体Service中分析调用哪些方法来解决请求
      */
     abstract protected void doService();
-
-
-    protected void invokeMethod(String methodName,Object obj){
-        List<String> permissionList = (List<String>) session.getAttribute("permissionList");
-        if (permissionList.contains(methodName)){
-            //存在此权限，执行响应方法
-            try {
-                Method method = obj.getClass().getMethod(methodName);
-                method.invoke(obj);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-                throw new UserException(CommonErrorCode.E_3001);
-            }
-        }else {
-            // 没有权限，则设置枚举异常结果
-            throw new UserException(CommonErrorCode.E_3001);
-        }
-    }
 
     protected void update(){
         entityInfo.setKey(1L);
@@ -122,7 +104,25 @@ public abstract class BaseService<T> {
         return (long) commonResult.getData();
     }
 
-
+    protected void invokeMethod(String methodName,Object obj){
+        List<String> permissionList = (List<String>) session.getAttribute("permissionList");
+        if (permissionList.contains(methodName)){
+            //存在此权限，执行响应方法
+            try {
+                Method method = obj.getClass().getMethod(methodName);
+                method.invoke(obj);
+            } catch (NoSuchMethodException e) {
+                throw new UserException(CommonErrorCode.E_5001);
+            } catch (IllegalAccessException e) {
+                throw new UserException(CommonErrorCode.E_5001);
+            } catch (InvocationTargetException e) {
+                throw new UserException(CommonErrorCode.E_5001);
+            }
+        }else {
+            // 没有权限，则设置枚举异常结果
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_3001);
+        }
+    }
 
     private CommonResult doMapper(){
         //将待BaseMapper处理的数据加入到SMQueue中

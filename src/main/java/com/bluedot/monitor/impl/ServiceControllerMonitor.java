@@ -1,13 +1,13 @@
 package com.bluedot.monitor.impl;
 
 
-import com.bluedot.adapt.Adapt;
 import com.bluedot.monitor.Monitor;
 import com.bluedot.queue.BlockQueue;
 import com.bluedot.queue.enterQueue.Impl.ControllerServiceQueue;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.utils.LogUtil;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -67,9 +67,17 @@ public class ServiceControllerMonitor extends Monitor<ControllerServiceQueue> {
     public void run() {
         while (!queue.isEmpty()) {
             Data poll = queue.take();
-            Adapt adapt = new Adapt(poll);
             //分配线程任务处理数据
-            executors.execute(adapt);
+            executors.execute(() -> {
+                String serViceName = poll.getServiceName();
+                try {
+                    Class<?> aClass = Class.forName(serViceName);
+                    aClass.getConstructor(Data.class).newInstance(poll);
+                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    LogUtil.getLogger().error(e.getMessage());
+                    e.printStackTrace();
+                }
+            });
         }
     }
 }
