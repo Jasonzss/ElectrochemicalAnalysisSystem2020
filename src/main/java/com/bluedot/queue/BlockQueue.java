@@ -11,11 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * @Author SDJin
- * @CreationDate 2022/08/16 - 11:54
- * @Description ：
- */
+
 public class BlockQueue<E> extends AbstractQueue<E>
         implements BlockingQueue<E> {
 
