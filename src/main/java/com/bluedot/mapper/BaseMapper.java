@@ -74,10 +74,20 @@ public class BaseMapper {
      **/
     private Object select(Condition condition) {
         List<Object> parameters = new ArrayList<>();
-        //根据查询条件，动态生成sql
+        //生成sqL语句并得到填充后的参数数组
         String sql = generateSelectSqL(condition, parameters);
         MappedStatement mappedStatement = new MappedStatement();
         mappedStatement.setSql(sql);
+        System.out.println(sql);
+        String view=condition.getViews().get(0);
+        if (view.startsWith("`")){
+            view=view.substring(1,view.length()-1);
+        }
+        view=StringUtil.tableNameToClassName(view);
+        System.out.println("---------->"+view);
+        mappedStatement.setView(view);
+        mappedStatement.setReturnType(condition.getReturnType());
+
         return this.executor.doQuery(mappedStatement,parameters);
     }
     /**
@@ -353,8 +363,8 @@ public class BaseMapper {
             }
         }
         //limit条件
-        if (condition.getStartIndex().longValue() != -1 && condition.getStartIndex().intValue() != -1) {
-            select.append("limit ");
+        if (condition.getStartIndex()!=null && condition.getStartIndex()!=null) {
+            select.append(" limit ");
             select.append(condition.getStartIndex() + ",");
             select.append(condition.getStartIndex() + condition.getSize());
         }

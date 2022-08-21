@@ -1,13 +1,24 @@
 package com.bluedot.pojo.entity;
 
+import java.util.ArrayList;
+
 /**
- * @Author Jason
- * @CreationDate 2022/08/19 - 16:24
- * @Description ：代替物理表中的用户角色中间表
+ * @author zlj
+ * @version 1.0
+ * @description: TODO
+ * @date 2022/8/21 13:49
  */
 public class UserRole {
     private User user;
-    private Role[] roles;
+    private ArrayList<Role> roleArrayList;
+
+    public UserRole() {
+    }
+
+    public UserRole(User user, ArrayList<Role> roleArrayList) {
+        this.user = user;
+        this.roleArrayList = roleArrayList;
+    }
 
     public User getUser() {
         return user;
@@ -17,11 +28,19 @@ public class UserRole {
         this.user = user;
     }
 
-    public Role[] getRoles() {
-        return roles;
+    public ArrayList<Role> getRoleArrayList() {
+        return roleArrayList;
     }
 
-    public void setRoles(Role[] roles) {
-        this.roles = roles;
+    public void setRoleArrayList(ArrayList<Role> roleArrayList) {
+        this.roleArrayList = roleArrayList;
+    }
+
+    @Override
+    public String toString() {
+        return "UserRole{" +
+                "user=" + user +
+                ", roleArrayList=" + roleArrayList +
+                '}';
     }
 }

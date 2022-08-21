@@ -1,13 +1,24 @@
 package com.bluedot.pojo.entity;
 
+import java.util.ArrayList;
+
 /**
- * @Author Jason
- * @CreationDate 2022/08/19 - 16:34
- * @Description ：代替物理表中的角色权限中间表
+ * @author zlj
+ * @version 1.0
+ * @description: TODO
+ * @date 2022/8/21 13:57
  */
 public class RolePermission {
     private Role role;
-    private Permission[] permissions;
+    private ArrayList<Permission> permissionArrayList;
+
+    public RolePermission() {
+    }
+
+    public RolePermission(Role role, ArrayList<Permission> permissionArrayList) {
+        this.role = role;
+        this.permissionArrayList = permissionArrayList;
+    }
 
     public Role getRole() {
         return role;
@@ -17,11 +28,19 @@ public class RolePermission {
         this.role = role;
     }
 
-    public Permission[] getPermissions() {
-        return permissions;
+    public ArrayList<Permission> getPermissionArrayList() {
+        return permissionArrayList;
     }
 
-    public void setPermissions(Permission[] permissions) {
-        this.permissions = permissions;
+    public void setPermissionArrayList(ArrayList<Permission> permissionArrayList) {
+        this.permissionArrayList = permissionArrayList;
+    }
+
+    @Override
+    public String toString() {
+        return "RolePermission{" +
+                "role=" + role +
+                ", permissionArrayList=" + permissionArrayList +
+                '}';
     }
 }

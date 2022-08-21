@@ -7,7 +7,7 @@ import com.bluedot.pojo.entity.Algorithm;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Project ElectrochemicalAnalysisSystem2020
@@ -93,12 +93,43 @@ public class AlgoUtil extends ClassLoader{
      * @return 返回一个Map，属性【train】表示分割好的训练集，属性【test】表示分割好的测试集
      */
     public static Map<String, Double[][]> divideDataSet(Double[][] data) {
-        if (data == null) {
+        if (data == null || data.length == 0) {
             //参数不能为空
             throw new UserException(e4001);
         }
+        //返回变量
+        Map<String, Double[][]> ret = new HashMap<>();
+        //训练集
+        List<Double[]> train = new ArrayList<>();
+        //测试集
+        List<Double[]> test = new ArrayList<>();
+        //得到0-data.length的随机序列集
+        List<Integer> index = new ArrayList<>();
+        for (int i = 0; i < data.length; i ++) {
+            index.add(i);
+        }
+        Collections.shuffle(index);
 
-        return null;
+        //将前80%作为训练集，后20%作为测试集。
+        double ratio = 0.8;
+        int splitPoint = (int) (data.length * ratio);
+
+        Integer[] trainIndex = index.subList(0, splitPoint).toArray(new Integer[0]);
+        Arrays.sort(trainIndex);
+        Integer[] testIndex = index.subList(splitPoint, index.size()).toArray(new Integer[0]);
+        Arrays.sort(testIndex);
+
+        for (Integer i: trainIndex) {
+            train.add(data[i]);
+        }
+        for (Integer i: testIndex) {
+            test.add(data[i]);
+        }
+
+        ret.put("train", train.toArray(new Double[][]{}));
+        ret.put("test", test.toArray(new Double[][]{}));
+
+        return ret;
     }
 
     /**
