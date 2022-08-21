@@ -22,6 +22,7 @@ public class AlgoUtil extends ClassLoader{
     private static final CommonErrorCode E4001 = CommonErrorCode.E_4001;
     private static final CommonErrorCode E4002 = CommonErrorCode.E_4002;
     private static final CommonErrorCode E4003 = CommonErrorCode.E_4003;
+    private static final CommonErrorCode E4004 = CommonErrorCode.E_4004;
 
     //获取资源文件目录的绝对路径
     private static final String RESPATH =
@@ -63,8 +64,10 @@ public class AlgoUtil extends ClassLoader{
         Object run = run(algo, data);
         if (run instanceof Double[]) {
             return (Double[]) run;
+        } else {
+            E4004.setMsg("方法返回值错误！方法返回值应为：Double[]\n");
+            throw new UserException(E4004);
         }
-        return null;
     }
 
     /**
@@ -82,8 +85,10 @@ public class AlgoUtil extends ClassLoader{
         Object run = run(algo, data);
         if (run instanceof Double[][]) {
             return (Double[][]) run;
+        } else {
+            E4004.setMsg("方法返回值错误！方法返回值应为：Double[][]\n");
+            throw new UserException(E4004);
         }
-        return null;
     }
 
     /**
@@ -145,9 +150,10 @@ public class AlgoUtil extends ClassLoader{
         Object run = run(algo, data);
         if (run instanceof Double[]) {
             return (Double[]) run;
+        } else {
+            E4004.setMsg("方法返回值错误！方法返回值应为：Double[][]\n");
+            throw new UserException(E4004);
         }
-        System.out.println();
-        return null;
     }
 
     /**
@@ -183,7 +189,6 @@ public class AlgoUtil extends ClassLoader{
             //加载算法类
             Class<?> algoClass = Class.forName(ALGOCLASSNAME, true, classLoader);
             //获得方法并执行
-            System.out.println(data.getClass().toGenericString());
             Method runMethod = algoClass.getDeclaredMethod(ALGOENTRY,
                     data.getClass());
             ret = runMethod.invoke(algoClass.newInstance(), data);
