@@ -16,6 +16,14 @@ public class Application {
     private Integer applicationStatus;
     private String applicationRejectReason;
 
+    /**
+     * 空参构造器：初始化一些默认的属性值
+     */
+    public Application(){
+        this.applicationStatus = 0;
+        this.applicationTime = new Date();
+    }
+
     public Integer getApplicationId() {
         return applicationId;
     }
