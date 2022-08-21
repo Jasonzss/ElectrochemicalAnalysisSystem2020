@@ -28,7 +28,6 @@ public class MapperInit {
     private void init() throws IOException, ClassNotFoundException, SQLException {
         InputStream inputStream = MapperInit.class.getClassLoader().getResourceAsStream(fileName);
         configuration.load(inputStream);
-//        loadSql(configuration.getProperty("mapper.location").replaceAll("\\.", "/"));
         loadTableInfo(configuration.getDataSource().getConnection());
     }
 
@@ -67,10 +66,8 @@ public class MapperInit {
                     ColumnInfo foreignColumnInfo = tableInfo.getColumnInfoMap().get(foreignKeyResultSet.getString("FKCOLUMN_NAME"));
                     tableInfo.getForeignKeys().add(foreignColumnInfo);
                 }
-                if(!tableInfo.getTableName().equals("user_role") && !tableInfo.getTableName().equals("role_permission")){
                     Class<?> clazz = Class.forName(Configuration.getProperty("po.location") + "." + StringUtil.tableNameToClassName(tableName));
                     map.put(clazz, tableInfo);
-                }
             }
             configuration.setClassToTableInfoMap(map);
         } catch (SQLException | ClassNotFoundException e) {
