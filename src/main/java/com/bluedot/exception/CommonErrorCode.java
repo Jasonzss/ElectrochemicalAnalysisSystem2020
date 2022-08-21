@@ -27,6 +27,10 @@ public enum CommonErrorCode implements ErrorCode {
      */
     E_3001(3001,"您没有此操作的权限"),
 
+    /**
+     * 系统方面的异常
+     */
+    E_9001(9001,"错误的请求参数"),
 
     ;
 
