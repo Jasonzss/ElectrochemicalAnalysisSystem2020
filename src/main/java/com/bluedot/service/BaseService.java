@@ -112,12 +112,12 @@ public abstract class BaseService<T> {
             try {
                 Method method = obj.getClass().getMethod(methodName);
                 method.invoke(obj);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                System.out.println("反射调用方法异常!");
-                e.printStackTrace();
-            } catch (UserException e){
-                // 处理service层抛出的自定义异常 封装到commonResult中
-                commonResult = CommonResult.commonErrorCode(e.getErrorCode());
+            } catch (NoSuchMethodException e) {
+                throw new UserException(CommonErrorCode.E_5001);
+            } catch (IllegalAccessException e) {
+                throw new UserException(CommonErrorCode.E_5001);
+            } catch (InvocationTargetException e) {
+                throw new UserException(CommonErrorCode.E_5001);
             }
         }else {
             // 没有权限，则设置枚举异常结果
