@@ -30,18 +30,35 @@ public class EmailUtil extends Thread{
     //发送的邮件
     private MimeMessage message;
 
+    /**
+     * 构造方法，初始化发送邮件所需数据
+     * @param userEmail 被发送邮件的用户邮箱
+     */
     public EmailUtil(String userEmail){
 
     }
 
-    public static boolean sendEmail(MessageType messageType){
+    /**
+     * 给用户调用的发送邮件方法
+     * @param messageType 发送邮件的类型
+     * @return 是否发送成功
+     */
+    public boolean sendEmail(MessageType messageType){
         return false;
     }
 
+    /**
+     * 判断邮箱的格式是否正确
+     * @param email 要判断的邮箱
+     * @return 邮箱格式是否正确
+     */
     public static boolean isLegalEmail(String email){
         return false;
     }
 
+    /**
+     * 创建一个线程发送邮件
+     */
     @Override
     public void run() {
         try {
@@ -75,6 +92,13 @@ public class EmailUtil extends Thread{
             //3.使用邮箱的用户名和授权码连上邮件服务器
             transport.connect(host,username,password);
 
+            //创建邮件
+            message = new MimeMessage(session);
+            //发件人
+            message.setFrom(new InternetAddress(from));
+            //收件人
+            message.setRecipient(Message.RecipientType.TO,new InternetAddress(userEmail));
+
             //发送邮件
             transport.sendMessage(message,message.getAllRecipients());
             transport.close();
@@ -83,14 +107,14 @@ public class EmailUtil extends Thread{
         }
     }
 
+    /**
+     * 创建一个注册邮件
+     */
     public void createSignInMessage(){
         try {
-            //创建邮件
-            message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(from));     //发件人
-            message.setRecipient(Message.RecipientType.TO,new InternetAddress(userEmail));   //收件人
+            //邮件的标题
+            message.setSubject(userEmail+"的Determinantor注册邮箱");
 
-            message.setSubject(userEmail+"的Determinantor注册邮箱");   //邮箱的标题
             //编辑邮件内容
             String authCode = makeCode(6);
             String info = "欢迎加入行列使，我们收到您的注册请求。<br><h2 style='color:green'>"+authCode+"</h2>是你的验证码，请勿告诉他人，验证码仅在60秒内生效。<br>如非本人操作申请请忽略。";
@@ -101,8 +125,10 @@ public class EmailUtil extends Thread{
         }
     }
 
-    //生成随机字母数字字符串
-    private String makeCode(int length){
+    /**
+     * 生成指定长度的随机字母数字字符串
+     */
+    public static String makeCode(int length){
         Random random = new Random();
         String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
@@ -115,6 +141,9 @@ public class EmailUtil extends Thread{
         return code.toString();
     }
 
+    /**
+     * 发送邮件的类型
+     */
     public enum MessageType{
         /**
          * 注册验证码邮箱
