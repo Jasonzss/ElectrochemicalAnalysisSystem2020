@@ -66,4 +66,9 @@ public enum CommonErrorCode implements ErrorCode {
     public String getMsg() {
         return msg;
     }
+
+    @Override
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
 }
