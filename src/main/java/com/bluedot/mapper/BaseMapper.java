@@ -8,7 +8,10 @@ import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.StringUtil;
 
 import java.lang.reflect.Field;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -104,7 +107,35 @@ public class BaseMapper {
             public void generateSqlExecutor(Field[] fields, TableInfo tableInfo, List<ColumnInfo> primaryKeys, StringBuilder sql, MappedStatement mappedStatement, List<Object> params) {
                 Object entity = typeList.get(0);
                 sql.append("insert into ").append(tableInfo.getTableName()).append("(");
+                List<Class> classList= Arrays.asList(Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,char.class,Boolean.class,String.class, Date.class, Timestamp.class);
                 for (Field field : fields) {
+                    field.setAccessible(true);
+                    //是否是外键实体类
+                    boolean flag=true;
+                    for (Class clazz : classList) {
+                        if (field.getType()==clazz){
+                            flag=false;
+                            break;
+                        }
+                    }
+                    if (flag){
+                        try {
+                            Object foreignKeyEntity = field.get(entity);
+                            if (foreignKeyEntity!=null){
+                                Field[] foreignKeyEntityFileds = foreignKeyEntity.getClass().getDeclaredFields();
+                                for (Field foreignKeyEntityFiled : foreignKeyEntityFileds) {
+                                    foreignKeyEntityFiled.setAccessible(true);
+                                    if (foreignKeyEntityFiled.get(foreignKeyEntity)!=null) {
+                                        sql.append(StringUtil.humpToLine(foreignKeyEntityFiled.getName())).append(",");
+                                        params.add(foreignKeyEntityFiled.get(foreignKeyEntity));
+                                    }
+                                }
+                            }
+                            continue;
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     String fieldName = field.getName();
                     Object fieldValue = ReflectUtil.invokeGet(entity, fieldName);
                     if (null != fieldValue) {
@@ -123,6 +154,33 @@ public class BaseMapper {
                     for (int i = 1; i <= typeList.size()-1; i++) {
                         sql.append("( ");
                         for (Field field : fields) {
+                            field.setAccessible(true);
+                            //是否是外键实体类
+                            boolean flag=true;
+                            for (Class clazz : classList) {
+                                if (field.getType()==clazz){
+                                    flag=false;
+                                    break;
+                                }
+                            }
+                            if (flag){
+                                try {
+                                    Object foreignKeyEntity = field.get(typeList.get(i));
+                                    if (foreignKeyEntity!=null){
+                                        Field[] foreignKeyEntityFileds = foreignKeyEntity.getClass().getDeclaredFields();
+                                        for (Field foreignKeyEntityFiled : foreignKeyEntityFileds) {
+                                            foreignKeyEntityFiled.setAccessible(true);
+                                            if (foreignKeyEntityFiled.get(foreignKeyEntity)!=null) {
+                                                sql.append("?,");
+                                                params.add(foreignKeyEntityFiled.get(foreignKeyEntity));
+                                            }
+                                        }
+                                    }
+                                    continue;
+                                } catch (IllegalAccessException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                             String fieldName = field.getName();
                             Object fieldValue = ReflectUtil.invokeGet(typeList.get(i), fieldName);
                             if (null != fieldValue) {
@@ -180,9 +238,55 @@ public class BaseMapper {
             @Override
             public void generateSqlExecutor(Field[] fields, TableInfo tableInfo, List<ColumnInfo> primaryKeys, StringBuilder sql, MappedStatement mappedStatement, List<Object> params) {
                 Object entity = typeList.get(0);
+                List<Class> classList=Arrays.asList(Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,char.class,Boolean.class,String.class,Date.class,Timestamp.class);
                 if (typeList.size()>1){
                     sql.append("update ").append(tableInfo.getTableName()).append(" set ");
                     for (Field field : fields) {
+
+                        field.setAccessible(true);
+                        //是否是外键实体类
+                        boolean flag=true;
+                        for (Class clazz : classList) {
+                            if (field.getType()==clazz){
+                                flag=false;
+                                break;
+                            }
+                        }
+                        if (flag){
+                            try {
+                                Object foreignKeyEntity = field.get(entity);
+                                if (foreignKeyEntity!=null){
+                                    Field[] foreignKeyEntityFileds = foreignKeyEntity.getClass().getDeclaredFields();
+                                    for (Field foreignKeyEntityFiled : foreignKeyEntityFileds) {
+                                        String filedName = foreignKeyEntityFiled.getName();
+                                        foreignKeyEntityFiled.setAccessible(true);
+                                        if (foreignKeyEntityFiled.get(foreignKeyEntity)!=null) {
+                                            for (ColumnInfo columnInfo : primaryKeys) {
+                                                String columnName=StringUtil.humpToLine(foreignKeyEntityFiled.getName());
+                                                sql.append(columnName);
+                                                sql.append("=(case ").append(columnInfo.getName());
+
+                                                for (Object o : typeList) {
+                                                    foreignKeyEntity = field.get(o);
+                                                    if (ReflectUtil.invokeGet(foreignKeyEntity, filedName)!=null){
+                                                        sql.append(" when ? then ? ");
+                                                        params.add(ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName())));
+                                                        params.add(ReflectUtil.invokeGet(foreignKeyEntity, filedName));
+                                                    }
+                                                }
+                                                sql.append(" end),");
+
+                                            }
+                                        }
+                                    }
+                                }
+                                continue;
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+
                         String fieldName = field.getName();
                         Object fieldValue = ReflectUtil.invokeGet(entity, fieldName);
                         if (null != fieldValue) {
@@ -190,7 +294,8 @@ public class BaseMapper {
                             for (ColumnInfo columnInfo : primaryKeys) {
                                 if (ReflectUtil.invokeGet(entity, StringUtil.lineToHump(columnInfo.getName()))!=null&&!fieldName.equals(StringUtil.lineToHump(columnInfo.getName()))) {
 
-                                    sql.append(StringUtil.humpToLine(fieldName)).append("=(case ").append(columnInfo.getName());
+                                    sql.append(StringUtil.humpToLine(fieldName));
+                                    sql.append("=(case ").append(columnInfo.getName());
                                     for (Object o : typeList) {
                                         if (ReflectUtil.invokeGet(o, fieldName)!=null){
                                             sql.append(" when ? then ? ");
