@@ -15,7 +15,7 @@ import java.util.*;
  * @DateTime 2022/8/17 16:34
  * @Author FuZhichao
  **/
-public class AlgoUtil extends ClassLoader{
+public class AlgoUtil {
     /**
      * 运行时的错误
      */
@@ -170,27 +170,28 @@ public class AlgoUtil extends ClassLoader{
         }
 
         //算法文件的父路径
-        String algoParentPath = RESPATH + "algo/" + algo.getAlgorithmId();
+        String algoParentPath = RESPATH + "algo/src";
 
         //算法文件所在位置
         String algoFilePath =
-                algoParentPath + "/" + ALGOCLASSNAME + "." + ALGOTXTSUFFIX;
+                algoParentPath + "/" + algo.getAlgorithmFileName() + "." + ALGOTXTSUFFIX;
 
         //返回的结果
         Object ret;
 
         try {
-            //编译文件，以utf-8编译
-            runProcess("javac -encoding utf-8 " + algoFilePath);
-            //创建自定义的类加载器
-            AlgoUtil classLoader = new AlgoUtil();
-            classLoader.setRoot(algoParentPath);
+            //算法文件的包名
+            String packageStr = "algo.target.algo" + algo.getAlgorithmId();
+            //编译文件
+            long b = System.currentTimeMillis();
+            compile(algoFilePath, packageStr);
+            long e = System.currentTimeMillis();
+            System.out.println("编译耗时：" + (e - b) / 1000.0);
 
             //加载算法类
-            Class<?> algoClass = Class.forName(ALGOCLASSNAME, true, classLoader);
+            Class<?> algoClass = Class.forName(packageStr + "." + ALGOCLASSNAME);
             //获得方法并执行
-            Method runMethod = algoClass.getDeclaredMethod(ALGOENTRY,
-                    data.getClass());
+            Method runMethod = algoClass.getDeclaredMethod(ALGOENTRY, data.getClass());
             ret = runMethod.invoke(algoClass.newInstance(), data);
 
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
@@ -224,6 +225,65 @@ public class AlgoUtil extends ClassLoader{
         return ret;
     }
 
+    private static void compile(String algoFilePath, String packageStr) {
+        //package语句的byte数组
+        byte[] packageBytes = ("package " + packageStr + ";\n").getBytes();
+
+        //源代码文件，在:classpath/algo/src/算法名.java下
+        File src;
+        //加了package语句的文件，在:classpath/target/algo[算法id]/Main.java下
+        File temp;
+
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+
+        try {
+            //在文件头加package语句
+            src = new File(algoFilePath);
+            temp = new File(algoFilePath.substring(0, algoFilePath.lastIndexOf("algo/src")) +
+                    packageStr.replace(".", "/") + "/" +ALGOCLASSNAME + "." + ALGOTXTSUFFIX);
+            if (!temp.getParentFile().exists()) {
+                temp.getParentFile().mkdirs();
+            }else if (!temp.exists()) {
+                temp.createNewFile();
+            }
+
+            fis = new FileInputStream(src);
+            fos = new FileOutputStream(temp);
+            //在temp里先写入package语句
+            fos.write(packageBytes);
+            //再将原始文件内容写入到temp
+            //存放每次读取的内容
+            byte[] bytes = new byte[fis.available()];
+            while (fis.read(bytes) != -1) {
+                fos.write(bytes);
+            }
+
+            fos.flush();
+            //运行编译程序，以utf-8编译
+            runProcess("javac -encoding utf-8 -cp " + RESPATH + " " + temp.getAbsolutePath());
+
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.flush();
+                }
+                if (fis != null) {
+                    fis.close();
+                }
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    }
+
     /**
      * 执行应用程序
      * 这里只是用于编译java文件
@@ -239,8 +299,13 @@ public class AlgoUtil extends ClassLoader{
             if (pro.exitValue() != 0) {
                 //获取错误信息
                 String errorMsg = getErrorMsg(pro.getErrorStream());
-                String ableOutMsg = errorMsg.substring(errorMsg.indexOf("algo"));
-                E4002.setMsg("编译错误：\n" + ableOutMsg);
+                if (errorMsg.contains("algo")) {
+                    E4002.setMsg("编译错误：\n" + errorMsg.substring(errorMsg.indexOf("algo")));
+                }else {
+                    E4002.setMsg("编译错误：\n" + errorMsg.substring(errorMsg.indexOf(errorMsg)));
+                }
+
+
                 throw new UserException(E4002);
             }
 
@@ -276,71 +341,6 @@ public class AlgoUtil extends ClassLoader{
 
 
         return builder.toString();
-    }
-
-    /**
-     * 自定义类加载过程，实现加载用户上传的算法文件
-     * @param name 全限定类名
-     * @return 创建的Class对象
-     * @throws ClassNotFoundException 找不到class文件
-     */
-    @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
-        byte[] classData = loadClassData(name);
-
-        if (classData == null) {
-            throw new ClassNotFoundException();
-        } else {
-            return defineClass(name, classData, 0, classData.length);
-        }
-    }
-
-
-    /**
-     * 得到class文件的二进制（字节）数据
-     * @param className 类的全限定名
-     * @return class文件的二进制数组
-     */
-    private byte[] loadClassData(String className) {
-        String fileName = root + File.separatorChar +
-                className.replace('.', File.separatorChar) + ".class";
-        InputStream ins = null;
-        ByteArrayOutputStream baos = null;
-        byte[] ret = null;
-        try {
-            ins = new FileInputStream(fileName);
-
-            baos = new ByteArrayOutputStream();
-
-            int bufferSize = 1024;
-
-            byte[] buffer = new byte[bufferSize];
-
-            int length;
-
-            while ((length = ins.read(buffer)) != -1) {
-                baos.write(buffer, 0, length);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            //关闭资源
-            try {
-                if (baos != null) {
-                    baos.close();
-                }
-                if (ins != null) {
-                    ins.close();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        if (baos != null) {
-            ret = baos.toByteArray();
-        }
-        return ret;
     }
 
 }
