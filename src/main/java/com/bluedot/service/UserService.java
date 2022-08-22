@@ -15,8 +15,10 @@ import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.constants.SessionConstants;
 import org.apache.commons.fileupload.FileItem;
 
+import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +31,10 @@ public class UserService extends BaseService<User> {
 
     public UserService(Data data) {
         super(data);
+    }
+
+    public UserService(HttpSession session, String insert, HashMap<String, Object> dataMap, CommonResult commonResult) {
+        super(session, insert, dataMap, commonResult);
     }
 
     /**
