@@ -48,7 +48,7 @@ public class MapperTest {
 
         ExpData expData = new ExpData();
         expData.setExpDataId(1);
-        expData.setExpDataDesc("kkkkk");
+        expData.setExpDataDesc("方法擦");
         expData.setUser(user);
 
         ExpData expData1 = new ExpData();
@@ -58,7 +58,7 @@ public class MapperTest {
 
         ArrayList<ExpData> expDataArrayList=new ArrayList<>();
         expDataArrayList.add(expData);
-        expDataArrayList.add(expData1);
+//        expDataArrayList.add(expData1);
 
         EntityInfo<ExpData> expDataEntityInfo=new EntityInfo<>();
         expDataEntityInfo.setEntity(expDataArrayList);
