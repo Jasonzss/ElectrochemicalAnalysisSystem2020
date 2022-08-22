@@ -262,7 +262,7 @@ public class AlgoUtil {
 
 
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new UserException(CommonErrorCode.E_4005);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
@@ -276,9 +276,6 @@ public class AlgoUtil {
                 }
                 //删除复制的源代码文件和编译文件
                 temp.delete();
-                System.out.println(temp.delete());
-
-
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

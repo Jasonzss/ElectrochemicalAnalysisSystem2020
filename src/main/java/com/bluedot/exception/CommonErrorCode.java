@@ -37,6 +37,7 @@ public enum CommonErrorCode implements ErrorCode {
     E_4002(4002, "编译错误"),
     E_4003(4003, "运行错误"),
     E_4004(4004, "方法返回值不正确！"),
+    E_4005(4005, "找不到算法！"),
 
     /**
      * 通用异常
