@@ -213,15 +213,11 @@ public class AlgoUtil {
             E4003.setMsg("没有" + e.getMessage() + "方法");
             throw new UserException(E4003);
         } finally {
-            //删除生成的class文件
-            File algoClassFile =
-                    new File(algoFilePath.replace("." + ALGOTXTSUFFIX,
-                            "." + ALGOBINSUFFIX));
-            if (algoClassFile.exists()) {
-                algoClassFile.delete();
-            }
+            //删除class文件
+            File classFile = new File(RESPATH + "algo/target/algo" +
+                    algo.getAlgorithmId() + "/" + ALGOCLASSNAME + "." + ALGOBINSUFFIX);
+            classFile.delete();
         }
-
         return ret;
     }
 
@@ -232,7 +228,7 @@ public class AlgoUtil {
         //源代码文件，在:classpath/algo/src/算法名.java下
         File src;
         //加了package语句的文件，在:classpath/target/algo[算法id]/Main.java下
-        File temp;
+        File temp = null;
 
         FileInputStream fis = null;
         FileOutputStream fos = null;
@@ -246,6 +242,7 @@ public class AlgoUtil {
                 temp.getParentFile().mkdirs();
             }else if (!temp.exists()) {
                 temp.createNewFile();
+
             }
 
             fis = new FileInputStream(src);
@@ -270,12 +267,17 @@ public class AlgoUtil {
             throw new RuntimeException(e);
         } finally {
             try {
+                //关闭资源
                 if (fos != null) {
-                    fos.flush();
+                    fos.close();
                 }
                 if (fis != null) {
                     fis.close();
                 }
+                //删除复制的源代码文件和编译文件
+                temp.delete();
+                System.out.println(temp.delete());
+
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -290,22 +292,22 @@ public class AlgoUtil {
      * @param command 应用程序名
      */
     private static void runProcess(String command) {
-        Process pro;
+        Process pro = null;
+        InputStream errorStream = null;
         try {
             pro = Runtime.getRuntime().exec(command);
             pro.waitFor();
 
             //如果编译出错
             if (pro.exitValue() != 0) {
+                errorStream = pro.getErrorStream();
                 //获取错误信息
-                String errorMsg = getErrorMsg(pro.getErrorStream());
+                String errorMsg = getErrorMsg(errorStream);
                 if (errorMsg.contains("algo")) {
                     E4002.setMsg("编译错误：\n" + errorMsg.substring(errorMsg.indexOf("algo")));
                 }else {
                     E4002.setMsg("编译错误：\n" + errorMsg.substring(errorMsg.indexOf(errorMsg)));
                 }
-
-
                 throw new UserException(E4002);
             }
 
@@ -328,15 +330,28 @@ public class AlgoUtil {
         String line;
         StringBuilder builder = new StringBuilder();
 
-        BufferedReader in;
+        BufferedReader in = null;
+        InputStreamReader isr = null;
         try {
-            in = new BufferedReader(
-                    new InputStreamReader(ins, "GBK"));
+            isr = new InputStreamReader(ins, "GBK");
+            in = new BufferedReader(isr);
             while ((line = in.readLine()) != null) {
                 builder.append(line + "\n");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                if (isr != null) {
+                    isr.close();
+                }
+                if (in != null) {
+                    in.close();
+                }
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
 
