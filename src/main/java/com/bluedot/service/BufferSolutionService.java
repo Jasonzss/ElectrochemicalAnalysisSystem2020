@@ -8,8 +8,10 @@ import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.BufferSolution;
 import com.bluedot.pojo.entity.BufferSolution;
+import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.ReflectUtil;
 
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +28,10 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
         super(data);
     }
 
+    public BufferSolutionService(HttpSession session, String operation, Map<String, Object> map, CommonResult commonResult) {
+        super(session, operation, map, commonResult);
+    }
+
     @Override
     protected void doService() {
         String methodName = null;
@@ -40,11 +46,7 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
                 methodName = "updateBufferSolution";
                 break;
             case "select":
-                if (paramList.get("pageNo")!=null || paramList.get("pageSize") != null){
-                    methodName = "listMaterialBufferSolution";
-                }else {
-                    methodName = "listBufferSolutionNames";
-                }
+                methodName = "listBufferSolution";
                 break;
             default:
                 throw new UserException(CommonErrorCode.E_5001);
@@ -69,29 +71,20 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
      */
     @SuppressWarnings("unchecked")
     private void deleteBufferSolution(){
-        //参数解析
-        Map<String,Object> intData = new HashMap<>();
-        List<Map<String,Object>> listData = new ArrayList<>();
         if (paramList.get("bufferSolutionId") instanceof List){
-            listData = (List<Map<String,Object>>)paramList.get("bufferSolutionId");
-        }else {
-            intData = (Map<String,Object>) paramList.get("bufferSolutionId");
-        }
-
-        //根据变量中是否有值来判断参数的类型，然后执行删除一个还是删除多个的操作
-        if (!intData.isEmpty()){
-            // 如果删除的参数是int类型的,则删除一个
-            BufferSolution bufferSolution = new BufferSolution();
-            ReflectUtil.invokeSetters(intData,bufferSolution);
-            entityInfo.addEntity(bufferSolution);
-        }
-        if (!listData.isEmpty()){
             // 如果删除的参数是list类型的，则删除多个
+            List<Integer> listData = (List<Integer>)paramList.get("bufferSolutionId");
             listData.forEach(data -> {
                 BufferSolution bufferSolution = new BufferSolution();
-                ReflectUtil.invokeSetters(data,bufferSolution);
+                bufferSolution.setBufferSolutionId(data);
                 entityInfo.addEntity(bufferSolution);
             });
+        }else if(paramList.get("bufferSolutionId") instanceof Integer){
+            // 如果删除的参数是map类型的,则删除一个
+            int intData = (Integer) paramList.get("bufferSolutionId");
+            BufferSolution bufferSolution = new BufferSolution();
+            bufferSolution.setBufferSolutionId(intData);
+            entityInfo.addEntity(bufferSolution);
         }
 
         delete();
@@ -111,17 +104,17 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
     }
 
     /**
-     * 分页所有的缓冲溶液数据
+     * 查询缓冲溶液
      */
-    private void listMaterialBufferSolution(){
+    private void listBufferSolution(){
         Condition condition = new Condition();
-        if (paramList.containsKey("pageSize")){
+        if (paramList.containsKey("pageSize") && paramList.get("bufferSolutionName") != null){
             condition.setSize((Integer) paramList.get("pageSize"));
         }
-        if (paramList.containsKey("pageNo")){
+        if (paramList.containsKey("pageNo") && paramList.get("bufferSolutionName") != null){
             condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
         }
-        if (paramList.containsKey("bufferSolutionName")){
+        if (paramList.containsKey("bufferSolutionName") && paramList.get("bufferSolutionName") != null){
             condition.addOrConditionWithView(new Term("buffer_solution","buffer_solution_id",paramList.get("bufferSolutionName"), TermType.EQUAL));
         }
 
@@ -129,26 +122,5 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
 
         select();
 
-    }
-
-    /**
-     * 查询所有的缓冲溶液名称
-     */
-    private void listBufferSolutionNames() {
-        Condition condition = new Condition();
-        condition.addView("buffer_solution");
-
-        entityInfo.setCondition(condition);
-
-        select();
-
-        List<BufferSolution> bufferSolutions = (List<BufferSolution>) commonResult.getData();
-        List<String> bufferSolutionNames = new ArrayList<>();
-
-        bufferSolutions.forEach(one -> {
-            bufferSolutionNames.add(one.getBufferSolutionName());
-        });
-
-        commonResult.setData(bufferSolutionNames);
     }
 }

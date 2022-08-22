@@ -9,9 +9,11 @@ import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Application;
 import com.bluedot.pojo.entity.MaterialType;
 import com.bluedot.pojo.entity.User;
+import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.constants.SessionConstants;
 
+import javax.servlet.http.HttpSession;
 import java.util.*;
 
 /**
@@ -25,6 +27,10 @@ public class MaterialTypeService extends BaseService<MaterialType> {
 
     public MaterialTypeService(Data data) {
         super(data);
+    }
+
+    public MaterialTypeService(HttpSession session, String operation, Map<String, Object> map, CommonResult commonResult) {
+        super(session, operation, map, commonResult);
     }
 
     @Override
@@ -42,11 +48,7 @@ public class MaterialTypeService extends BaseService<MaterialType> {
                 methodName = "updateMaterialType";
                 break;
             case "select":
-                if (paramList.get("pageNo")!=null || paramList.get("pageSize") != null){
-                    methodName = "listMaterialTypePage";
-                }else {
-                    methodName = "listMaterialTypeNames";
-                }
+                methodName = "listMaterialType";
                 break;
             default:
                 throw new UserException(CommonErrorCode.E_5001);
@@ -72,29 +74,20 @@ public class MaterialTypeService extends BaseService<MaterialType> {
      */
     @SuppressWarnings("unchecked")
     private void deleteMaterialType(){
-        //参数解析
-        Map<String,Object> intData = new HashMap<>();
-        List<Map<String,Object>> listData = new ArrayList<>();
         if (paramList.get("materialTypeId") instanceof List){
-            listData = (List<Map<String,Object>>)paramList.get("materialTypeId");
-        }else {
-            intData = (Map<String,Object>) paramList.get("materialTypeId");
-        }
-
-        //根据变量中是否有值来判断参数的类型，然后执行删除一个还是删除多个的操作
-        if (!intData.isEmpty()){
-            // 如果删除的参数是int类型的,则删除一个
-            MaterialType materialType = new MaterialType();
-            ReflectUtil.invokeSetters(intData,materialType);
-            entityInfo.addEntity(materialType);
-        }
-        if (!listData.isEmpty()){
+            List<Integer> listData = (List<Integer>)paramList.get("materialTypeId");
             // 如果删除的参数是list类型的，则删除多个
             listData.forEach(data -> {
                 MaterialType materialType = new MaterialType();
-                ReflectUtil.invokeSetters(data,materialType);
+                materialType.setMaterialTypeId(data);
                 entityInfo.addEntity(materialType);
             });
+        }else {
+            Integer intData = (Integer) paramList.get("materialTypeId");
+            // 如果删除的参数是int类型的,则删除一个
+            MaterialType materialType = new MaterialType();
+            materialType.setMaterialTypeId(intData);
+            entityInfo.addEntity(materialType);
         }
 
         delete();
@@ -114,17 +107,17 @@ public class MaterialTypeService extends BaseService<MaterialType> {
     }
 
     /**
-     * 分页所有的实验物质类型数据
+     * 查询物质类型
      */
-    private void listMaterialTypePage(){
+    private void listMaterialType(){
         Condition condition = new Condition();
-        if (paramList.containsKey("pageSize")){
+        if (paramList.containsKey("pageSize") || paramList.get("pageSize") != null){
             condition.setSize((Integer) paramList.get("pageSize"));
         }
-        if (paramList.containsKey("pageNo")){
+        if (paramList.containsKey("pageNo") || paramList.get("pageNo") != null){
             condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
         }
-        if (paramList.containsKey("materialTypeName")){
+        if (paramList.containsKey("materialTypeName") && paramList.get("materialTypeName") != null){
             condition.addOrConditionWithView(new Term("material_type","material_type_id",paramList.get("materialTypeName"),TermType.EQUAL));
         }
 
@@ -132,26 +125,5 @@ public class MaterialTypeService extends BaseService<MaterialType> {
 
         select();
 
-    }
-
-    /**
-     * 查询所有的实验物质类型名数据
-     */
-    private void listMaterialTypeNames() {
-        Condition condition = new Condition();
-        condition.addView("material_type");
-
-        entityInfo.setCondition(condition);
-
-        select();
-
-        List<MaterialType> materialTypes = (List<MaterialType>) commonResult.getData();
-        List<String> materialTypeNames = new ArrayList<>();
-
-        materialTypes.forEach(one -> {
-            materialTypeNames.add(one.getMaterialTypeName());
-        });
-
-        commonResult.setData(materialTypeNames);
     }
 }

@@ -7,6 +7,7 @@ import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.*;
+import com.bluedot.utils.JsonUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +36,7 @@ public class ApplicationService extends BaseService<Application>{
                 methodName = "addApplication";
                 break;
             case "delete":
+                //
                 methodName = "deleteApplication";
                 break;
             case "update":
@@ -45,7 +47,7 @@ public class ApplicationService extends BaseService<Application>{
                 }
                 break;
             case "select":
-                methodName = "listApplicationPage";
+                methodName = "listApplication";
                 break;
             default:
                 throw new UserException(CommonErrorCode.E_5001);
@@ -98,31 +100,27 @@ public class ApplicationService extends BaseService<Application>{
         insert();
     }
 
+    /**
+     * 管理员删除申请
+     */
+    @SuppressWarnings("unchecked")
     private void deleteApplication(){
-        //参数解析
-        Map<String,Object> intData = new HashMap<>();
-        List<Map<String,Object>> listData = new ArrayList<>();
         if (paramList.get("applicationId") instanceof List){
-            listData = (List<Map<String,Object>>)paramList.get("applicationId");
-        }else {
-            intData = (Map<String,Object>) paramList.get("applicationId");
-        }
-
-        //根据变量中是否有值来判断参数的类型，然后执行删除一个还是删除多个的操作
-        if (!intData.isEmpty()){
-            // 如果删除的参数是int类型的,则删除一个
-            Application application = new Application();
-            ReflectUtil.invokeSetters(intData,application);
-            entityInfo.addEntity(application);
-        }
-        if (!listData.isEmpty()){
             // 如果删除的参数是list类型的，则删除多个
+            List<Integer> listData = (List<Integer>)paramList.get("applicationId");
             listData.forEach(data -> {
                 Application application = new Application();
-                ReflectUtil.invokeSetters(data,application);
+                application.setApplicationId(data);
                 entityInfo.addEntity(application);
             });
+        }else if (paramList.get("applicationId") instanceof Integer){
+            // 如果删除的参数是int类型的,则删除一个
+            Integer intData = (Integer) paramList.get("applicationId");
+            Application application = new Application();
+            application.setApplicationId(intData);
+            entityInfo.addEntity(application);
         }
+        delete();
     }
 
     /**
@@ -134,16 +132,8 @@ public class ApplicationService extends BaseService<Application>{
         if (paramList.get("applicationContent") != null || paramList.get("applicationContent") instanceof Map){
             // 获取到请求参数中的申请内容，转换为json格式,并替换
             Map<String,Object> applicationContent = (Map<String, Object>) paramList.get("applicationContent");
-            String content = null;
-            try {
-                content = new ObjectMapper().writeValueAsString(applicationContent);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-                throw new UserException(CommonErrorCode.E_6001);
-            }
-            paramList.replace("applicationContent",content);
+            paramList.replace("applicationContent",convertMapToJson(applicationContent));
         }
-
 
         Application application = new Application();
         ReflectUtil.invokeSetters(paramList,application);
@@ -155,59 +145,52 @@ public class ApplicationService extends BaseService<Application>{
     /**
      * 管理员审核申请
      */
+    @SuppressWarnings("unchecked,rawtypes")
     private void updateApplication(){
         Application application = new Application();
         ReflectUtil.invokeSetters(paramList,application);
 
-        Integer applicationId = application.getApplicationId();
-
         // 拒绝理由为空，即同意申请，则执行申请内容中的操作
-        if (application.getApplicationRejectReason() != null){
-            Application selectedApplication = new Application();
+        if (application.getApplicationRejectReason() != null && application.getApplicationStatus() == 1){
             // 通过申请id查询到申请
             Condition condition = new Condition();
-            condition.addAndConditionWithView(new Term("application","application_id",applicationId, TermType.EQUAL));
+            condition.addAndConditionWithView(new Term("application","application_id",application.getApplicationId(), TermType.EQUAL));
 
-            entityInfo.addEntity(selectedApplication);
+            entityInfo.setCondition(condition);
             select();
 
             // 获取查询到的申请内容
-            selectedApplication = (Application) commonResult.getData();
+            Application selectedApplication = (Application) commonResult.getData();
             String applicationContent = selectedApplication.getApplicationContent();
 
             // 判断申请的类型,然后解析申请内容并执行
             Integer applicationType = selectedApplication.getApplicationType();
-            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectMapper objectMapper = JsonUtil.getObjectMapper();
 
             switch (applicationType){
                 case 0:
                     // 解封申请：根据userEmail来修改账号状态
-                    User user = new User();
-                    user.setUserEmail((String) paramList.get("userEmail"));
-                    //修改账号状态 ?
-                    update();
+                    HashMap<String, Object> userDataMap = new HashMap<>();
+                    userDataMap.put("userEmail",paramList.get("userEmail"));
+                    userDataMap.put("userStatus",1);
+                    new UserService(session,"insert",userDataMap,commonResult);
                     break;
                 case 1:
-                    MaterialType materialType = objectMapper.convertValue(applicationContent,MaterialType.class);
-                    //添加物质类型 ?
-                    insert();
+                    Map materialTypeMap= objectMapper.convertValue(applicationContent,Map.class);
+                    new MaterialTypeService(session,"insert",materialTypeMap,commonResult);
                     break;
                 case 2:
-                    Algorithm algorithm = objectMapper.convertValue(applicationContent,Algorithm.class);
-                    //测试 ?
-                    //改变算法状态 ?
-                    algorithm.setAlgorithmStatus(1);
-                    update();
+                    Map algorithmMap = objectMapper.convertValue(applicationContent,Map.class);
+                    algorithmMap.put("algorithmStatus",1);
+                    //改变算法状态 ?????
                     break;
                 case 3:
-                    BufferSolution bufferSolution = objectMapper.convertValue(applicationContent,BufferSolution.class);
-                    //添加缓冲溶液 ?
-                    insert();
+                    Map bufferSolutionMap = objectMapper.convertValue(applicationContent,Map.class);
+                    new BufferSolutionService(session,"insert",bufferSolutionMap,commonResult);
                     break;
                 default:
                     throw new UserException(CommonErrorCode.E_6001);
             }
-
         }
 
         // 完成审核操作，修改该申请的审核状态
@@ -218,29 +201,36 @@ public class ApplicationService extends BaseService<Application>{
     /**
      * 查询申请数据
      */
-    private void listApplicationPage(){
+    private void listApplication(){
         Condition condition = new Condition();
 
+        // 分页查询
         if (paramList.containsKey("pageSize")){
             condition.setSize((Integer) paramList.get("pageSize"));
         }
         if (paramList.containsKey("pageNo")){
             condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
         }
+
+        // 查询申请的类型
         if (paramList.containsKey("applicationType") || paramList.get("applicationTyoe") != null){
             condition.addAndConditionWithView(new Term("application","application_type",paramList.get("applicationType"),TermType.EQUAL));
         }
+
+        // 用户查找/管理员查找
         if (paramList.containsKey("userEmail")){
-            condition.addOrConditionWithView(new Term("application","user_email",paramList.get("userEmail"),TermType.EQUAL));
+            condition.addAndConditionWithView(new Term("application","user_email",paramList.get("userEmail"),TermType.EQUAL));
         }
+
+        // 可能添加的筛选条件:开始时间/截止时间/申请状态
         if (paramList.get("beginTime") != null){
-            condition.addOrConditionWithView(new Term("application","application_time",paramList.get("beginTime"),TermType.GREATER));
+            condition.addAndConditionWithView(new Term("application","application_time",paramList.get("beginTime"),TermType.GREATER));
         }
         if (paramList.get("endTime") != null){
-            condition.addOrConditionWithView(new Term("application","application_time",paramList.get("endTime"),TermType.Less));
+            condition.addAndConditionWithView(new Term("application","application_time",paramList.get("endTime"),TermType.Less));
         }
         if (paramList.containsKey("applicationStatus") || paramList.get("applicationStatus") != null){
-            condition.addOrConditionWithView(new Term("application","application_status",paramList.get("applicationStatus"),TermType.EQUAL));
+            condition.addAndConditionWithView(new Term("application","application_status",paramList.get("applicationStatus"),TermType.EQUAL));
         }
 
         entityInfo.setCondition(condition);
