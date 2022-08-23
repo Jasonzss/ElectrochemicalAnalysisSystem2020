@@ -87,11 +87,11 @@ public class UserService extends BaseService<User> {
                 }else if (paramList.get("userEmail") != null){
                     methodName = "sendAuthEmail";
                 }else {
-                    throw new UserException(CommonErrorCode.E_4001);
+                    throw new UserException(CommonErrorCode.E_5001);
                 }
                 break;
             default:
-                throw new UserException(CommonErrorCode.E_4001);
+                throw new UserException(CommonErrorCode.E_5001);
         }
 
         invokeMethod(methodName,this);
