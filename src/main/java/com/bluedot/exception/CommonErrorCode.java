@@ -4,7 +4,7 @@ package com.bluedot.exception;
  * @author FireRain
  * @version 1.0
  * @date 2022/8/17 11:47
- * @created: 自定义异常信息枚举类
+ * @created: 用户异常信息枚举类
  */
 public enum CommonErrorCode implements ErrorCode {
 
@@ -16,6 +16,9 @@ public enum CommonErrorCode implements ErrorCode {
     E_1003(1003,"非法邮箱"),
     E_1004(1004,"验证码错误"),
     E_1005(1005,"该用户邮箱不存在"),
+    E_1006(1006,"用户信息非法修改"),
+    E_1007(1007,"禁止进行未验证的密码修改"),
+    E_1008(1008,"账号或密码错误"),
 
     /**
      * 数据管理模块错误:E_2xxx
@@ -33,7 +36,18 @@ public enum CommonErrorCode implements ErrorCode {
     E_4001(4001, "数据不能为空"),
     E_4002(4002, "编译错误"),
     E_4003(4003, "运行错误"),
+    E_4004(4004, "方法返回值不正确！"),
+    E_4005(4005, "找不到算法！"),
 
+    /**
+     * 通用异常
+     */
+    E_5001(5001,"错误的请求参数"),
+
+    /**
+     * 系统异常
+     */
+    E_6001(6001,"系统出现异常"),
 
     ;
 

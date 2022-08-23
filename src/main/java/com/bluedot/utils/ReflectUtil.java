@@ -2,6 +2,7 @@ package com.bluedot.utils;
 
 
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -10,15 +11,13 @@ public class ReflectUtil {
     public static Object invokeGet(Object object, String fieldName) {
         Class<?> clazz = object.getClass();
         Method method;
-        Object res;
+        Object res = null;
+
         try {
             method = clazz.getDeclaredMethod("get" + StringUtil.firstCharToUpperCase(fieldName));
             res = method.invoke(object);
-        } catch (Exception e) {
-            throw new RuntimeException("[" + Thread.currentThread().getName() + "]" +
-                    "com.xxbb.smybatis.utils.ReflectUtils" + "--->" +
-                    e.getMessage());
-        }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+
         return res;
     }
 
@@ -26,14 +25,10 @@ public class ReflectUtil {
         Class<?> clazz = obj.getClass();
         Method method;
         try {
-            method = clazz.getDeclaredMethod("set" + StringUtil.columnNameToMethodName(columnName), value.getClass());
+            method = clazz.getDeclaredMethod("set" +  StringUtil.firstCharToUpperCase(columnName), value.getClass());
             method.setAccessible(true);
             method.invoke(obj, value);
-        } catch (Exception e) {
-            throw new RuntimeException("[" + Thread.currentThread().getName() + "]" +
-                    "com.xxbb.smybatis.utils.ReflectUtils" + "--->" + "value=" +
-                    value.getClass());
-        }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
     }
 
     /**
@@ -41,12 +36,10 @@ public class ReflectUtil {
      * @param map 装有属性名和对应的属性值
      * @param obj 执行set方法的对象
      */
-    public static Object invokeSetters(Map<String,Object> map, Object obj){
+    public static void invokeSetters(Map<String,Object> map, Object obj){
         map.forEach((k,v)->{
             invokeSet(obj,k,v);
         });
-
-        return obj;
     }
     public static void invokeSetAttribute(Object obj, String columnName, Object value) {
         Class<?> clazz = obj.getClass();

@@ -170,21 +170,21 @@ public class Executor {
 
                             try {//基本类型封装
                                 if (rowObject.getClass().getDeclaredField(columnClassName) != null && columnValue != null) {
-                                    ReflectUtil.invokeSet(rowObject, columnName, columnValue);
+                                    ReflectUtil.invokeSet(rowObject, columnClassName, columnValue);
                                 }
                             } catch (Exception e) {
 
                                 for (Object o : foreignKeyEntityList) {
                                     try {
                                         if (o.getClass().getDeclaredField(columnClassName) != null && columnValue != null) {
-                                            ReflectUtil.invokeSet(o, columnName, columnValue);
+                                            ReflectUtil.invokeSet(o, columnClassName, columnValue);
                                         }
                                     } catch (Exception exception) {}
                                 }
                                 for (Object value : foreignKeyEntityMap.values()) {
                                     try {
                                         if (value.getClass().getDeclaredField(columnClassName) != null && columnValue != null) {
-                                            ReflectUtil.invokeSet(value, columnName, columnValue);
+                                            ReflectUtil.invokeSet(value, columnClassName, columnValue);
                                         }
                                     } catch (Exception ex) {}
                                 }
