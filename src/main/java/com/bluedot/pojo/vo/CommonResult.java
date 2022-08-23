@@ -15,6 +15,7 @@ import java.util.Map;
 public class CommonResult {
     public static final String JSON = "application/json";
     public static final String PNG = "image/png";
+    public static final String EXCEL="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     //响应码
     private int code;
