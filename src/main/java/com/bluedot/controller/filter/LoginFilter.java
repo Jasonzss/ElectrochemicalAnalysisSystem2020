@@ -22,7 +22,7 @@ import java.util.*;
  * @Description ：
  */
 @WebFilter(urlPatterns = "/*",filterName = "登录过滤器",initParams = {
-        @WebInitParam(name = "userService",value = "login,insert")
+        @WebInitParam(name = "UserService",value = "login,insert")
 })
 public class LoginFilter implements Filter {
     /**

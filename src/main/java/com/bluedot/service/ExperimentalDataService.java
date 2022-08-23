@@ -169,7 +169,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
      */
     private void updateExpData(){
         ExpData expData = new ExpData();
-        ReflectUtil.invokeSetters(paramList,expData);
+        ReflectUtil.invokeSettersIncludeEntity(paramList,expData);
         entityInfo.addEntity(expData);
         update();
     }
@@ -179,7 +179,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
      */
     private void updatePersonalExpData(){
         ExpData expData = new ExpData();
-        ReflectUtil.invokeSetters(paramList,expData);
+        ReflectUtil.invokeSettersIncludeEntity(paramList,expData);
         entityInfo.addEntity(expData);
         update();
     }
@@ -195,8 +195,9 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         }
 
         for(Map<String,Object> map:data){
+            map.put("userEmail",session.getAttribute("userEmail"));
             ExpData expData = new ExpData();
-            ReflectUtil.invokeSetters(paramList,expData);
+            ReflectUtil.invokeSettersIncludeEntity(map,expData);
             entityInfo.addEntity(expData);
         }
 
@@ -215,7 +216,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
 
         for(Map<String,Object> map:data){
             ExpData expData = new ExpData();
-            ReflectUtil.invokeSetters(paramList,expData);
+            ReflectUtil.invokeSettersIncludeEntity(map,expData);
             entityInfo.addEntity(expData);
         }
 
