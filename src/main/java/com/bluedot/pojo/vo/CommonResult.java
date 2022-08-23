@@ -13,12 +13,17 @@ import java.util.Map;
  * @created: 通常结果类
  */
 public class CommonResult {
-
+    public static final String JSON = "application/json";
+    public static final String PNG = "image/png";
+    public static final String EXCEL="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    //响应码
     private int code;
-
+    //响应信息
     private String msg;
-
+    //响应数据
     private Object data;
+    //响应头类型
+    private String respHeadType = JSON;
 
     // 成功封装
     public static CommonResult successResult(String msg, Object data) {
@@ -58,6 +63,14 @@ public class CommonResult {
         this.code = code;
         this.msg = msg;
         this.data = data;
+    }
+
+    public String getRespHeadType() {
+        return respHeadType;
+    }
+
+    public void setRespHeadType(String respHeadType) {
+        this.respHeadType = respHeadType;
     }
 
     @Override
