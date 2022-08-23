@@ -9,6 +9,7 @@ import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Application;
 import com.bluedot.pojo.entity.Report;
 import com.bluedot.utils.ReflectUtil;
+import org.apache.commons.fileupload.FileItem;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class ExperimentalReportService extends BaseService<Report>{
 
         switch (operation){
             case "insert":
-                methodName = "saveReport";
+                methodName = "createReport";
                 break;
             case "delete":
                 methodName = "deleteReport";
@@ -45,29 +46,25 @@ public class ExperimentalReportService extends BaseService<Report>{
                     methodName = "getReportInfo";
                 }
                 break;
-            case "download":
-                methodName = "downloadReport";
-                break;
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
     }
 
-    private boolean isPersonal() {
-        String userEmail = (String) session.getAttribute("userEmail");
-        String requestUserEmail = (String) paramList.get("userEmail");
-        return userEmail.equals(requestUserEmail);
-    }
-
     /**
      * 保存实验报告
      */
-    private void saveReport(){
+    private void createReport(){
+        // 将数据填充到实体类中
+        Report report = new Report();
+        ReflectUtil.invokeSetters(paramList,report);
 
+        entityInfo.addEntity(report);
+        insert();
     }
 
     /**
-     * 管理员删除实验报告
+     * 删除实验报告
      */
     private void deleteReport(){
         if (paramList.get("reportId") instanceof List){
@@ -89,7 +86,7 @@ public class ExperimentalReportService extends BaseService<Report>{
     }
 
     /**
-     * 管理员修改实验报告
+     * 修改实验报告基本数据
      */
     private void updateReport(){
         Report report = new Report();
@@ -139,13 +136,6 @@ public class ExperimentalReportService extends BaseService<Report>{
 
         entityInfo.setCondition(condition);
         select();
-    }
-
-    /**
-     * 下载实验报告
-     */
-    private void downloadReport(){
-
     }
 
 }
