@@ -1,5 +1,7 @@
 package com.bluedot.utils;
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.UserException;
 import com.sun.mail.util.MailSSLSocketFactory;
 
 import javax.mail.*;
@@ -25,35 +27,19 @@ public class EmailUtil extends Thread{
 
     //接收邮件的用户邮箱
     private String userEmail;
-    //定义整个应用程序所需的环境信息的Session对象
-    private Session session;
-    //发送的邮件
-    private MimeMessage message;
+    //邮件题头
+    private String title;
+    //邮件内容
+    private String content;
 
     /**
      * 构造方法，初始化发送邮件所需数据
      * @param userEmail 被发送邮件的用户邮箱
      */
-    public EmailUtil(String userEmail){
-
-    }
-
-    /**
-     * 给用户调用的发送邮件方法
-     * @param messageType 发送邮件的类型
-     * @return 是否发送成功
-     */
-    public boolean sendEmail(MessageType messageType){
-        return false;
-    }
-
-    /**
-     * 判断邮箱的格式是否正确
-     * @param email 要判断的邮箱
-     * @return 邮箱格式是否正确
-     */
-    public static boolean isLegalEmail(String email){
-        return false;
+    public EmailUtil(String userEmail,String title,String content){
+        this.userEmail = userEmail;
+        this.title = title;
+        this.content = content;
     }
 
     /**
@@ -70,16 +56,18 @@ public class EmailUtil extends Thread{
             //关于qq邮箱，还需要设置SSL加密，加上一下代码即可
             MailSSLSocketFactory mailSSLSocketFactory = new MailSSLSocketFactory();
             mailSSLSocketFactory.setTrustAllHosts(true);
-            
+
             properties.put("mail.smtp.ssl.enable","true");
             properties.put("mail.smtp.ssl.socketFactory",mailSSLSocketFactory);
 
             //1.创建定义整个应用程序所需的环境信息的Session对象
-            session = Session.getDefaultInstance(properties,new Authenticator() {
+            //发件人的邮箱用户名和授权码
+            //定义整个应用程序所需的环境信息的Session对象
+            Session session = Session.getDefaultInstance(properties, new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     //发件人的邮箱用户名和授权码
-                    return new PasswordAuthentication(from,password);
+                    return new PasswordAuthentication(from, password);
                 }
             });
 
@@ -92,38 +80,27 @@ public class EmailUtil extends Thread{
             //3.使用邮箱的用户名和授权码连上邮件服务器
             transport.connect(host,username,password);
 
-            //创建邮件
-            message = new MimeMessage(session);
+            //4.创建邮件
+            MimeMessage mimeMessage = new MimeMessage(session);
             //发件人
-            message.setFrom(new InternetAddress(from));
+            mimeMessage.setFrom(new InternetAddress(from));
             //收件人
-            message.setRecipient(Message.RecipientType.TO,new InternetAddress(userEmail));
+            mimeMessage.setRecipient(Message.RecipientType.TO,new InternetAddress(userEmail));
+
+            //编辑邮件
+            //邮箱的标题
+            mimeMessage.setSubject(title);
+            mimeMessage.setContent(content,"text/html;charset=UTF-8");
+            mimeMessage.saveChanges();
 
             //发送邮件
-            transport.sendMessage(message,message.getAllRecipients());
+            transport.sendMessage(mimeMessage,mimeMessage.getAllRecipients());
             transport.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * 创建一个注册邮件
-     */
-    public void createSignInMessage(){
-        try {
-            //邮件的标题
-            message.setSubject(userEmail+"的Determinantor注册邮箱");
-
-            //编辑邮件内容
-            String authCode = makeCode(6);
-            String info = "欢迎加入行列使，我们收到您的注册请求。<br><h2 style='color:green'>"+authCode+"</h2>是你的验证码，请勿告诉他人，验证码仅在60秒内生效。<br>如非本人操作申请请忽略。";
-            message.setContent(info,"text/html;charset=UTF-8");
-            message.saveChanges();
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * 生成指定长度的随机字母数字字符串
@@ -142,28 +119,11 @@ public class EmailUtil extends Thread{
     }
 
     /**
-     * 发送邮件的类型
+     * 判断邮箱的格式是否正确
+     * @param email 要判断的邮箱
+     * @return 邮箱格式是否正确
      */
-    public enum MessageType{
-        /**
-         * 注册验证码邮箱
-         */
-        SIGN_IN,
-        /**
-         * 找回密码验证码邮箱
-         */
-        FIND_PASSWORD,
-        /**
-         * 算法审核通过邮件
-         */
-        ALGORITHM_PASS,
-        /**
-         * 解封申请通过邮件
-         */
-        UNFREEZE_SUCCESS,
-        /**
-         * 解封申请未通过邮件
-         */
-        UNFREEZE_DEFEAT
+    public static boolean isLegalEmail(String email){
+        return false;
     }
 }
