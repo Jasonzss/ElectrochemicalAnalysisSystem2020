@@ -33,4 +33,13 @@ public class BufferSolution {
     public void setBufferSolutionDesc(String bufferSolutionDesc) {
         this.bufferSolutionDesc = bufferSolutionDesc;
     }
+
+    @Override
+    public String toString() {
+        return "BufferSolution{" +
+                "bufferSolutionId=" + bufferSolutionId +
+                ", bufferSolutionName='" + bufferSolutionName + '\'' +
+                ", bufferSolutionDesc='" + bufferSolutionDesc + '\'' +
+                '}';
+    }
 }

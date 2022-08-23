@@ -20,6 +20,10 @@ public class Algorithm {
     private Date algorithmUpdateTime;
     private Integer algorithmStatus;
 
+    public Algorithm() {
+        user = new User();
+    }
+
     public Integer getAlgorithmId() {
         return algorithmId;
     }
@@ -98,5 +102,21 @@ public class Algorithm {
 
     public void setAlgorithmStatus(Integer algorithmStatus) {
         this.algorithmStatus = algorithmStatus;
+    }
+
+    @Override
+    public String toString() {
+        return "Algorithm{" +
+                "algorithmId=" + algorithmId +
+                ", algorithmName='" + algorithmName + '\'' +
+                ", algorithmType=" + algorithmType +
+                ", algorithmLanguage=" + algorithmLanguage +
+                ", user=" + user +
+                ", algorithmFileName='" + algorithmFileName + '\'' +
+                ", algorithmDesc='" + algorithmDesc + '\'' +
+                ", algorithmCreateTime=" + algorithmCreateTime +
+                ", algorithmUpdateTime=" + algorithmUpdateTime +
+                ", algorithmStatus=" + algorithmStatus +
+                '}';
     }
 }

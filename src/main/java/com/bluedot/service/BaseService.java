@@ -35,10 +35,12 @@ public abstract class BaseService<T> {
         ServiceControllerQueue.getInstance().put(data.getKey(), commonResult);
     }
 
-    public BaseService(HttpSession session,String operation,Map<String,Object> map,CommonResult commonResult){
+    public BaseService(HttpSession session,Map<String,Object> map,String operation,CommonResult commonResult){
+        paramList = map;
         this.session = session;
         this.operation = operation;
-        this.paramList = map;
+        entityInfo = new EntityInfo<>();
+
         doService();
         commonResult = this.commonResult;
     }

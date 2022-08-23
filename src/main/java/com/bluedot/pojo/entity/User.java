@@ -1,5 +1,7 @@
 package com.bluedot.pojo.entity;
 
+import java.util.Arrays;
+
 /**
  * @Author Jason
  * @CreationDate 2022/07/26 - 11:13
@@ -86,5 +88,20 @@ public class User {
 
     public void setUserImg(Byte[] userImg) {
         this.userImg = userImg;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userEmail='" + userEmail + '\'' +
+                ", userPassword='" + userPassword + '\'' +
+                ", userSalt='" + userSalt + '\'' +
+                ", userStatus=" + userStatus +
+                ", userName='" + userName + '\'' +
+                ", userSex=" + userSex +
+                ", userAge=" + userAge +
+                ", userTel=" + userTel +
+                ", userImg=" + Arrays.toString(userImg) +
+                '}';
     }
 }

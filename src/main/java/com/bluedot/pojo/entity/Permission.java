@@ -42,4 +42,14 @@ public class Permission {
     public void setUrl(String url) {
         this.url = url;
     }
+
+    @Override
+    public String toString() {
+        return "Permission{" +
+                "permissionId=" + permissionId +
+                ", permissionName='" + permissionName + '\'' +
+                ", serviceName='" + serviceName + '\'' +
+                ", url='" + url + '\'' +
+                '}';
+    }
 }
