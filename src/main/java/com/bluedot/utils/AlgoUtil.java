@@ -56,7 +56,7 @@ public class AlgoUtil {
      * @return
      * 平滑处理算法的返回值为Double[]类型。
      */
-    public static Double[] smooth(Algorithm algo, Double[] data) {
+    public static Double[] dataProcess(Algorithm algo, Double[] data) {
         if (algo == null || data == null) {
             //参数不能为空
             throw new UserException(E4001);
