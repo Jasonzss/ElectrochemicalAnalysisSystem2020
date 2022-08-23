@@ -20,6 +20,39 @@ import java.util.List;
 public class MapperTest {
 
     @Test
+    public void testPermission() throws SQLException, IOException, ClassNotFoundException {
+        //模拟根据条件生成select语句
+        Condition condition = new Condition();
+        //查询涉及表
+        List<String>  views = new ArrayList<>();
+        views.add("`role_permission`");
+        views.add("user_role");
+        views.add("`permission`");
+        //连接表条件
+        List<String> viewCondition=new ArrayList<>();
+        viewCondition.add("role_id");
+        viewCondition.add("permission_id");
+        //查询结果字段
+        List<String> fields = new ArrayList<>();
+        fields.add("role_permission.role_id");
+        fields.add("permission.permission_name");
+        //以and为连接符的查询条件
+        List<Term> andCondition=new ArrayList<>();
+        andCondition.add(new Term("user_role","user_email","2418972236@qq.com", TermType.EQUAL));
+        condition.setViews(views);
+        condition.setFields(fields);
+        condition.setAndCondition(andCondition);
+        condition.setViewCondition(viewCondition);
+
+        new MapperInit("database.properties");
+        EntityInfo<Object> entityInfo = new EntityInfo<>();
+        condition.setReturnType("RolePermission");
+        entityInfo.setCondition(condition);
+        entityInfo.setOperation("select");
+        BaseMapper baseMapper=new BaseMapper(entityInfo);
+    }
+
+    @Test
     public void testUpdate() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
 
@@ -47,22 +80,22 @@ public class MapperTest {
         userEntityInfo.setOperation("insert");
 
         ExpData expData = new ExpData();
-        expData.setExpDataId(1);
-        expData.setExpDataDesc("kkkkk");
+        expData.setExpDataId(6);
+        expData.setExpDataDesc("看看看看");
         expData.setUser(user);
 
         ExpData expData1 = new ExpData();
-        expData1.setExpDataId(2);
-        expData1.setExpDataDesc("kkkkkkkk");
+        expData1.setExpDataId(5);
+        expData1.setExpDataDesc("零零零零");
         expData1.setUser(user);
 
         ArrayList<ExpData> expDataArrayList=new ArrayList<>();
         expDataArrayList.add(expData);
-        expDataArrayList.add(expData1);
+//        expDataArrayList.add(expData1);
 
         EntityInfo<ExpData> expDataEntityInfo=new EntityInfo<>();
         expDataEntityInfo.setEntity(expDataArrayList);
-        expDataEntityInfo.setOperation("update");
+        expDataEntityInfo.setOperation("insert");
 
         new BaseMapper(expDataEntityInfo);
     }
@@ -118,6 +151,7 @@ public class MapperTest {
         entityInfo.setOperation("select");
         BaseMapper baseMapper=new BaseMapper(entityInfo);
     }
+
 
     @org.junit.Test
     public void testSelect() throws SQLException, IOException, ClassNotFoundException {

@@ -325,6 +325,40 @@ public class BaseMapper {
                 else {
                     sql.append("update ").append(tableInfo.getTableName()).append(" set ");
                     for (Field field : fields) {
+
+                        field.setAccessible(true);
+                        //是否是外键实体类
+                        boolean flag=true;
+                        for (Class clazz : classList) {
+                            if (field.getType()==clazz){
+                                flag=false;
+                                break;
+                            }
+                        }
+                        if (flag){
+                            try {
+                                Object foreignKeyEntity = field.get(entity);
+                                if (foreignKeyEntity!=null){
+                                    Field[] foreignKeyEntityFileds = foreignKeyEntity.getClass().getDeclaredFields();
+                                    for (Field foreignKeyEntityFiled : foreignKeyEntityFileds) {
+                                        String filedName = foreignKeyEntityFiled.getName();
+                                        foreignKeyEntityFiled.setAccessible(true);
+                                        if (foreignKeyEntityFiled.get(foreignKeyEntity)!=null) {
+                                            for (ColumnInfo columnInfo : primaryKeys) {
+                                                String columnName=StringUtil.humpToLine(foreignKeyEntityFiled.getName());
+                                                sql.append(columnName).append("=?,");
+                                                params.add(foreignKeyEntityFiled.get(foreignKeyEntity));
+
+                                            }
+                                        }
+                                    }
+                                }
+                                continue;
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
                         String fieldName = field.getName();
                         Object fieldValue = ReflectUtil.invokeGet(entity, fieldName);
                         if (null != fieldValue) {
