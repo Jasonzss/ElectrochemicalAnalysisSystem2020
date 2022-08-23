@@ -11,14 +11,18 @@ import com.bluedot.pojo.entity.User;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.EmailUtil;
 import com.bluedot.utils.ImageUtil;
+import com.bluedot.utils.JwtUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.constants.SessionConstants;
 import org.apache.commons.fileupload.FileItem;
 
+import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author Jason
@@ -31,6 +35,10 @@ public class UserService extends BaseService<User> {
         super(data);
     }
 
+    public UserService(HttpSession session, Map<String, Object> map, String operation, CommonResult commonResult) {
+        super(session, map, operation, commonResult);
+    }
+
     /**
      * 负责在UserService中个根据父类属性分析调用哪些方法来解决请求
      */
@@ -38,24 +46,21 @@ public class UserService extends BaseService<User> {
     protected void doService() {
         String userEmail = (String) session.getAttribute("userEmail");
         List<Map<String,Object>> userList = null;
-        User user = null;
 
         if (paramList.get("user") instanceof List){
             userList = (List<Map<String, Object>>) paramList.get("user");
-        }else {
-            ReflectUtil.invokeSetters(paramList,user);
         }
 
         String methodName;
         switch (operation) {
             case "delete":
-                if (user == null && userList == null){
+                if (paramList.size() == 0 && userList == null){
                     methodName = "logout";
                 } else {
-                    if (user != null) {
-                        methodName = "deletePersonalUser";
-                    } else {
+                    if (userList != null) {
                         methodName = "deleteUser";
+                    } else {
+                        methodName = "deletePersonalUser";
                     }
                 }
                 break;
@@ -68,7 +73,7 @@ public class UserService extends BaseService<User> {
                 break;
             case "select":
                 if (paramList.get("pageNo") == null && paramList.get("pageSize") == null) {
-                    if (paramList.get("password") != null) {
+                    if (paramList.get("userPassword") != null) {
                         methodName = "login";
                     } else {
                         methodName = "getPersonalUser";
@@ -105,12 +110,12 @@ public class UserService extends BaseService<User> {
         if (paramList.containsKey("userImg")){
             FileItem userImg = (FileItem) paramList.get("userImg");
             //将图片转换为二进制数组
-            Byte[][] bytes = ImageUtil.imgToBinary(userImg);
+            Byte[] bytes = ImageUtil.imgToBinary(userImg);
             paramList.put("userImg",bytes);
         }
         
         User user = new User();
-        ReflectUtil.invokeSetters(paramList,user);
+        ReflectUtil.invokeSettersIncludeEntity(paramList,user);
 
         //执行更新逻辑
         entityInfo.addEntity(user);
@@ -121,11 +126,30 @@ public class UserService extends BaseService<User> {
      * 个人权限修改用户信息
      */
     private void updatePersonalUser(){
-        // 先将paramList中的参数取出
 
         // 判断是否有密码
         if (paramList.containsKey("userPassword")){
-            if (!session.getAttribute("passwordAuth").equals(true) && !session.getAttribute("emailAuth").equals(true)) {
+            //判断是邮箱验证码修改密码还是密码验证修改
+            if (session.getAttribute("authCode") != null) {
+                //邮箱验证修改密码
+                //获取验证码
+                String authCode = (String) session.getAttribute(SessionConstants.AUTH_CODE);
+                //移除验证码
+                session.removeAttribute(SessionConstants.AUTH_CODE);
+                //判断验证码是否正确
+                if (!authCode.equalsIgnoreCase((String) paramList.get("authCode"))){
+                    throw new UserException(CommonErrorCode.E_1004);
+                }
+            } else if (paramList.containsKey("oldPassword")){
+                //旧密码验证修改密码
+                //判断旧密码是否正确
+                getPersonalUser();
+                User user = (User) commonResult.getData();
+                String userPassword = user.getUserPassword();
+                if (!userPassword.equals(paramList.get("oldPassword"))){
+                    throw new UserException(CommonErrorCode.E_1004);
+                }
+            } else {
                 throw new UserException(CommonErrorCode.E_1007);
             }
         }
@@ -143,7 +167,7 @@ public class UserService extends BaseService<User> {
 
         // 封装User实体
         User user = new User();
-        ReflectUtil.invokeSetters(paramList, user);
+        ReflectUtil.invokeSettersIncludeEntity(paramList, user);
 
         // 执行修改逻辑
         entityInfo.addEntity(user);
@@ -154,9 +178,11 @@ public class UserService extends BaseService<User> {
      * 注册新用户
      */
     private void insertUser(){
-        String authCode = (String) paramList.get("authCode");
+        String authCode = (String) session.getAttribute(SessionConstants.AUTH_CODE);
+        //移除验证码
+        session.removeAttribute(SessionConstants.AUTH_CODE);
         //判断邮箱验证码是否正确
-        if (authCode.equalsIgnoreCase((String) session.getAttribute(SessionConstants.AUTH_CODE))){
+        if (authCode.equalsIgnoreCase((String) paramList.get("authCode"))){
             //验证码不正确
             throw new UserException(CommonErrorCode.E_1004);
         }
@@ -170,7 +196,7 @@ public class UserService extends BaseService<User> {
         }
 
         //执行插入操作
-        ReflectUtil.invokeSetters(paramList,user);
+        ReflectUtil.invokeSettersIncludeEntity(paramList,user);
         entityInfo.addEntity(user);
         insert();
     }
@@ -214,6 +240,7 @@ public class UserService extends BaseService<User> {
 
         // 封装Condition
         Condition condition = new Condition();
+        condition.setReturnType("UserRole");
         // 判断搜索用户的各项属性
         condition.addAndConditionWithView(new Term("user","userEmail",userEmail,TermType.EQUAL));
 
@@ -299,7 +326,6 @@ public class UserService extends BaseService<User> {
 
         //执行查询逻辑
         entityInfo.setCondition(condition);
-//        entityInfo.setEntityName("Permission");
         select();
 
         //得到查询结果
@@ -315,35 +341,61 @@ public class UserService extends BaseService<User> {
         session.setAttribute(SessionConstants.USER_EMAIL,paramList.get("userEmail"));
 
         //返回token回前端
-        //?
+        Map<String,String> map = new HashMap<>();
+        map.put("userEmail",user.getUserEmail());
+        JwtUtil.generateToken(map);
     }
 
     /**
      * 发送邮箱验证码，包括注册验证码，找回密码验证码
      */
     private void sendAuthEmail(){
+        String userEmail = (String) paramList.get("userEmail");
+        String title;
+        String content;
+        String authCode = EmailUtil.makeCode(6);
+
         getPersonalUser();
         User user = (User) commonResult.getData();
-        EmailUtil emailUtil = new EmailUtil((String) paramList.get("userEmail"));
-
         if(user == null){
             //邮箱未注册,发送注册验证码
-            emailUtil.sendEmail(EmailUtil.MessageType.SIGN_IN);
+            title = userEmail+" 的注册邮件";
+            content = "【蓝点电化学分析系统】 您正在使用邮箱【"+userEmail+"】进行用户注册。<br><h2 style='color:green'>"+authCode+"</h2>是你的验证码，请勿告诉他人，验证码仅在60秒内生效。<br>如非本人操作申请请忽略。";
         }else {
             //邮箱已注册，发送找回密码验证码
-            emailUtil.sendEmail(EmailUtil.MessageType.FIND_PASSWORD);
+            title = user.getUserName()+" 的找回密码邮件";
+            content = "【蓝点电化学分析系统】 您正在找回邮箱用户【"+userEmail+"】的密码。<br><h2 style='color:green'>"+authCode+"</h2>是你的验证码，请勿告诉他人，验证码仅在60秒内生效。<br>如非本人操作申请请忽略。";
         }
 
+        //发送邮件
+        EmailUtil emailUtil = new EmailUtil(userEmail,title,content);
+        emailUtil.start();
+        //将验证码放入session中
+        session.setAttribute(SessionConstants.AUTH_CODE,authCode);
+
+        //设置定时任务60s后删除验证码
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                session.removeAttribute(SessionConstants.AUTH_CODE);
+            }
+        };
+        ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(5,new ThreadPoolExecutor.CallerRunsPolicy());
+        //定时一分钟
+        long delay  = 60 * 1000L;
+        executor.schedule(task, delay, TimeUnit.MILLISECONDS);
+        executor.shutdown();
+
         //返回消息
-        commonResult = CommonResult.successResult("消息已发送，请及时接收",true);
+        commonResult = CommonResult.successResult("验证码已发送，请及时接收",true);
     }
 
     /**
      * 用户账号登出
      */
     private void logout(){
-        //移除session和token
-
+        //移除session
+        session.invalidate();
     }
 
     /**
@@ -353,14 +405,25 @@ public class UserService extends BaseService<User> {
         //创建随机六位由数字字母组成的字符串
         String imgAuthCode = EmailUtil.makeCode(6);
         //创建对应的图片文件
-        BufferedImage authImg = ImageUtil.createAuthImg(imgAuthCode);
+        BufferedImage authImg = ImageUtil.createAuthImage(imgAuthCode);
         //将验证码记录到session中
         session.setAttribute("imgAuthCode",imgAuthCode);
 
         //将图片包装返回前端
         commonResult.setData(authImg);
+        commonResult.setRespHeadType(CommonResult.PNG);
 
         //设置60秒后从session里移除验证码
-
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                session.removeAttribute(SessionConstants.IMG_AUTH_CODE);
+            }
+        };
+        ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(5,new ThreadPoolExecutor.CallerRunsPolicy());
+        //定时一分钟
+        long delay  = 60 * 1000L;
+        executor.schedule(task, delay, TimeUnit.MILLISECONDS);
+        executor.shutdown();
     }
 }
