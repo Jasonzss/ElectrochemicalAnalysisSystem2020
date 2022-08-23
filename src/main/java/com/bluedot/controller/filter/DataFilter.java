@@ -63,7 +63,8 @@ public class DataFilter implements Filter {
         data.setSession(request.getSession());
         //设置请求数据对应的key
         data.setKey(requestId.getAndIncrement());
-        if ("application/json".equals(request.getContentType()) || request.getContentType().indexOf("multipart/form-data") != -1) {
+        String contentType = request.getContentType();
+        if (contentType!=null&&"application/json".equals(contentType) || contentType.indexOf("multipart/form-data") != -1) {
             if ("application/json".equals(request.getContentType())) {
                 try {
                     //获取请求中的json数据
@@ -133,6 +134,9 @@ public class DataFilter implements Filter {
                 log.error(e.getMessage());
                 e.printStackTrace();
             }
+        }else {
+            log.error("请求ContentType错误---请求用户:{}", request.getSession().getAttribute("userEmail") == null ? "游客" : request.getSession().getAttribute("userEmail"));
+            JsonDataRender.renderData(response, CommonResult.errorResult(400, "请求ContentType错误"));
         }
     }
 
