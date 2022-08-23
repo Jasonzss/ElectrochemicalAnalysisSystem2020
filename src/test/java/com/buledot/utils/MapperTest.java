@@ -47,13 +47,13 @@ public class MapperTest {
         userEntityInfo.setOperation("insert");
 
         ExpData expData = new ExpData();
-        expData.setExpDataId(1);
-        expData.setExpDataDesc("方法擦");
+        expData.setExpDataId(6);
+        expData.setExpDataDesc("看看看看");
         expData.setUser(user);
 
         ExpData expData1 = new ExpData();
-        expData1.setExpDataId(2);
-        expData1.setExpDataDesc("kkkkkkkk");
+        expData1.setExpDataId(5);
+        expData1.setExpDataDesc("零零零零");
         expData1.setUser(user);
 
         ArrayList<ExpData> expDataArrayList=new ArrayList<>();
@@ -62,7 +62,7 @@ public class MapperTest {
 
         EntityInfo<ExpData> expDataEntityInfo=new EntityInfo<>();
         expDataEntityInfo.setEntity(expDataArrayList);
-        expDataEntityInfo.setOperation("update");
+        expDataEntityInfo.setOperation("insert");
 
         new BaseMapper(expDataEntityInfo);
     }
