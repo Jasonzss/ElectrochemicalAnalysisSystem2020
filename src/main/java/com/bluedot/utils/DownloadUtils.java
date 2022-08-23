@@ -4,8 +4,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Base64;
 
-
-public class DownLoadUtils {
+/**
+ * @Author SDJin
+ * @CreationDate 2022/08/16 - 11:54
+ * @Description ：
+ */
+public class DownloadUtils {
 
     public static String getFileName(String agent, String filename) throws UnsupportedEncodingException {
         if (agent.contains("MSIE")) {

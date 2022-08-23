@@ -1,7 +1,7 @@
 package com.bluedot.controller.render;
 
 import com.bluedot.pojo.vo.CommonResult;
-import com.bluedot.utils.DownLoadUtils;
+import com.bluedot.utils.DownloadUtils;
 import com.bluedot.utils.LogUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +20,7 @@ public class FileDataRender {
             //根据文件格式设置对应的ContentType
             response.setContentType(commonResult.getRespHeadType());
             HashMap<String, Object> map = (HashMap<String, Object>) commonResult.getData();
-            String name = DownLoadUtils.getFileName(request.getHeader("user-agent"), (String) map.get("fileName"));
+            String name = DownloadUtils.getFileName(request.getHeader("user-agent"), (String) map.get("fileName"));
             //设置下载文件的文件名
             response.setHeader("content-disposition", "attachment;filename=" + name);
             //将文件以字节流输出
