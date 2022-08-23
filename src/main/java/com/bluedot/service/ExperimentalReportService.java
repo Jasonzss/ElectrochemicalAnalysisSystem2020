@@ -40,7 +40,7 @@ public class ExperimentalReportService extends BaseService<Report>{
                 break;
             case "select":
                 if (paramList.get("pageNo") != null || paramList.get("pageSize") != null){
-                    methodName ="listReport";
+                    methodName = "listReport";
                 }else {
                     methodName = "getReportInfo";
                 }
@@ -98,7 +98,6 @@ public class ExperimentalReportService extends BaseService<Report>{
         entityInfo.addEntity(report);
         update();
     }
-
 
     /**
      * 查询实验报告
