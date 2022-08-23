@@ -53,4 +53,15 @@ public class SystemLog {
     public void setSystemLogTime(Date systemLogTime) {
         this.systemLogTime = systemLogTime;
     }
+
+    @Override
+    public String toString() {
+        return "SystemLog{" +
+                "systemLogId=" + systemLogId +
+                ", systemLogType='" + systemLogType + '\'' +
+                ", systemLogLevel='" + systemLogLevel + '\'' +
+                ", systemLogDetails='" + systemLogDetails + '\'' +
+                ", systemLogTime=" + systemLogTime +
+                '}';
+    }
 }

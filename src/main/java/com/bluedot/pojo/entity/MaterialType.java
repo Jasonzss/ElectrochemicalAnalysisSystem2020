@@ -42,4 +42,14 @@ public class MaterialType {
     public void setMaterialDesc(String materialDesc) {
         this.materialDesc = materialDesc;
     }
+
+    @Override
+    public String toString() {
+        return "MaterialType{" +
+                "materialTypeId=" + materialTypeId +
+                ", materialTypeName='" + materialTypeName + '\'' +
+                ", materialNumber=" + materialNumber +
+                ", materialDesc='" + materialDesc + '\'' +
+                '}';
+    }
 }

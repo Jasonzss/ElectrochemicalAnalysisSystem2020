@@ -1,5 +1,6 @@
 package com.bluedot.pojo.entity;
 
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -29,6 +30,12 @@ public class Report {
     private Double maep;
     private Double rpd;
     private String reportDesc;
+
+    public Report() {
+        pretreatmentAlgorithm = new Algorithm();
+        reportDataModel = new Algorithm();
+        user = new User();
+    }
 
     public Integer getReportId() {
         return reportId;
@@ -196,5 +203,32 @@ public class Report {
 
     public void setReportDesc(String reportDesc) {
         this.reportDesc = reportDesc;
+    }
+
+    @Override
+    public String toString() {
+        return "Report{" +
+                "reportId=" + reportId +
+                ", reportTitle='" + reportTitle + '\'' +
+                ", reportMaterialName='" + reportMaterialName + '\'' +
+                ", pretreatmentAlgorithm=" + pretreatmentAlgorithm +
+                ", reportDataModel=" + reportDataModel +
+                ", reportResultModel='" + reportResultModel + '\'' +
+                ", reportTrainingSetGraph=" + Arrays.toString(reportTrainingSetGraph) +
+                ", reportTestSetGraph=" + Arrays.toString(reportTestSetGraph) +
+                ", reportCreateTime=" + reportCreateTime +
+                ", reportLastUpdateTime=" + reportLastUpdateTime +
+                ", user=" + user +
+                ", trainingSetData='" + trainingSetData + '\'' +
+                ", testSetData='" + testSetData + '\'' +
+                ", rc2=" + rc2 +
+                ", rmsec=" + rmsec +
+                ", maec=" + maec +
+                ", rp2=" + rp2 +
+                ", rmsep=" + rmsep +
+                ", maep=" + maep +
+                ", rpd=" + rpd +
+                ", reportDesc='" + reportDesc + '\'' +
+                '}';
     }
 }
