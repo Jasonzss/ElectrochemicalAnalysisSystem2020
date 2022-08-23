@@ -258,10 +258,13 @@ public class UserService extends BaseService<User> {
      * 管理员权限的查询用户
      */
     private void listUsers(){
+        Long pageNo = (Long) paramList.get("pageNo");
+        Integer pageSize = (Integer) paramList.get("pageSize");
+
         // 封装Condition
         Condition condition = new Condition();
-        condition.setStartIndex((Long) paramList.get("startIndex"));
-        condition.setSize((Integer) paramList.get("pageSize"));
+        condition.setStartIndex((pageNo-1)*pageSize);
+        condition.setSize(pageSize);
 
         // 判断搜索用户的各项属性
         if (paramList.size() != 0){
