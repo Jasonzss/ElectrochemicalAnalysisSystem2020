@@ -44,6 +44,14 @@ public class CharacterEncodingFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {;
         HttpServletRequest request= (HttpServletRequest) servletRequest;
         HttpServletResponse response= (HttpServletResponse) servletResponse;
+        //设置请求跨域
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, HEAD, PUT,PATCH, DELETE");
+        response.setHeader("Access-Control-Max-Age", "3600");
+        response.setHeader("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
+//        response.setHeader("Access-Control-Allow-Credentials", "true");
+        log.info("请求设置允许跨域");
+        //设置字符编码
         request.setCharacterEncoding(characterEncoding);
         response.setCharacterEncoding(characterEncoding);
         log.debug("过滤器设置请求编号");
