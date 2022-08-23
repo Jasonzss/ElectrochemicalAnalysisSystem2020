@@ -2,6 +2,7 @@ package com.bluedot.controller;
 
 import com.bluedot.controller.handler.RequestHandler;
 import com.bluedot.controller.handler.impl.MainRequestHandler;
+import com.bluedot.controller.render.FileDataRender;
 import com.bluedot.controller.render.JsonDataRender;
 import com.bluedot.mapper.MapperInit;
 import com.bluedot.mapper.dataSource.impl.MyDataSourceImpl;
@@ -75,7 +76,12 @@ public class DispatcherServlet extends HttpServlet {
         CommonResult commonResult = requestHandler.handlerRequest(req, resp);
         //渲染结果并返回给前端
         log.debug("开始渲染结果数据--请求用户:{}", req.getSession().getAttribute("userEmail") == null ? "游客" : req.getSession().getAttribute("userEmail"));
-        JsonDataRender.renderData(resp, commonResult);
+        //根据CommonResult中的RespHeadType使用对应的数据渲染器
+        if (commonResult.getRespHeadType().equals(CommonResult.JSON)){
+            JsonDataRender.renderData(resp, commonResult);
+        }else {
+            FileDataRender.renderData(resp,req,commonResult);
+        }
     }
 
     @Override
