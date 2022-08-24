@@ -21,7 +21,7 @@ public class EmailUtil extends Thread{
     //邮箱的用户名
     private final String username = "Jason";
     //邮箱的授权码
-    private final String password = "llpxlpcybjnbeaic";
+    private final String password = "sbswcmcukhnlecgg";
     //发送邮件的服务器地址
     private final String host = "smtp.qq.com";
 
