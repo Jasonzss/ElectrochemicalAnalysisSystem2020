@@ -138,7 +138,7 @@ public abstract class BaseService<T> {
         if ("login".equals(operation) || permissionList.contains(methodName)){
             //存在此权限，执行响应方法
             try {
-                Method method = obj.getClass().getMethod(methodName);
+                Method method = obj.getClass().getDeclaredMethod(methodName);
                 method.invoke(obj);
             } catch (NoSuchMethodException e) {
                 System.out.println(1);
