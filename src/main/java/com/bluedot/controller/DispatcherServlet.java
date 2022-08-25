@@ -77,7 +77,7 @@ public class DispatcherServlet extends HttpServlet {
         //渲染结果并返回给前端
         log.debug("开始渲染结果数据--请求用户:{}", req.getSession().getAttribute("userEmail") == null ? "游客" : req.getSession().getAttribute("userEmail"));
         //根据CommonResult中的RespHeadType使用对应的数据渲染器
-        if (commonResult.getRespHeadType().equals(CommonResult.JSON)){
+        if (commonResult.getRespContentType().equals(CommonResult.JSON)){
             JsonDataRender.renderData(resp, commonResult);
         }else {
             FileDataRender.renderData(resp,req,commonResult);
