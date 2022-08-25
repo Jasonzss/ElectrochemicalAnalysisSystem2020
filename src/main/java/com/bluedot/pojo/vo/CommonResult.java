@@ -2,7 +2,6 @@ package com.bluedot.pojo.vo;
 
 import com.bluedot.exception.ErrorCode;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,8 +13,10 @@ import java.util.Map;
  */
 public class CommonResult {
     public static final String JSON = "application/json";
-    public static final String PNG = "image/png";
-    public static final String EXCEL="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    public static final String BUFFERED_IMAGE = "image/png";
+    public static final String INPUT_STREAM_IMAGE = "image/jpg";
+    public static final String EXCEL = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    public static final String FILE = "text/plain";
 
     //响应码
     private int code;
@@ -24,7 +25,7 @@ public class CommonResult {
     //响应数据
     private Object data;
     //响应头类型
-    private String respHeadType = JSON;
+    private String respContentType = JSON;
 
     // 成功封装
     public static CommonResult successResult(String msg, Object data) {
@@ -43,6 +44,13 @@ public class CommonResult {
 
     public void setData(Object data) {
         this.data = data;
+    }
+
+    public void setFileData(String fileName, Object file){
+        Map<String,Object> map = new HashMap<>();
+        map.put("fileName",fileName);
+        map.put("file",file);
+        this.data = map;
     }
 
     public Object getData() {
@@ -66,12 +74,12 @@ public class CommonResult {
         this.data = data;
     }
 
-    public String getRespHeadType() {
-        return respHeadType;
+    public String getRespContentType() {
+        return respContentType;
     }
 
-    public void setRespHeadType(String respHeadType) {
-        this.respHeadType = respHeadType;
+    public void setRespContentType(String respContentType) {
+        this.respContentType = respContentType;
     }
 
     @Override

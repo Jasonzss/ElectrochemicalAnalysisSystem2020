@@ -18,7 +18,7 @@ public class FileDataRender {
     public static void renderData(HttpServletResponse response, HttpServletRequest request, CommonResult commonResult) {
         try {
             //根据文件格式设置对应的ContentType
-            response.setContentType(commonResult.getRespHeadType());
+            response.setContentType(commonResult.getRespContentType());
             HashMap<String, Object> map = (HashMap<String, Object>) commonResult.getData();
             String name = DownloadUtils.getFileName(request.getHeader("user-agent"), (String) map.get("fileName"));
             //设置下载文件的文件名
