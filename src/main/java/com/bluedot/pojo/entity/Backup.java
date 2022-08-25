@@ -44,4 +44,14 @@ public class Backup {
     public void setBackupTime(Date backupTime) {
         this.backupTime = backupTime;
     }
+
+    @Override
+    public String toString() {
+        return "Backup{" +
+                "backupDataId=" + backupDataId +
+                ", backupType=" + backupType +
+                ", backupDataFileName='" + backupDataFileName + '\'' +
+                ", backupTime=" + backupTime +
+                '}';
+    }
 }

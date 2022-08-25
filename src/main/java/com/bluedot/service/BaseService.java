@@ -35,6 +35,16 @@ public abstract class BaseService<T> {
         ServiceControllerQueue.getInstance().put(data.getKey(), commonResult);
     }
 
+    public BaseService(HttpSession session,Map<String,Object> map,String operation,CommonResult commonResult){
+        paramList = map;
+        this.session = session;
+        this.operation = operation;
+        entityInfo = new EntityInfo<>();
+
+        doService();
+        commonResult = this.commonResult;
+    }
+
     private void fillAttribute(Data data){
         paramList = data.getMap();
         session = data.getSession();

@@ -1,6 +1,7 @@
 package com.bluedot.pojo.entity;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 
 /**
  * @Author Jason
@@ -25,6 +26,12 @@ public class ExpData {
     private Timestamp expCreateTime;
     private Timestamp expLastUpdateTime;
     private Integer expDeleteStatus;
+
+    public ExpData() {
+        user = new User();
+        materialType = new MaterialType();
+        bufferSolution = new BufferSolution();
+    }
 
     public Integer getExpDataId() {
         return expDataId;
@@ -160,5 +167,28 @@ public class ExpData {
 
     public void setExpDeleteStatus(Integer expDeleteStatus) {
         this.expDeleteStatus = expDeleteStatus;
+    }
+
+    @Override
+    public String toString() {
+        return "ExpData{" +
+                "expDataId=" + expDataId +
+                ", user=" + user +
+                ", materialType=" + materialType +
+                ", expMaterialName='" + expMaterialName + '\'' +
+                ", expMaterialSolubility=" + expMaterialSolubility +
+                ", expOriginalPointData=" + Arrays.toString(expOriginalPointData) +
+                ", expNewestPointData=" + Arrays.toString(expNewestPointData) +
+                ", expOriginalCurrent=" + expOriginalCurrent +
+                ", expOriginalPotential=" + expOriginalPotential +
+                ", expNewestCurrent=" + expNewestCurrent +
+                ", expNewestPotential=" + expNewestPotential +
+                ", bufferSolution=" + bufferSolution +
+                ", expPh=" + expPh +
+                ", expDataDesc='" + expDataDesc + '\'' +
+                ", expCreateTime=" + expCreateTime +
+                ", expLastUpdateTime=" + expLastUpdateTime +
+                ", expDeleteStatus=" + expDeleteStatus +
+                '}';
     }
 }

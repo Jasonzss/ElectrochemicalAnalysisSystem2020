@@ -16,6 +16,10 @@ public class Application {
     private Integer applicationStatus;
     private String applicationRejectReason;
 
+    public Application() {
+        user = new User();
+    }
+
     public Integer getApplicationId() {
         return applicationId;
     }
@@ -70,5 +74,18 @@ public class Application {
 
     public void setApplicationRejectReason(String applicationRejectReason) {
         this.applicationRejectReason = applicationRejectReason;
+    }
+
+    @Override
+    public String toString() {
+        return "Application{" +
+                "applicationId=" + applicationId +
+                ", user=" + user +
+                ", applicationType=" + applicationType +
+                ", applicationContent='" + applicationContent + '\'' +
+                ", applicationTime=" + applicationTime +
+                ", applicationStatus=" + applicationStatus +
+                ", applicationRejectReason='" + applicationRejectReason + '\'' +
+                '}';
     }
 }

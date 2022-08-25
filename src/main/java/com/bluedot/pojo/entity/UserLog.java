@@ -18,6 +18,10 @@ public class UserLog {
     private String userLogDetail;
     private Date userLogOperateTime;
 
+    public UserLog() {
+        user = new User();
+    }
+
     public Integer getUserLogId() {
         return userLogId;
     }
@@ -88,5 +92,20 @@ public class UserLog {
 
     public void setUserLogOperateTime(Date userLogOperateTime) {
         this.userLogOperateTime = userLogOperateTime;
+    }
+
+    @Override
+    public String toString() {
+        return "UserLog{" +
+                "userLogId=" + userLogId +
+                ", user=" + user +
+                ", userIp='" + userIp + '\'' +
+                ", userLogLevel='" + userLogLevel + '\'' +
+                ", userLogClassMethodName='" + userLogClassMethodName + '\'' +
+                ", userLogParameter='" + userLogParameter + '\'' +
+                ", userLogMethodReturnValue='" + userLogMethodReturnValue + '\'' +
+                ", userLogDetail='" + userLogDetail + '\'' +
+                ", userLogOperateTime=" + userLogOperateTime +
+                '}';
     }
 }
