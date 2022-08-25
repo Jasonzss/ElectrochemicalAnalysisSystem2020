@@ -29,12 +29,23 @@ public abstract class BaseService<T> {
     protected EntityInfo<T> entityInfo;
     protected CommonResult commonResult;
 
+    /**
+     * Service监听器调用具体Service时用的构造方法
+     * @param data Controller层传进来的数据
+     */
     public BaseService(Data data) {
         fillAttribute(data);
         doService();
         ServiceControllerQueue.getInstance().put(data.getKey(), commonResult);
     }
 
+    /**
+     * Service之间互相调用使用到的构造方法
+     * @param session 调用者自身的Session
+     * @param map 调用者自身的paramList
+     * @param operation 调用者调用某个Service时想让他执行的操作
+     * @param commonResult 调用者自身的CommonResult
+     */
     public BaseService(HttpSession session,Map<String,Object> map,String operation,CommonResult commonResult){
         paramList = map;
         this.session = session;
@@ -45,11 +56,16 @@ public abstract class BaseService<T> {
         commonResult = this.commonResult;
     }
 
+    /**
+     * 将data中的数据封装到baseService的属性中
+     * @param data Controller层传进来的数据
+     */
     private void fillAttribute(Data data){
         paramList = data.getMap();
         session = data.getSession();
         operation = data.getOperation();
         entityInfo = new EntityInfo<>();
+        commonResult = new CommonResult();
     }
 
     /**
@@ -81,6 +97,9 @@ public abstract class BaseService<T> {
         commonResult = doMapper();
     }
 
+    /**
+     * 分页查询
+     */
     protected void selectPage(){
         // 查询当前页的对应数据
         entityInfo.setKey(1L);
@@ -116,16 +135,19 @@ public abstract class BaseService<T> {
 
     protected void invokeMethod(String methodName,Object obj){
         List<String> permissionList = (List<String>) session.getAttribute("permissionList");
-        if (permissionList.contains(methodName)){
+        if ("login".equals(operation) || permissionList.contains(methodName)){
             //存在此权限，执行响应方法
             try {
                 Method method = obj.getClass().getMethod(methodName);
                 method.invoke(obj);
             } catch (NoSuchMethodException e) {
+                System.out.println(1);
                 throw new UserException(CommonErrorCode.E_5001);
             } catch (IllegalAccessException e) {
+                System.out.println(2);
                 throw new UserException(CommonErrorCode.E_5001);
             } catch (InvocationTargetException e) {
+                System.out.println(3);
                 throw new UserException(CommonErrorCode.E_5001);
             }
         }else {
