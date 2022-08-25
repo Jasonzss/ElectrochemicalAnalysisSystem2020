@@ -1,11 +1,12 @@
 package com.bluedot.pojo.entity;
 
-import java.util.Date;
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.sql.Timestamp;
 
 /**
  * @Author Jason
- * @CreationDate 2022/07/29 - 0:56
+ * @CreationDate  2022/07/29 - 0:56
  * @Description ：
  */
 public class Algorithm {
@@ -14,10 +15,20 @@ public class Algorithm {
     private Integer algorithmType;
     private Integer algorithmLanguage;
     private User user;
-    private String algorithmFileName;
     private String algorithmDesc;
-    private Date algorithmCreateTime;
-    private Date algorithmUpdateTime;
+
+    /**
+     * 加上注解，让对象在被转化成JSON时（为了传给前段）按规定格式转化（默认会有毫秒）
+     * 还有时区默认是GMT，咱们是东八区。
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Timestamp algorithmCreateTime;
+    /**
+     * 加上注解，让对象在被转化成JSON时（为了传给前段）按规定格式转化（默认会有毫秒）
+     * 还有时区默认是GMT，咱们是东八区。
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Timestamp algorithmUpdateTime;
     private Integer algorithmStatus;
 
     public Algorithm() {
@@ -64,13 +75,6 @@ public class Algorithm {
         this.user = user;
     }
 
-    public String getAlgorithmFileName() {
-        return algorithmFileName;
-    }
-
-    public void setAlgorithmFileName(String algorithmFileName) {
-        this.algorithmFileName = algorithmFileName;
-    }
 
     public String getAlgorithmDesc() {
         return algorithmDesc;
@@ -80,19 +84,19 @@ public class Algorithm {
         this.algorithmDesc = algorithmDesc;
     }
 
-    public Date getAlgorithmCreateTime() {
+    public Timestamp getAlgorithmCreateTime() {
         return algorithmCreateTime;
     }
 
-    public void setAlgorithmCreateTime(Date algorithmCreateTime) {
+    public void setAlgorithmCreateTime(Timestamp algorithmCreateTime) {
         this.algorithmCreateTime = algorithmCreateTime;
     }
 
-    public Date getAlgorithmUpdateTime() {
+    public Timestamp getAlgorithmUpdateTime() {
         return algorithmUpdateTime;
     }
 
-    public void setAlgorithmUpdateTime(Date algorithmUpdateTime) {
+    public void setAlgorithmUpdateTime(Timestamp algorithmUpdateTime) {
         this.algorithmUpdateTime = algorithmUpdateTime;
     }
 
@@ -112,7 +116,6 @@ public class Algorithm {
                 ", algorithmType=" + algorithmType +
                 ", algorithmLanguage=" + algorithmLanguage +
                 ", user=" + user +
-                ", algorithmFileName='" + algorithmFileName + '\'' +
                 ", algorithmDesc='" + algorithmDesc + '\'' +
                 ", algorithmCreateTime=" + algorithmCreateTime +
                 ", algorithmUpdateTime=" + algorithmUpdateTime +
