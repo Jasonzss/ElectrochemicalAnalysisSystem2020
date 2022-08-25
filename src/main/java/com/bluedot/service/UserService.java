@@ -268,7 +268,6 @@ public class UserService extends BaseService<User> {
 
         // 判断搜索用户的各项属性
         if (paramList.size() != 0){
-            List<Term> list = new ArrayList<>();
             if (paramList.containsKey("userName")){
                 condition.addOrConditionWithView(new Term("user","userName",paramList.get("userName"), TermType.LIKE));
             }
@@ -282,7 +281,7 @@ public class UserService extends BaseService<User> {
 
         // 执行修改逻辑
         entityInfo.setCondition(condition);
-        select();
+        selectPage();
     }
 
     /**
@@ -334,9 +333,7 @@ public class UserService extends BaseService<User> {
         //得到查询结果
         List<String> permissionList = new ArrayList<>();
         List<Permission> list = (List<Permission>) commonResult.getData();
-        list.forEach((p) -> {
-            permissionList.add(p.getPermissionName());
-        });
+        list.forEach((p) -> permissionList.add(p.getPermissionName()));
         //将权限名集合放入session中
         session.setAttribute(SessionConstants.PERMISSION_LIST,permissionList);
 
@@ -413,8 +410,8 @@ public class UserService extends BaseService<User> {
         session.setAttribute("imgAuthCode",imgAuthCode);
 
         //将图片包装返回前端
-        commonResult.setData(authImg);
-        commonResult.setRespHeadType(CommonResult.PNG);
+        commonResult.setFileData("authImg.png",authImg);
+        commonResult.setRespContentType(CommonResult.BUFFERED_IMAGE);
 
         //设置60秒后从session里移除验证码
         TimerTask task = new TimerTask() {

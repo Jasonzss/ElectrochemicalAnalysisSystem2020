@@ -2,9 +2,13 @@ package com.bluedot.utils;
 
 import org.apache.commons.fileupload.FileItem;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -206,6 +210,22 @@ public class ImageUtil {
      * @return 图片的二进制数组
      */
     public static Byte[] imgToBinary(FileItem userImg) {
+        try {
+            InputStream is = userImg.getInputStream();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] bytes = new byte[4240000];
+            Byte[] b = new Byte[4240000];
+            int i = 0;
+            while (is.read(bytes) != -1){
+                bos.write(bytes);
+                b[i] = bytes[i];
+                i++;
+            }
+
+            return b;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }
