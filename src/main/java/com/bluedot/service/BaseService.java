@@ -139,6 +139,7 @@ public abstract class BaseService<T> {
             //存在此权限，执行响应方法
             try {
                 Method method = obj.getClass().getDeclaredMethod(methodName);
+                method.setAccessible(true);
                 method.invoke(obj);
             } catch (NoSuchMethodException e) {
                 System.out.println(1);
@@ -162,7 +163,6 @@ public abstract class BaseService<T> {
         //每隔1秒判断MS队列中是否有处理结果
         while (!MapperServiceQueue.getInstance().getKeys().contains(entityInfo.getKey())){
             try {
-                System.out.println("正在睡觉");
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
