@@ -34,21 +34,47 @@ public class ExperimentalReportService extends BaseService<Report>{
                 methodName = "createReport";
                 break;
             case "delete":
-                methodName = "deleteReport";
+                if (isPersonal()){
+                    methodName = "deletePersonalReport";
+                }else {
+                    methodName = "deleteReport";
+                }
                 break;
             case "update":
-                methodName = "updateReport";
+                if (isPersonal()){
+                    methodName = "updatePersonalReport";
+                }else {
+                    methodName = "updateReport";
+                }
                 break;
             case "select":
                 if (paramList.get("pageNo") != null || paramList.get("pageSize") != null){
-                    methodName = "listReport";
+                    if (isPersonal()){
+                        methodName = "listPersonalReport";
+                    }else {
+                        methodName = "listReport";
+                    }
                 }else {
-                    methodName = "getReportInfo";
+                    if (isPersonal()){
+                        methodName = "getPersonalReportInfo";
+                    }else {
+                        methodName = "getReportInfo";
+                    }
                 }
                 break;
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
+    }
+
+    /**
+     * 判断数据是否是当前用户的数据
+     */
+    private boolean isPersonal(){
+        String userEmail = (String) session.getAttribute("userEmail");
+        // 处理的数据拥有者的userEmail
+        String dataUserEmail = (String) paramList.get("userEmail");
+        return userEmail.equals(dataUserEmail);
     }
 
     /**
@@ -64,7 +90,30 @@ public class ExperimentalReportService extends BaseService<Report>{
     }
 
     /**
-     * 删除实验报告
+     * 用户删除实验报告
+     */
+    private void deletePersonalReport(){
+        paramList.put("userEmail",session.getAttribute("userEmail"));
+        if (paramList.get("reportId") instanceof List){
+            // list类型id，则删除多条数据
+            List<Integer> listData = (List<Integer>)paramList.get("reportId");
+            listData.forEach(data -> {
+                Report report = new Report();
+                report.setReportId(data);
+                entityInfo.addEntity(report);
+            });
+        }else if (paramList.get("reportId") instanceof Integer){
+            // int类型id，则删除一个
+            Integer intData = (Integer) paramList.get("reportId");
+            Report report = new Report();
+            report.setReportId(intData);
+            entityInfo.addEntity(report);
+        }
+        delete();
+    }
+
+    /**
+     * 管理员删除实验报告
      */
     private void deleteReport(){
         if (paramList.get("reportId") instanceof List){
@@ -86,6 +135,17 @@ public class ExperimentalReportService extends BaseService<Report>{
     }
 
     /**
+     * 用户修改实验报告基本数据
+     */
+    private void updatePersonalReport(){
+        Report report = new Report();
+        ReflectUtil.invokeSetters(paramList,report);
+
+        entityInfo.addEntity(report);
+        update();
+    }
+
+    /**
      * 修改实验报告基本数据
      */
     private void updateReport(){
@@ -97,7 +157,38 @@ public class ExperimentalReportService extends BaseService<Report>{
     }
 
     /**
-     * 查询实验报告
+     * 用户查询实验报告
+     */
+    private void listPersonalReport(){
+        Condition condition = new Condition();
+
+        // 分页
+        if (paramList.containsKey("pageSize") && paramList.get("pageSize") != null){
+            condition.setSize((Integer) paramList.get("pageSize"));
+        }
+        if (paramList.containsKey("pageNo") && paramList.get("pageNo") != null){
+            condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
+        }
+
+        // 筛选条件:标题/物质名称
+        if (paramList.get("reportTitle") != null){
+            condition.addAndConditionWithView(new Term("report","report_title",paramList.get("reportTitle"),TermType.EQUAL));
+        }
+        if (paramList.get("reportMaterialName") != null){
+            condition.addAndConditionWithView(new Term("report","report_material_name",paramList.get("reportMaterialName"),TermType.EQUAL));
+        }
+
+        // 用户查询
+        if (paramList.containsKey("userEmail")){
+            condition.addAndConditionWithView(new Term("report","user_email",paramList.get("userEmail"),TermType.EQUAL));
+        }
+
+        entityInfo.setCondition(condition);
+        select();
+    }
+
+    /**
+     * 管理员查询实验报告
      */
     private void listReport(){
         Condition condition = new Condition();
@@ -111,17 +202,29 @@ public class ExperimentalReportService extends BaseService<Report>{
         }
 
         // 筛选条件:标题/物质名称
-        if (paramList.containsKey("reportTitle") && paramList.get("reportTitle") != null){
+        if (paramList.get("reportTitle") != null){
             condition.addAndConditionWithView(new Term("report","report_title",paramList.get("reportTitle"),TermType.EQUAL));
         }
-        if (paramList.containsKey("reportMaterialName") && paramList.get("reportMaterialName") != null){
+        if (paramList.get("reportMaterialName") != null){
             condition.addAndConditionWithView(new Term("report","report_material_name",paramList.get("reportMaterialName"),TermType.EQUAL));
         }
 
-        // 用户查询/管理员查询
-        if (paramList.containsKey("userEmail") && paramList.get("userEmail") != null){
+        // 用户筛选
+        if (paramList.get("userEmail") != null){
             condition.addAndConditionWithView(new Term("report","user_email",paramList.get("userEmail"),TermType.EQUAL));
         }
+
+        entityInfo.setCondition(condition);
+        select();
+    }
+
+
+    /**
+     * 查询实验报告详情信息
+     */
+    private void getPersonalReportInfo(){
+        Condition condition = new Condition();
+        condition.addAndConditionWithView(new Term("report","report_id",paramList.get("reportId"), TermType.EQUAL));
 
         entityInfo.setCondition(condition);
         select();

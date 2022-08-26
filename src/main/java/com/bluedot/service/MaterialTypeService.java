@@ -36,8 +36,8 @@ public class MaterialTypeService extends BaseService<MaterialType> {
     @Override
     protected void doService() {
 
-        String methodName = null;
-        switch (operation){
+        String methodName;
+        switch (operation) {
             case "insert":
                 methodName = "insertMaterialType";
                 break;
@@ -53,7 +53,6 @@ public class MaterialTypeService extends BaseService<MaterialType> {
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
-
     }
 
     /**

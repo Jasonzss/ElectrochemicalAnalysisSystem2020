@@ -34,7 +34,8 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
 
     @Override
     protected void doService() {
-        String methodName = null;
+
+        String methodName;
         switch (operation){
             case "insert":
                 methodName = "insertBufferSolution";

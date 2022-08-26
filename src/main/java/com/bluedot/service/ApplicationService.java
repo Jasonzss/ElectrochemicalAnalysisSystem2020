@@ -21,6 +21,7 @@ import java.util.*;
  * @date 2022/8/21 21:06
  * @created: 申请业务
  */
+@SuppressWarnings("unchecked")
 public class ApplicationService extends BaseService<Application>{
     public ApplicationService(Data data) {
         super(data);
@@ -36,7 +37,6 @@ public class ApplicationService extends BaseService<Application>{
                 methodName = "addApplication";
                 break;
             case "delete":
-                //
                 methodName = "deleteApplication";
                 break;
             case "update":
@@ -47,7 +47,11 @@ public class ApplicationService extends BaseService<Application>{
                 }
                 break;
             case "select":
-                methodName = "listApplication";
+                if (isPersonal()){
+                    methodName = "listPersonalApplication";
+                }else {
+                    methodName = "listApplication";
+                }
                 break;
             default:
                 throw new UserException(CommonErrorCode.E_5001);
@@ -83,7 +87,6 @@ public class ApplicationService extends BaseService<Application>{
     /**
      * 用户发送申请
      */
-    @SuppressWarnings("unchecked")
     private void addApplication(){
         //申请内容是map数据，则转json
         if (paramList.get("applicationContent")!=null && paramList.get("applicationContent") instanceof Map){
@@ -103,7 +106,6 @@ public class ApplicationService extends BaseService<Application>{
     /**
      * 管理员删除申请
      */
-    @SuppressWarnings("unchecked")
     private void deleteApplication(){
         if (paramList.get("applicationId") instanceof List){
             // 如果删除的参数是list类型的，则删除多个
@@ -126,7 +128,6 @@ public class ApplicationService extends BaseService<Application>{
     /**
      * 用户修改申请内容信息
      */
-    @SuppressWarnings("unchecked")
     private void updatePersonalApplication(){
         //申请内容是map数据，则转json
         if (paramList.get("applicationContent") != null || paramList.get("applicationContent") instanceof Map){
@@ -145,7 +146,7 @@ public class ApplicationService extends BaseService<Application>{
     /**
      * 管理员审核申请
      */
-    @SuppressWarnings("unchecked,rawtypes")
+    @SuppressWarnings("rawtypes")
     private void updateApplication(){
         Application application = new Application();
         ReflectUtil.invokeSetters(paramList,application);
@@ -198,6 +199,45 @@ public class ApplicationService extends BaseService<Application>{
         update();
     }
 
+
+    /**
+     * 用户查询申请
+     */
+    private void listPersonalApplication(){
+        Condition condition = new Condition();
+
+        // 分页查询
+        if (paramList.containsKey("pageSize")){
+            condition.setSize((Integer) paramList.get("pageSize"));
+        }
+        if (paramList.containsKey("pageNo")){
+            condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
+        }
+
+        // 查询申请的类型
+        if (paramList.get("applicationTyoe") != null){
+            condition.addAndConditionWithView(new Term("application","application_type",paramList.get("applicationType"),TermType.EQUAL));
+        }
+
+        // 用户查找
+        if (paramList.containsKey("userEmail")){
+            condition.addAndConditionWithView(new Term("application","user_email",paramList.get("userEmail"),TermType.EQUAL));
+        }
+
+        // 可能添加的筛选条件:开始时间/截止时间/申请状态
+        if (paramList.get("beginTime") != null){
+            condition.addAndConditionWithView(new Term("application","application_time",paramList.get("beginTime"),TermType.GREATER));
+        }
+        if (paramList.get("endTime") != null){
+            condition.addAndConditionWithView(new Term("application","application_time",paramList.get("endTime"),TermType.Less));
+        }
+        if (paramList.get("applicationStatus") != null){
+            condition.addAndConditionWithView(new Term("application","application_status",paramList.get("applicationStatus"),TermType.EQUAL));
+        }
+
+        entityInfo.setCondition(condition);
+    }
+
     /**
      * 查询申请数据
      */
@@ -213,12 +253,12 @@ public class ApplicationService extends BaseService<Application>{
         }
 
         // 查询申请的类型
-        if (paramList.containsKey("applicationType") || paramList.get("applicationTyoe") != null){
+        if (paramList.get("applicationTyoe") != null){
             condition.addAndConditionWithView(new Term("application","application_type",paramList.get("applicationType"),TermType.EQUAL));
         }
 
-        // 用户查找/管理员查找
-        if (paramList.containsKey("userEmail")){
+        // 查找某个用户的
+        if (paramList.get("userEmail") != null){
             condition.addAndConditionWithView(new Term("application","user_email",paramList.get("userEmail"),TermType.EQUAL));
         }
 
@@ -229,7 +269,7 @@ public class ApplicationService extends BaseService<Application>{
         if (paramList.get("endTime") != null){
             condition.addAndConditionWithView(new Term("application","application_time",paramList.get("endTime"),TermType.Less));
         }
-        if (paramList.containsKey("applicationStatus") || paramList.get("applicationStatus") != null){
+        if (paramList.get("applicationStatus") != null){
             condition.addAndConditionWithView(new Term("application","application_status",paramList.get("applicationStatus"),TermType.EQUAL));
         }
 
