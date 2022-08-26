@@ -251,7 +251,7 @@ public class AlgoUtil {
             fos.write(packageBytes);
             //再将原始文件内容写入到temp
             //存放每次读取的内容
-            byte[] bytes = new byte[fis.available()];
+            byte[] bytes = new byte[2048];
             while (fis.read(bytes) != -1) {
                 fos.write(bytes);
             }

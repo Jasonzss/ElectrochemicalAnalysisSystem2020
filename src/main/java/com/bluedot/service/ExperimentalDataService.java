@@ -7,8 +7,10 @@ import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.ExpData;
+import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.ReflectUtil;
 
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,10 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         super(data);
     }
 
+    public ExperimentalDataService(HttpSession session, Map<String, Object> map, String operation, CommonResult commonResult) {
+        super(session, map, operation, commonResult);
+    }
+
     /**
      * 负责在ExperimentalService中个根据父类属性分析调用哪些方法来解决请求
      */
@@ -35,13 +41,16 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         //判断操作的实验数据是个人管理还是管理员管理
         boolean isPersonal = true;
         if (paramList.get("expData") instanceof List){
+            //操作多条数据，将多条数据取出
             expDataList = (List<Map<String, Object>>) paramList.get("expData");
+            //判断每条数据是个人的还是他人的
             for (Map<String,Object> map:expDataList) {
                 if (map.get("userEmail").equals(userEmail)){
                     isPersonal = false;
                 }
             }
         }
+
         if (paramList.containsKey("userEmail")){
             if (!paramList.get("userEmail").equals(userEmail)){
                 isPersonal = false;
