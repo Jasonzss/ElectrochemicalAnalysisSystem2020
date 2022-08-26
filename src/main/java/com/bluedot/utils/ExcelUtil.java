@@ -242,7 +242,9 @@ public class ExcelUtil {
     }
 
 
-    // 初始化模板数据
+    /**
+     * 初始化excel模板数据
+     */
     private static void initTemplate(){
         // 基本信息
         List<Object> firstColTitle = new ArrayList<>();
@@ -275,7 +277,6 @@ public class ExcelUtil {
         thirdColTitle.add("原始电位");
         thirdColTitle.add("原始电流");
         thirdColTitle.add("最新电位");
-//        thirdColTitle.add("电位");
         thirdColTitle.add("最新电流");
 
         title.add(new Pair<>(POINT_INFO,thirdColTitle));
@@ -399,10 +400,11 @@ public class ExcelUtil {
      */
     private static Pair<Double[], Double[]> resolvePointData(Double[][] pointData){
         int length = pointData.length;
+        int size = pointData[0].length;
         Double[] potential = new Double[length];
         Double[] current = new Double[length];
         for (int i = 0; i < length; i++) {
-            for (int j = 0; j < 2; j++) {
+            for (int j = 0; j < size; j++) {
                 potential[i] = pointData[i][0];
                 current[i] = pointData[i][1];
             }
