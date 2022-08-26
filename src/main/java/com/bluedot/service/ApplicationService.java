@@ -173,11 +173,11 @@ public class ApplicationService extends BaseService<Application>{
                     HashMap<String, Object> userDataMap = new HashMap<>();
                     userDataMap.put("userEmail",paramList.get("userEmail"));
                     userDataMap.put("userStatus",1);
-                    new UserService(session,"insert",userDataMap,commonResult);
+                    new UserService(session,userDataMap,"insert",commonResult);
                     break;
                 case 1:
                     Map materialTypeMap= objectMapper.convertValue(applicationContent,Map.class);
-                    new MaterialTypeService(session,"insert",materialTypeMap,commonResult);
+                    new MaterialTypeService(session,materialTypeMap,"insert",commonResult);
                     break;
                 case 2:
                     Map algorithmMap = objectMapper.convertValue(applicationContent,Map.class);
@@ -186,7 +186,7 @@ public class ApplicationService extends BaseService<Application>{
                     break;
                 case 3:
                     Map bufferSolutionMap = objectMapper.convertValue(applicationContent,Map.class);
-                    new BufferSolutionService(session,"insert",bufferSolutionMap,commonResult);
+                    new BufferSolutionService(session,bufferSolutionMap,"insert",commonResult);
                     break;
                 default:
                     throw new UserException(CommonErrorCode.E_6001);

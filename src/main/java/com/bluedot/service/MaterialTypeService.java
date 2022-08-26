@@ -29,8 +29,8 @@ public class MaterialTypeService extends BaseService<MaterialType> {
         super(data);
     }
 
-    public MaterialTypeService(HttpSession session, String operation, Map<String, Object> map, CommonResult commonResult) {
-        super(session, operation, map, commonResult);
+    public MaterialTypeService(HttpSession session, Map<String, Object> map, String operation, CommonResult commonResult) {
+        super(session, map, operation, commonResult);
     }
 
     @Override

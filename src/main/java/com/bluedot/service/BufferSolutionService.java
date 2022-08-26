@@ -28,8 +28,8 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
         super(data);
     }
 
-    public BufferSolutionService(HttpSession session, String operation, Map<String, Object> map, CommonResult commonResult) {
-        super(session, operation, map, commonResult);
+    public BufferSolutionService(HttpSession session, Map<String, Object> map, String operation, CommonResult commonResult) {
+        super(session, map, operation, commonResult);
     }
 
     @Override
