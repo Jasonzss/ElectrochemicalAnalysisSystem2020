@@ -9,7 +9,7 @@ package com.buledot.exception;
  */
 public class MyLogTest {
 
-    @org.junit.Test
+//    @org.junit.Test
     public void test(){
         // 抛出自定义异常示范
 //        throw new UserException(CommonErrorCode.E_3001);
