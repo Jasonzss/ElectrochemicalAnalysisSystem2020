@@ -1,6 +1,7 @@
 package com.bluedot.service;
 
 import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.ErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
@@ -35,25 +36,45 @@ public abstract class BaseService<T> {
      */
     public BaseService(Data data) {
         fillAttribute(data);
-        doService();
+        if (check()){
+            //检查通过
+            doService();
+        }else {
+            //检查未通过
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_5002);
+        }
+
         ServiceControllerQueue.getInstance().put(data.getKey(), commonResult);
     }
 
     /**
-     * Service之间互相调用使用到的构造方法
-     * @param session 调用者自身的Session
-     * @param map 调用者自身的paramList
-     * @param operation 调用者调用某个Service时想让他执行的操作
-     * @param commonResult 调用者自身的CommonResult
+     * 各Service之间互相调用时的构造方法
+     * @param session 调用者的Session
+     * @param entityInfo 调用者的entityInfo
      */
-    public BaseService(HttpSession session,Map<String,Object> map,String operation,CommonResult commonResult){
-        paramList = map;
+    protected BaseService(HttpSession session, EntityInfo<?> entityInfo){
         this.session = session;
-        this.operation = operation;
-        entityInfo = new EntityInfo<>();
+        this.entityInfo = new EntityInfo<>();
+        this.entityInfo.setKey(entityInfo.getKey());
+    }
 
-        doService();
-        commonResult = this.commonResult;
+    /**
+     *
+     * @param map
+     * @param operation
+     * @return
+     */
+    protected CommonResult doOtherService(Map<String,Object> map, String operation){
+        this.paramList = map;
+        this.operation = operation;
+        if (check()){
+            //检查通过
+            doService();
+        }else {
+            //检查未通过
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_5002);
+        }
+        return commonResult;
     }
 
     /**
@@ -66,6 +87,7 @@ public abstract class BaseService<T> {
         operation = data.getOperation();
         entityInfo = new EntityInfo<>();
         commonResult = new CommonResult();
+        entityInfo.setKey(data.getKey());
     }
 
     /**
@@ -73,26 +95,27 @@ public abstract class BaseService<T> {
      */
     abstract protected void doService();
 
+    /**
+     * 负责对传进来的paramList数据进行检查
+     */
+    abstract protected boolean check();
+
     protected void update(){
-        entityInfo.setKey(1L);
         entityInfo.setOperation("update");
         commonResult = doMapper();
     }
 
     protected void delete(){
-        entityInfo.setKey(1L);
         entityInfo.setOperation("delete");
         commonResult = doMapper();
     }
 
     protected void insert(){
-        entityInfo.setKey(1L);
         entityInfo.setOperation("insert");
         commonResult = doMapper();
     }
 
     protected void select(){
-        entityInfo.setKey(1L);
         entityInfo.setOperation("select");
         commonResult = doMapper();
     }
@@ -102,7 +125,6 @@ public abstract class BaseService<T> {
      */
     protected void selectPage(){
         // 查询当前页的对应数据
-        entityInfo.setKey(1L);
         entityInfo.setOperation("select");
         doMapper();
 
@@ -125,7 +147,6 @@ public abstract class BaseService<T> {
         condition.addFields("count(*)");
         condition.addView(entityInfo.getCondition().getViews().get(0));
 
-        entityInfo.setKey(1L);
         entityInfo.setCondition(condition);
         entityInfo.setOperation("select");
         CommonResult commonResult = doMapper();
@@ -137,19 +158,29 @@ public abstract class BaseService<T> {
         List<String> permissionList = (List<String>) session.getAttribute("permissionList");
         if ("login".equals(operation) || permissionList.contains(methodName)){
             //存在此权限，执行响应方法
+
+            Method method = null;
             try {
-                Method method = obj.getClass().getDeclaredMethod(methodName);
-                method.setAccessible(true);
-                method.invoke(obj);
+                method = obj.getClass().getDeclaredMethod(methodName);
             } catch (NoSuchMethodException e) {
-                System.out.println(1);
-                throw new UserException(CommonErrorCode.E_5001);
+                e.printStackTrace();
+            }
+            method.setAccessible(true);
+            try {
+                method.invoke(obj);
             } catch (IllegalAccessException e) {
-                System.out.println(2);
-                throw new UserException(CommonErrorCode.E_5001);
+                e.printStackTrace();
             } catch (InvocationTargetException e) {
-                System.out.println(3);
-                throw new UserException(CommonErrorCode.E_5001);
+                //处理抛出的UserException
+                if (e.getTargetException() instanceof UserException){
+                    //如果抛出的异常是UserException，则在此处理
+                    UserException userException = (UserException) e.getTargetException();
+                    ErrorCode errorCode = userException.getErrorCode();
+                    commonResult = CommonResult.commonErrorCode(errorCode);
+                }else {
+                    //其他异常处理
+                    commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
+                }
             }
         }else {
             // 没有权限，则设置枚举异常结果
