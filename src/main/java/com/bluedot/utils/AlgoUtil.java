@@ -174,7 +174,7 @@ public class AlgoUtil {
 
         //算法文件所在位置
         String algoFilePath =
-                algoParentPath + "/" + algo.getAlgorithmFileName() + "." + ALGOTXTSUFFIX;
+                algoParentPath + "/" + algo.getAlgorithmName() + "." + ALGOTXTSUFFIX;
 
         //返回的结果
         Object ret;
