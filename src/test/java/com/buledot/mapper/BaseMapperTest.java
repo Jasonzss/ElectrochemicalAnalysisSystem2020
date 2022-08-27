@@ -21,7 +21,7 @@ import java.util.ArrayList;
  */
 public class BaseMapperTest {
 
-    @Test
+//    @Test
     public void testInsert() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
         EntityInfo<User> entityInfo=new EntityInfo();
@@ -41,7 +41,7 @@ public class BaseMapperTest {
         BaseMapper baseMapper=new BaseMapper(entityInfo);
 
     }
-    @Test
+//    @Test
     public void testDelete() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
         EntityInfo<User> entityInfo=new EntityInfo();
@@ -61,7 +61,7 @@ public class BaseMapperTest {
         BaseMapper baseMapper=new BaseMapper(entityInfo);
     }
 
-    @Test
+//    @Test
     public void testUpdate() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
         EntityInfo<User> entityInfo=new EntityInfo();
@@ -82,7 +82,7 @@ public class BaseMapperTest {
 
     }
 
-    @Test
+//    @Test
     public void testUser() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
         // 封装Condition
@@ -97,7 +97,7 @@ public class BaseMapperTest {
         new BaseMapper(entityInfo);
     }
 
-    @Test
+//    @Test
     public void testPermission() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
 
@@ -116,7 +116,7 @@ public class BaseMapperTest {
         new BaseMapper(entityInfo);
     }
 
-    @Test
+//    @Test
     public void testExpSelect() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
         Condition condition = new Condition();

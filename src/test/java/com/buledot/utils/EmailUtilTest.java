@@ -12,7 +12,7 @@ import java.util.List;
  * @Description ：
  */
 public class EmailUtilTest {
-    @Test
+//    @Test
     public void test(){
         List<String> emails = new ArrayList<>();
         String userEmail = "2418972236@qq.com";

@@ -19,7 +19,7 @@ import java.util.List;
 
 public class MapperTest {
 
-    @Test
+//    @Test
     public void testPermission() throws SQLException, IOException, ClassNotFoundException {
         //模拟根据条件生成select语句
         Condition condition = new Condition();
@@ -52,7 +52,7 @@ public class MapperTest {
         BaseMapper baseMapper=new BaseMapper(entityInfo);
     }
 
-    @Test
+//    @Test
     public void testUpdate() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
 
@@ -100,7 +100,7 @@ public class MapperTest {
         new BaseMapper(expDataEntityInfo);
     }
 
-    @Test
+//    @Test
     public void testTablesSelect() throws SQLException, IOException, ClassNotFoundException {
         //模拟根据条件生成select语句
         Condition condition = new Condition();
@@ -153,7 +153,7 @@ public class MapperTest {
     }
 
 
-    @org.junit.Test
+//    @org.junit.Test
     public void testSelect() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
         //模拟根据条件生成select语句
