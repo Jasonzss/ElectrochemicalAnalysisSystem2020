@@ -1,5 +1,8 @@
 package com.bluedot.mapper.bean;
 
+import com.bluedot.utils.StringUtil;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +27,7 @@ public class Condition {
         views = new ArrayList<>();
         viewCondition = new ArrayList<>();
         fields = new ArrayList<>();
+        fields.add("*");
         andCondition = new ArrayList<>();
         orCondition = new ArrayList<>();
     }
@@ -33,7 +37,10 @@ public class Condition {
      * @param field 需要在物理表查询的字段
      */
     public void addFields(String field) {
-        this.fields.add(field);
+        if (fields.size() == 1 && "*".equals(fields.get(0))){
+            fields = new ArrayList<>();
+        }
+        fields.add(field);
     }
 
     /**
@@ -53,17 +60,17 @@ public class Condition {
      * @param viewName 与主表连接的表名
      */
     public void addViewCondition(String viewCondition,String viewName) {
-        if (views.contains(viewName)){
+        if (!views.contains(viewName)){
             //尚不存在此表,添加这个表
             addView(viewName);
         }
 
         //获得此表在列表中的位置
         int i = views.indexOf(viewName);
-        if (i != 0){
+        if (i != 0 && i != -1){
             //非主表
             //设置此表与主表的连接条件
-            this.viewCondition.set(i-1,viewCondition);
+            this.viewCondition.add(i-1,viewCondition);
         }
     }
 
@@ -83,6 +90,22 @@ public class Condition {
     public void addOrConditionWithView(Term orCondition) {
         this.orCondition.add(orCondition);
         addView(orCondition.getViewName());
+    }
+
+    /**
+     * 设置某个实体类的属性为sql查找的目标，并排除个别
+     * @param clazz 实体类
+     * @param exceptFields 排除属性的list
+     */
+    public void setFieldsInEntityExcept(Class<?> clazz,List<String> exceptFields){
+        Field[] declaredFields = clazz.getDeclaredFields();
+        for (Field field:declaredFields){
+            String fieldName = field.getName();
+            if (!exceptFields.contains(fieldName)){
+                //此属性不为排除属性,加入查找
+                addFields(StringUtil.humpToLine(fieldName));
+            }
+        }
     }
 
     /**

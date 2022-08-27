@@ -3,6 +3,7 @@ package com.bluedot.service;
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
+import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
@@ -28,8 +29,8 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
         super(data);
     }
 
-    public BufferSolutionService(HttpSession session, Map<String, Object> map, String operation, CommonResult commonResult) {
-        super(session, map, operation, commonResult);
+    public BufferSolutionService(HttpSession session, EntityInfo<?> entityInfo) {
+        super(session, entityInfo);
     }
 
     @Override
@@ -52,6 +53,11 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
+    }
+
+    @Override
+    protected boolean check() {
+        return false;
     }
 
     /**

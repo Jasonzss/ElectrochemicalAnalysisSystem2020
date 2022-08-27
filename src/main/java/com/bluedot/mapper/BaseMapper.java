@@ -6,6 +6,7 @@ import com.bluedot.mapper.callBack.MyCallback;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.StringUtil;
+import com.bluedot.utils.constants.SessionConstants;
 
 import java.lang.reflect.Field;
 import java.sql.Date;
@@ -66,6 +67,7 @@ public class BaseMapper {
         commonResult = new CommonResult();
         commonResult.setData(object);
         //将结果通过队列  返回给service层
+        System.out.println(commonResult.toString());
         com.bluedot.queue.outQueue.impl.MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
     }
     /**
@@ -102,7 +104,7 @@ public class BaseMapper {
      **/
     private <T> int insert(List typeList) {
         return (int) generateSqlTemplate(typeList, new MyCallback() {
-           //回调接口，insert类型sql语句生成模板
+            //回调接口，insert类型sql语句生成模板
             @Override
             public void generateSqlExecutor(Field[] fields, TableInfo tableInfo, List<ColumnInfo> primaryKeys, StringBuilder sql, MappedStatement mappedStatement, List<Object> params) {
                 Object entity = typeList.get(0);
@@ -418,9 +420,25 @@ public class BaseMapper {
      * @return: java.lang.String
      **/
     public static String generateSelectSqL(Condition condition, List<Object> list) {
+        String view=condition.getViews().get(0);
+        if (view.startsWith("`")){
+            view=view.substring(1,view.length()-1);
+        }
+        view=StringUtil.tableNameToClassName(view);
+        String entity = Configuration.getProperty(SessionConstants.ENTITY_PACKAGENAME)+"."+view;
+        TableInfo tableInfo = null;
+        try {
+            tableInfo = MapperInit.getConfiguration().getClassToTableInfoMap().get(Class.forName(entity));
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        //表主键名
+        String primaryName = tableInfo.getPrimaryKeys().get(0).getName();
+        List<String> fields = condition.getFields();
+        fields.add(tableInfo.getTableName()+"."+primaryName);
         StringBuffer select = new StringBuffer("select ");
         List<String> views = condition.getViews();
-        if (condition.getFields() == null) {
+        if (condition.getFields().size() == 0) {
             select.append("*");
         } else {
             for (String field : condition.getFields()) {

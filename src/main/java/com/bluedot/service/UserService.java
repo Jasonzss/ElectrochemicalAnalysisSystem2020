@@ -3,6 +3,7 @@ package com.bluedot.service;
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
+import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
@@ -35,8 +36,8 @@ public class UserService extends BaseService<User> {
         super(data);
     }
 
-    public UserService(HttpSession session, Map<String, Object> map, String operation, CommonResult commonResult) {
-        super(session, map, operation, commonResult);
+    public UserService(HttpSession session, EntityInfo<?> entityInfo) {
+        super(session, entityInfo);
     }
 
     /**
@@ -100,6 +101,11 @@ public class UserService extends BaseService<User> {
         }
 
         invokeMethod(methodName,this);
+    }
+
+    @Override
+    protected boolean check() {
+        return true;
     }
 
     /**
@@ -240,18 +246,48 @@ public class UserService extends BaseService<User> {
 
         // 封装Condition
         Condition condition = new Condition();
-        condition.setReturnType("UserRole");
+        condition.setReturnType("User");
         // 判断搜索用户的各项属性
-        condition.addAndConditionWithView(new Term("user","userEmail",userEmail,TermType.EQUAL));
+        condition.addAndConditionWithView(new Term("user","user_email",userEmail,TermType.EQUAL));
 
-        // 执行修改逻辑
-        entityInfo.setCondition(condition);
-        select();
+        //判断是否查询图片
+        if (paramList.get("userImg") == null){
+            //查询图片以外的信息
+            List<String> list = new ArrayList<>();
+            list.add("userImg");
+            condition.setFieldsInEntityExcept(User.class,list);
 
-        //重新封装数据
-        List<User> userList = (List<User>) commonResult.getData();
-        User user = userList.get(0);
-        commonResult.setData(user);
+            // 执行查询逻辑
+            entityInfo.setCondition(condition);
+            select();
+
+            //重新封装数据
+            List<User> userList = (List<User>) commonResult.getData();
+            if (userList.size() != 0){
+                commonResult = CommonResult.successResult("用户信息",userList.get(0));
+            }else {
+                throw new UserException(CommonErrorCode.E_1005);
+            }
+        }else {
+            //查询图片
+            condition.addFields("userImg");
+
+            // 执行查询逻辑
+            entityInfo.setCondition(condition);
+            select();
+
+            //获取查询的图片数据
+            List<User> userList = (List<User>) commonResult.getData();
+            if (userList.size() != 0){
+                User user = userList.get(0);
+                byte[] userImg = user.getUserImg();
+                commonResult = CommonResult.successResult("",null);
+                commonResult.setFileData("userImg",userImg);
+                commonResult.setRespContentType(CommonResult.INPUT_STREAM_IMAGE);
+            }else {
+                throw new UserException(CommonErrorCode.E_1005);
+            }
+        }
     }
 
     /**
@@ -316,15 +352,17 @@ public class UserService extends BaseService<User> {
         //登录通过
         //查询权限列表放入session
         //编写查询逻辑
-//        SELECT permission_name FROM user_role
-//          LEFT JOIN role_permission ON user_role.role_id=role_permission.`role_id`
-//          LEFT JOIN permission ON role_permission.`permission_id` = permission.`permission_id`
-//        WHERE user_role.user_email = "2418972236@qq.com"
+        //select permission.permission_name from role_permission
+        //  left join permission on permission.permission_id = role_permission.permission_id
+        //  left join user_role on user_role.role_id = role_permission.role_id
+        //where user_role.user_email = '2418972236@qq.com';
         Condition condition = new Condition();
-        condition.addAndConditionWithView(new Term("user_role", "user_email", paramList.get("userEmail"), TermType.EQUAL));
         condition.addViewCondition("role_id","role_permission");
         condition.addViewCondition("permission_id","permission");
+        condition.addViewCondition("role_id","user_role");
+        condition.addAndConditionWithView(new Term("user_role", "user_email", paramList.get("userEmail"), TermType.EQUAL));
         condition.addFields("permission_name");
+        condition.setReturnType("Permission");
 
         //执行查询逻辑
         entityInfo.setCondition(condition);
@@ -343,7 +381,8 @@ public class UserService extends BaseService<User> {
         //返回token回前端
         Map<String,String> map = new HashMap<>();
         map.put("userEmail",user.getUserEmail());
-        JwtUtil.generateToken(map);
+        String tokenStr = JwtUtil.generateToken(map);
+        commonResult = CommonResult.successResult("登录成功",tokenStr);
     }
 
     /**

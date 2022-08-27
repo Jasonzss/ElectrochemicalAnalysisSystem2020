@@ -173,6 +173,7 @@ public class AlgoUtil {
         String algoParentPath = RESPATH + "algo/src";
 
         //算法文件所在位置
+        //TODO 待修改
         String algoFilePath =
                 algoParentPath + "/" + algo.getAlgorithmName() + "." + ALGOTXTSUFFIX;
 

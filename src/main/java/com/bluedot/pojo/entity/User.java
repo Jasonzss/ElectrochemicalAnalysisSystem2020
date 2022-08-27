@@ -16,7 +16,7 @@ public class User {
     private Integer userSex;
     private Integer userAge;
     private Long userTel;
-    private Byte[] userImg;
+    private byte[] userImg;
 
     public String getUserEmail() {
         return userEmail;
@@ -82,11 +82,11 @@ public class User {
         this.userTel = userTel;
     }
 
-    public Byte[] getUserImg() {
+    public byte[] getUserImg() {
         return userImg;
     }
 
-    public void setUserImg(Byte[] userImg) {
+    public void setUserImg(byte[] userImg) {
         this.userImg = userImg;
     }
 

@@ -3,6 +3,7 @@ package com.bluedot.service;
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
+import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
@@ -11,6 +12,7 @@ import com.bluedot.pojo.entity.Report;
 import com.bluedot.utils.ReflectUtil;
 import org.apache.commons.fileupload.FileItem;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -22,6 +24,10 @@ import java.util.List;
 public class ExperimentalReportService extends BaseService<Report>{
     public ExperimentalReportService(Data data) {
         super(data);
+    }
+
+    public ExperimentalReportService(HttpSession session, EntityInfo<?> entityInfo) {
+        super(session, entityInfo);
     }
 
     @Override
@@ -65,6 +71,11 @@ public class ExperimentalReportService extends BaseService<Report>{
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
+    }
+
+    @Override
+    protected boolean check() {
+        return false;
     }
 
     /**

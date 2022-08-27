@@ -17,8 +17,8 @@ public class Report {
     private Algorithm pretreatmentAlgorithm;
     private Algorithm reportDataModel;
     private String reportResultModel;
-    private Byte[] reportTrainingSetGraph;
-    private Byte[] reportTestSetGraph;
+    private byte[] reportTrainingSetGraph;
+    private byte[] reportTestSetGraph;
     /**
      * 加上注解，让对象在被转化成JSON时（为了传给前段）按规定格式转化（默认会有毫秒）
      * 还有时区默认是GMT，咱们是东八区。
@@ -97,19 +97,19 @@ public class Report {
         this.reportResultModel = reportResultModel;
     }
 
-    public Byte[] getReportTrainingSetGraph() {
+    public byte[] getReportTrainingSetGraph() {
         return reportTrainingSetGraph;
     }
 
-    public void setReportTrainingSetGraph(Byte[] reportTrainingSetGraph) {
+    public void setReportTrainingSetGraph(byte[] reportTrainingSetGraph) {
         this.reportTrainingSetGraph = reportTrainingSetGraph;
     }
 
-    public Byte[] getReportTestSetGraph() {
+    public byte[] getReportTestSetGraph() {
         return reportTestSetGraph;
     }
 
-    public void setReportTestSetGraph(Byte[] reportTestSetGraph) {
+    public void setReportTestSetGraph(byte[] reportTestSetGraph) {
         this.reportTestSetGraph = reportTestSetGraph;
     }
 
