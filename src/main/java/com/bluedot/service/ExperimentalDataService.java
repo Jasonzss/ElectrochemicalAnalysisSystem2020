@@ -3,6 +3,7 @@ package com.bluedot.service;
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
+import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
@@ -26,8 +27,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         super(data);
     }
 
-    public ExperimentalDataService(HttpSession session, Map<String, Object> map, String operation, CommonResult commonResult) {
-        super(session, map, operation, commonResult);
+    public ExperimentalDataService(HttpSession session, EntityInfo<?> entityInfo) {
+        super(session, entityInfo);
     }
 
     /**
@@ -100,6 +101,11 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         }
 
         invokeMethod(methodName,this);
+    }
+
+    @Override
+    protected boolean check() {
+        return true;
     }
 
     /**
