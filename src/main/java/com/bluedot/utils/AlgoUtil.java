@@ -173,8 +173,9 @@ public class AlgoUtil {
         String algoParentPath = RESPATH + "algo/src";
 
         //算法文件所在位置
-//        String algoFilePath =
-//                algoParentPath + "/" + algo.getAlgorithmFileName() + "." + ALGOTXTSUFFIX;
+        //TODO 待修改
+        String algoFilePath =
+                algoParentPath + "/" + algo.getAlgorithmName() + "." + ALGOTXTSUFFIX;
 
         //返回的结果
         Object ret;
@@ -184,7 +185,7 @@ public class AlgoUtil {
             String packageStr = "algo.target.algo" + algo.getAlgorithmId();
             //编译文件
             long b = System.currentTimeMillis();
-//            compile(algoFilePath, packageStr);
+            compile(algoFilePath, packageStr);
             long e = System.currentTimeMillis();
             System.out.println("编译耗时：" + (e - b) / 1000.0);
 

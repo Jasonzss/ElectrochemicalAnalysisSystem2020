@@ -49,7 +49,6 @@ public enum CommonErrorCode implements ErrorCode {
      * 系统异常
      */
     E_6001(6001,"系统出现异常"),
-
     ;
 
     private final int code;

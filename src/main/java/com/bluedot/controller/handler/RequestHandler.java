@@ -1,6 +1,5 @@
 package com.bluedot.controller.handler;
 
-import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.vo.CommonResult;
 
 import javax.servlet.http.HttpServletRequest;
