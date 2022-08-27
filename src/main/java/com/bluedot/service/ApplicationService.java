@@ -3,6 +3,7 @@ package com.bluedot.service;
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
+import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
@@ -12,6 +13,7 @@ import com.bluedot.utils.ReflectUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.servlet.http.HttpSession;
 import java.nio.Buffer;
 import java.util.*;
 
@@ -25,6 +27,10 @@ import java.util.*;
 public class ApplicationService extends BaseService<Application>{
     public ApplicationService(Data data) {
         super(data);
+    }
+
+    public ApplicationService(HttpSession session, EntityInfo<?> entityInfo) {
+        super(session, entityInfo);
     }
 
     @Override
@@ -56,6 +62,11 @@ public class ApplicationService extends BaseService<Application>{
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
+    }
+
+    @Override
+    protected boolean check() {
+        return false;
     }
 
     /**
