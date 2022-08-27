@@ -8,6 +8,7 @@ import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.*;
+import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.JsonUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -179,17 +180,18 @@ public class ApplicationService extends BaseService<Application>{
             Integer applicationType = selectedApplication.getApplicationType();
             ObjectMapper objectMapper = JsonUtil.getObjectMapper();
 
+            CommonResult result = null;
             switch (applicationType){
                 case 0:
                     // 解封申请：根据userEmail来修改账号状态
                     HashMap<String, Object> userDataMap = new HashMap<>();
                     userDataMap.put("userEmail",paramList.get("userEmail"));
                     userDataMap.put("userStatus",1);
-                    new UserService(session,userDataMap,"insert",commonResult);
+                    result = new UserService(session,entityInfo).doOtherService(userDataMap,"insert");
                     break;
                 case 1:
                     Map materialTypeMap= objectMapper.convertValue(applicationContent,Map.class);
-                    new MaterialTypeService(session,materialTypeMap,"insert",commonResult);
+                    result = new MaterialTypeService(session,entityInfo).doOtherService(materialTypeMap,"insert");
                     break;
                 case 2:
                     Map algorithmMap = objectMapper.convertValue(applicationContent,Map.class);
@@ -198,7 +200,7 @@ public class ApplicationService extends BaseService<Application>{
                     break;
                 case 3:
                     Map bufferSolutionMap = objectMapper.convertValue(applicationContent,Map.class);
-                    new BufferSolutionService(session,bufferSolutionMap,"insert",commonResult);
+                    result = new BufferSolutionService(session,entityInfo).doOtherService(bufferSolutionMap,"insert");
                     break;
                 default:
                     throw new UserException(CommonErrorCode.E_6001);

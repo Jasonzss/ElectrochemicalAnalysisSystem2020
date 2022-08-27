@@ -274,9 +274,9 @@ public class ExcelUtil {
         // 点位数据
         List<Object> thirdColTitle = new ArrayList<>();
 
-        thirdColTitle.add("原始电位");
+        thirdColTitle.add("电位");
         thirdColTitle.add("原始电流");
-        thirdColTitle.add("最新电位");
+//        thirdColTitle.add("最新电位");
         thirdColTitle.add("最新电流");
 
         title.add(new Pair<>(POINT_INFO,thirdColTitle));
@@ -382,34 +382,40 @@ public class ExcelUtil {
         //点位数据
         List<Object> pointInfoList = new ArrayList<>();
         //double[][]点位数据分解
-        Double[][] originalPointData = data.getExpOriginalPointData();
-        Double[][] newestPointData = data.getExpNewestPointData();
-        Pair<Double[], Double[]> originalData = resolvePointData(originalPointData);
-        Pair<Double[], Double[]> newestData = resolvePointData(newestPointData);
-        pointInfoList.add(originalData.getKey());
-        pointInfoList.add(originalData.getValue());
-        pointInfoList.add(newestData.getKey());
-        pointInfoList.add(newestData.getValue());
+        Double[] originalCurrentPointData = data.getExpOriginalCurrentPointData();
+        Double[] newestCurrentPointData = data.getExpNewestCurrentPointData();
+        Double[] voltagePointData = data.getExpVoltagePointData();
+//        Double[][] originalPointData = data.getExpOriginalPointData();
+//        Double[][] newestPointData = data.getExpNewestPointData();
+//        Pair<Double[], Double[]> originalData = resolvePointData(originalPointData);
+//        Pair<Double[], Double[]> newestData = resolvePointData(newestPointData);
+//        pointInfoList.add(originalData.getKey());
+//        pointInfoList.add(originalData.getValue());
+//        pointInfoList.add(newestData.getKey());
+//        pointInfoList.add(newestData.getValue());
+        pointInfoList.add(voltagePointData);
+        pointInfoList.add(originalCurrentPointData);
+        pointInfoList.add(newestCurrentPointData);
         valueList.add(2,new Pair<>(POINT_INFO,pointInfoList));
     }
 
-    /**
-     * 将点位数据中的电流和电位分开
-     * @param pointData 点位数据
-     * @return 分开后的点位数据
-     */
-    private static Pair<Double[], Double[]> resolvePointData(Double[][] pointData){
-        int length = pointData.length;
-        int size = pointData[0].length;
-        Double[] potential = new Double[length];
-        Double[] current = new Double[length];
-        for (int i = 0; i < length; i++) {
-            for (int j = 0; j < size; j++) {
-                potential[i] = pointData[i][0];
-                current[i] = pointData[i][1];
-            }
-        }
-        return new Pair<>(potential, current);
-    }
+//    /**
+//     * 将点位数据中的电流和电位分开
+//     * @param pointData 点位数据
+//     * @return 分开后的点位数据
+//     */
+//    private static Pair<Double[], Double[]> resolvePointData(Double[][] pointData){
+//        int length = pointData.length;
+//        int size = pointData[0].length;
+//        Double[] potential = new Double[length];
+//        Double[] current = new Double[length];
+//        for (int i = 0; i < length; i++) {
+//            for (int j = 0; j < size; j++) {
+//                potential[i] = pointData[i][0];
+//                current[i] = pointData[i][1];
+//            }
+//        }
+//        return new Pair<>(potential, current);
+//    }
 
 }

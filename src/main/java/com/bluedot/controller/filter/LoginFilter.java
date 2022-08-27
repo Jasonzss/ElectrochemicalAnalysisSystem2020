@@ -49,6 +49,7 @@ public class LoginFilter implements Filter {
             map.put(name, set);
         }
     }
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
