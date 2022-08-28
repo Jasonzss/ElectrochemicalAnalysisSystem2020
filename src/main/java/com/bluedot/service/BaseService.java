@@ -11,6 +11,7 @@ import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
 import com.bluedot.queue.outQueue.impl.ServiceControllerQueue;
+import com.bluedot.utils.constants.OperationConstants;
 
 import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;
@@ -98,25 +99,27 @@ public abstract class BaseService<T> {
     /**
      * 负责对传进来的paramList数据进行检查
      */
-    abstract protected boolean check();
+    protected boolean check(){
+        return true;
+    }
 
     protected void update(){
-        entityInfo.setOperation("update");
+        entityInfo.setOperation(OperationConstants.UPDATE);
         commonResult = doMapper();
     }
 
     protected void delete(){
-        entityInfo.setOperation("delete");
+        entityInfo.setOperation(OperationConstants.DELETE);
         commonResult = doMapper();
     }
 
     protected void insert(){
-        entityInfo.setOperation("insert");
+        entityInfo.setOperation(OperationConstants.INSERT);
         commonResult = doMapper();
     }
 
     protected void select(){
-        entityInfo.setOperation("select");
+        entityInfo.setOperation(OperationConstants.SELECT);
         commonResult = doMapper();
     }
 
@@ -125,7 +128,7 @@ public abstract class BaseService<T> {
      */
     protected void selectPage(){
         // 查询当前页的对应数据
-        entityInfo.setOperation("select");
+        entityInfo.setOperation(OperationConstants.SELECT);
         doMapper();
 
         Condition condition = entityInfo.getCondition();
@@ -148,7 +151,7 @@ public abstract class BaseService<T> {
         condition.addView(entityInfo.getCondition().getViews().get(0));
 
         entityInfo.setCondition(condition);
-        entityInfo.setOperation("select");
+        entityInfo.setOperation(OperationConstants.SELECT);
         CommonResult commonResult = doMapper();
 
         return (long) commonResult.getData();
@@ -163,12 +166,14 @@ public abstract class BaseService<T> {
             try {
                 method = obj.getClass().getDeclaredMethod(methodName);
             } catch (NoSuchMethodException e) {
+                commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
                 e.printStackTrace();
             }
             method.setAccessible(true);
             try {
                 method.invoke(obj);
             } catch (IllegalAccessException e) {
+                commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
                 e.printStackTrace();
             } catch (InvocationTargetException e) {
                 //处理抛出的UserException
@@ -180,6 +185,7 @@ public abstract class BaseService<T> {
                 }else {
                     //其他异常处理
                     commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
+                    e.printStackTrace();
                 }
             }
         }else {
