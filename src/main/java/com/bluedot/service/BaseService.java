@@ -134,14 +134,19 @@ public abstract class BaseService<T> {
         Condition condition = entityInfo.getCondition();
         // 设置pageInfo，并将查询到的数据填入
         PageInfo<T> pageInfo = new PageInfo<T>();
-        pageInfo.setDataList((List<T>) commonResult.getData());
-        pageInfo.setPageSize(condition.getSize());
-        // 调用getCount查询数据总数量
-        pageInfo.setTotalDataSize(getCount());
-        pageInfo.setTotalPageSize((pageInfo.getTotalDataSize() + pageInfo.getTotalPageSize() - 1)/pageInfo.getTotalPageSize());
-        pageInfo.setCurrentPageNo(Math.toIntExact(condition.getStartIndex() / condition.getSize() + 1));
+        if (((List<T>) commonResult.getData()).size() == 0){
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
+        }else {
+            pageInfo.setDataList((List<T>) commonResult.getData());
+            pageInfo.setPageSize(condition.getSize());
+            // 调用getCount查询数据总数量
+            pageInfo.setTotalDataSize(getCount());
+            pageInfo.setTotalPageSize((pageInfo.getTotalDataSize() + pageInfo.getTotalPageSize() - 1)/pageInfo.getTotalPageSize());
+            pageInfo.setCurrentPageNo(Math.toIntExact(condition.getStartIndex() / condition.getSize() + 1));
 
-        commonResult = CommonResult.successResult("分页查询",pageInfo);
+            commonResult = CommonResult.successResult("分页查询",pageInfo);
+        }
+
     }
 
     private long getCount(){
