@@ -37,7 +37,7 @@ public class CharacterEncodingFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         filterName = filterConfig.getFilterName();
         characterEncoding = filterConfig.getInitParameter("encoding");
-        log.debug(filterName+"过滤器初始化");
+        log.debug(filterName+"初始化");
     }
 
     @Override
