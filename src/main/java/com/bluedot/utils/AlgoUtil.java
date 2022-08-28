@@ -161,27 +161,30 @@ public class AlgoUtil {
             throw new UserException(E4001);
         }
 
-        //算法文件的父路径
-        String algoParentPath = RESPATH + "algo/src";
-
+        //算法文件的目录
+        String algoSrcPath = RESPATH + "algo/java";
+        //算法的包名
+        String algoPackage = "algo.java.cla.algo" + algo.getAlgorithmId();
+        //算法的编译目录
+        String algoTargetPath = RESPATH + algoPackage.replace(".", "/");
         //算法文件所在位置
         String algoFilePath =
-                algoParentPath + "/" + algo.getAlgorithmId() + "." + ALGOTXTSUFFIX;
+                algoSrcPath + "/" + algo.getAlgorithmId() + "." + ALGOTXTSUFFIX;
+        //算法编译文件位置
+        String algoClassPath = algoTargetPath + "/" + ALGOCLASSNAME + "." + ALGOBINSUFFIX;
 
         //返回的结果
         Object ret;
 
         try {
-            //算法文件的包名
-            String packageStr = "algo.target.algo" + algo.getAlgorithmId();
             //编译文件
             long b = System.currentTimeMillis();
-            compile(algoFilePath, packageStr);
+            compile(algoFilePath, algoPackage, algoTargetPath);
             long e = System.currentTimeMillis();
             System.out.println("编译耗时：" + (e - b) / 1000.0);
 
             //加载算法类
-            Class<?> algoClass = Class.forName(packageStr + "." + ALGOCLASSNAME);
+            Class<?> algoClass = Class.forName(algoPackage + "." + ALGOCLASSNAME);
             //获得方法并执行
             Method runMethod = algoClass.getDeclaredMethod(ALGOENTRY, data.getClass());
             ret = runMethod.invoke(algoClass.newInstance(), data);
@@ -206,14 +209,13 @@ public class AlgoUtil {
             throw new UserException(E4003);
         } finally {
             //删除class文件
-            File classFile = new File(RESPATH + "algo/target/algo" +
-                    algo.getAlgorithmId() + "/" + ALGOCLASSNAME + "." + ALGOBINSUFFIX);
+            File classFile = new File(algoClassPath);
             classFile.delete();
         }
         return ret;
     }
 
-    private static void compile(String algoFilePath, String packageStr) {
+    private static void compile(String algoFilePath, String packageStr, String algoTargetPath) {
         //package语句的byte数组
         byte[] packageBytes = ("package " + packageStr + ";\n").getBytes();
 
@@ -228,14 +230,13 @@ public class AlgoUtil {
         try {
             //在文件头加package语句
             src = new File(algoFilePath);
-            temp = new File(algoFilePath.substring(0, algoFilePath.lastIndexOf("algo/src")) +
-                    packageStr.replace(".", "/") + "/" +ALGOCLASSNAME + "." + ALGOTXTSUFFIX);
+            temp = new File(algoTargetPath + "/" +ALGOCLASSNAME + "." + ALGOTXTSUFFIX);
             if (!temp.getParentFile().exists()) {
                 temp.getParentFile().mkdirs();
             }else if (!temp.exists()) {
                 temp.createNewFile();
-
             }
+            System.out.println(temp.exists());
 
             fis = new FileInputStream(src);
             fos = new FileOutputStream(temp);
