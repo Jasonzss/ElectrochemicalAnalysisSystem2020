@@ -5,7 +5,7 @@
     <!--日志处理-->
     <Appenders>
         <!--控制台输出 appender-->
-        <Console name="Console" target="SYSTEM_ERR">
+        <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] [%-5level] %class{36}:%L --- %m%n"/>
         </Console>
 
