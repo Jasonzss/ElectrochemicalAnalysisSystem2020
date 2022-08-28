@@ -49,4 +49,14 @@ public class Term {
         this.value = value;
         this.termType = termType;
     }
+
+    @Override
+    public String toString() {
+        return "Term{" +
+                "viewName='" + viewName + '\'' +
+                ", fieldName='" + fieldName + '\'' +
+                ", value=" + value +
+                ", termType=" + termType +
+                '}';
+    }
 }
