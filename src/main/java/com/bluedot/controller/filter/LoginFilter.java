@@ -37,8 +37,8 @@ public class LoginFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        log.debug(filterName + "初始化");
         filterName = filterConfig.getFilterName();
+        log.debug(filterName + "初始化");
         //初始化白名单方法集合
         Enumeration<String> initParameterNames = filterConfig.getInitParameterNames();
         while (initParameterNames.hasMoreElements()) {
@@ -53,6 +53,7 @@ public class LoginFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
+        log.debug("开始验证用户是否登录--请求用户:{}", request.getSession().getAttribute("userEmail") == null ? "游客" : request.getSession().getAttribute("userEmail"));
         Data data = (Data) request.getAttribute("Data");
         String name = data.getServiceName();
         name=name.substring(name.lastIndexOf('.')+1,name.length());
