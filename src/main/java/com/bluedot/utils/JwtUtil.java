@@ -35,7 +35,7 @@ public class JwtUtil {
 
         //token过期时间设置
         Calendar instance = Calendar.getInstance();
-        instance.add(Calendar.MILLISECOND,1000);
+        instance.add(Calendar.MINUTE,1000);
 
         //创建token
         return builder.withExpiresAt(instance.getTime())
