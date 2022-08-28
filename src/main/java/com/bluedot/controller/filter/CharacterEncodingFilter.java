@@ -50,11 +50,11 @@ public class CharacterEncodingFilter implements Filter {
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
 //        response.setHeader("Access-Control-Allow-Credentials", "true");
-        log.info("请求设置允许跨域");
+        log.debug("请求设置允许跨域");
         //设置字符编码
         request.setCharacterEncoding(characterEncoding);
         response.setCharacterEncoding(characterEncoding);
-        log.debug("过滤器设置请求编号");
+        log.debug("过滤器设置请求编码");
         filterChain.doFilter(request,response);
     }
 
