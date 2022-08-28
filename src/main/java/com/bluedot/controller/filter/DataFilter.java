@@ -106,7 +106,7 @@ public class DataFilter implements Filter {
                     for (FileItem fileItem : fileItems) {
                         if (fileItem.isFormField()) {
                             if ("viewName".equals(fileItem.getFieldName())) {
-                                data.setServiceName("com.bluedot.service." + fileItem.getString("utf-8"));
+                                data.setServiceName("com.bluedot.service." + fileItem.getString("utf-8")+ "Service");
                             } else if ("operation".equals(fileItem.getFieldName())) {
                                 data.setOperation(fileItem.getString("utf-8"));
                             } else {
