@@ -45,7 +45,7 @@ public class UserService extends BaseService<User> {
      */
     @Override
     protected void doService() {
-        String userEmail = (String) session.getAttribute("userEmail");
+        String userEmail = (String) session.getAttribute(SessionConstants.USER_EMAIL);
         List<Map<String,Object>> userList = null;
 
         if (paramList.get("user") instanceof List){
@@ -136,7 +136,7 @@ public class UserService extends BaseService<User> {
         // 判断是否有密码
         if (paramList.containsKey("userPassword")){
             //判断是邮箱验证码修改密码还是密码验证修改
-            if (session.getAttribute("authCode") != null) {
+            if (session.getAttribute(SessionConstants.AUTH_CODE) != null) {
                 //邮箱验证修改密码
                 //获取验证码
                 String authCode = (String) session.getAttribute(SessionConstants.AUTH_CODE);
@@ -294,7 +294,6 @@ public class UserService extends BaseService<User> {
      * 管理员权限的查询用户
      */
     private void listUsers(){
-        //TODO int 转 Long
         Long pageNo = Long.valueOf(((Integer)paramList.get("pageNo")).longValue());
         Integer pageSize = (Integer) paramList.get("pageSize");
 
@@ -343,7 +342,7 @@ public class UserService extends BaseService<User> {
         }
 
         //session中移除图片验证码
-        session.removeAttribute("imgAuthCode");
+        session.removeAttribute(SessionConstants.IMG_AUTH_CODE);
 
         //根据邮箱查询用户
         getPersonalUser();
