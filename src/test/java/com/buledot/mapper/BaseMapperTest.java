@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Author SDJin
@@ -122,6 +123,24 @@ public class BaseMapperTest {
         Condition condition = new Condition();
         condition.addAndConditionWithView(new Term("exp_data","exp_data_id",6,TermType.EQUAL));
         condition.setReturnType("ExpData");
+        //执行查询逻辑
+        EntityInfo<RolePermission> entityInfo = new EntityInfo<>();
+        entityInfo.setCondition(condition);
+        entityInfo.setOperation("select");
+        new BaseMapper(entityInfo);
+    }
+
+    @Test
+    public void testListUsers() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+        Condition condition = new Condition();
+        condition.setSize(5);
+        condition.setStartIndex(10L);
+        condition.addView("user");
+        List<String> list = new ArrayList<>();
+        list.add("userImg");
+        condition.setFieldsInEntityExcept(User.class,list);
+        condition.setReturnType("User");
         //执行查询逻辑
         EntityInfo<RolePermission> entityInfo = new EntityInfo<>();
         entityInfo.setCondition(condition);
