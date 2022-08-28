@@ -302,6 +302,8 @@ public class UserService extends BaseService<User> {
         Condition condition = new Condition();
         condition.setStartIndex((pageNo-1)*pageSize);
         condition.setSize(pageSize);
+        condition.setReturnType("User");
+        condition.addView("user");
 
         // 判断搜索用户的各项属性
         if (paramList.size() != 0){
@@ -310,11 +312,17 @@ public class UserService extends BaseService<User> {
             }
             if (paramList.containsKey("roleId")){
                 condition.addOrConditionWithView(new Term("user_role","roleId",paramList.get("roleId"),TermType.EQUAL));
+                condition.addViewCondition("user_email","user_role");
             }
             if (paramList.containsKey("userEmail")){
                 condition.addOrConditionWithView(new Term("user", "userEmail", paramList.get("userEmail"), TermType.EQUAL));
             }
         }
+
+        //设置不查询图片
+        List<String> list = new ArrayList<>();
+        list.add("userImg");
+        condition.setFieldsInEntityExcept(User.class,list);
 
         // 执行修改逻辑
         entityInfo.setCondition(condition);
