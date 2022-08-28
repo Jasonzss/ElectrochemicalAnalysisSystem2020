@@ -294,7 +294,8 @@ public class UserService extends BaseService<User> {
      * 管理员权限的查询用户
      */
     private void listUsers(){
-        Long pageNo = (Long) paramList.get("pageNo");
+        //TODO int 转 Long
+        Long pageNo = Long.valueOf(((Integer)paramList.get("pageNo")).longValue());
         Integer pageSize = (Integer) paramList.get("pageSize");
 
         // 封装Condition
@@ -325,7 +326,8 @@ public class UserService extends BaseService<User> {
      */
     private void login(){
         //获取登录的参数
-        String authCode = (String) session.getAttribute("imgAuthCode");
+        String authCode = (String) session.getAttribute(SessionConstants.IMG_AUTH_CODE);
+        System.out.println(authCode);
 
         //判断图片验证码是否正确
         if (!authCode.equalsIgnoreCase((String) paramList.get("imgAuthCode"))){
@@ -446,7 +448,7 @@ public class UserService extends BaseService<User> {
         //创建对应的图片文件
         BufferedImage authImg = ImageUtil.createAuthImage(imgAuthCode);
         //将验证码记录到session中
-        session.setAttribute("imgAuthCode",imgAuthCode);
+        session.setAttribute(SessionConstants.IMG_AUTH_CODE,imgAuthCode);
 
         //将图片包装返回前端
         commonResult.setFileData("authImg.png",authImg);
