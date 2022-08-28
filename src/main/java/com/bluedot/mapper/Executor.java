@@ -93,6 +93,13 @@ public class Executor {
                     return null;
                 }
                 ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+//                if (mappedStatement.getView().equals(mappedStatement.getReturnType())){
+//
+//                }else {
+//                    while (resultSet.next()){
+//
+//                    }
+//                }
                 //封装数据
                 while (resultSet.next()) {
                     //行数据主键值
@@ -101,7 +108,7 @@ public class Executor {
                     String rowObjectType = mappedStatement.getReturnType();
                     //每一行结果
                     E rowObject = null;
-                    if (map.containsKey(primaryValue)) {
+                    if (mappedStatement.getView().equals(mappedStatement.getReturnType()) && map.containsKey(primaryValue)) {
                         rowObject = (E) map.get(primaryValue);
                     } else {
                         rowObject = (E) Class.forName(Configuration.getProperty(SessionConstants.ENTITY_PACKAGENAME)+"."+rowObjectType).newInstance();
@@ -127,6 +134,21 @@ public class Executor {
                         }
                         //不是外键实体类，跳过
                         if (flag==false){
+                            continue;
+                        }
+                        if(field.getType()==byte[].class){
+                            String fieldName = StringUtil.humpToLine(field.getName());
+                            //判断查询结果集中是否存在此列
+                            try{
+                                if (resultSet.findColumn(fieldName) > 0){
+                                    //存在此列
+                                    byte[] bytes = resultSet.getBytes(fieldName);
+                                    field.setAccessible(true);
+                                    field.set(rowObject,bytes);
+                                }
+                            }catch (SQLException ignored){
+                                //无事发生，忽略对实体类中的此属性赋值
+                            }
                             continue;
                         }
                         if (field.getType()==List.class || field.getType()==ArrayList.class) {
@@ -167,37 +189,44 @@ public class Executor {
                             Object columnValue = resultSet.getObject(i + 1);
 
                             String columnClassName = StringUtil.lineToHump(columnName);
-
-                            try {//基本类型封装
-                                if (rowObject.getClass().getDeclaredField(columnClassName) != null && columnValue != null) {
+//                            Field declaredField = rowObject.getClass().getDeclaredField(columnClassName);
+//                            declaredField.setAccessible(true);
+                            //基本类型封装
+                            Field[] declaredFields = rowObject.getClass().getDeclaredFields();
+                            for (Field declaredField : declaredFields) {
+                                if (declaredField.getName().equals(columnClassName)&& columnValue != null){
                                     ReflectUtil.invokeSet(rowObject, columnClassName, columnValue);
                                 }
-                            } catch (Exception e) {
+                            }
 
-                                for (Object o : foreignKeyEntityList) {
-                                    try {
-                                        if (o.getClass().getDeclaredField(columnClassName) != null && columnValue != null) {
-                                            ReflectUtil.invokeSet(o, columnClassName, columnValue);
-                                        }
-                                    } catch (Exception exception) {}
+
+                            for (Object o : foreignKeyEntityList) {
+                                Field[] declaredFields1 = o.getClass().getDeclaredFields();
+                                for (Field declaredField1 : declaredFields1) {
+                                    if (declaredField1.getName().equals(columnClassName)&& columnValue != null){
+                                        ReflectUtil.invokeSet(o, columnClassName, columnValue);
+                                    }
                                 }
-                                for (Object value : foreignKeyEntityMap.values()) {
-                                    try {
-                                        if (value.getClass().getDeclaredField(columnClassName) != null && columnValue != null) {
-                                            ReflectUtil.invokeSet(value, columnClassName, columnValue);
-                                        }
-                                    } catch (Exception ex) {}
+                            }
+                            for (Object value : foreignKeyEntityMap.values()) {
+                                Field[] declaredFields1 = value.getClass().getDeclaredFields();
+                                for (Field field : declaredFields1) {
+                                    if (field.getName().equals(columnClassName)&& columnValue != null){
+                                        ReflectUtil.invokeSet(value, columnClassName, columnValue);
+                                    }
                                 }
                             }
                         }
-                        if (!map.containsKey(primaryValue)) {
-                            map.put(primaryValue, rowObject);
-                        }
-                        if (!result.contains(rowObject)) {
-                            result.add(rowObject);
-                        }
                     }
+                    if (mappedStatement.getView().equals(mappedStatement.getReturnType()) && !map.containsKey(primaryValue)) {
+                        map.put(primaryValue, rowObject);
+                    }
+                    if (!result.contains(rowObject)) {
+                        result.add(rowObject);
+                    }
+
                 }
+
                 return result;
             } catch (Exception exc) {
                 exc.printStackTrace();

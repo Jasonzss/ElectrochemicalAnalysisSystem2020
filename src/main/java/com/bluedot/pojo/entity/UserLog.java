@@ -1,10 +1,12 @@
 package com.bluedot.pojo.entity;
 
-import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.sql.Timestamp;
 
 /**
  * @Author Jason
- * @CreationDate 2022/07/29 - 0:57
+ * @CreationDate  2022/07/29 - 0:57
  * @Description ：
  */
 public class UserLog {
@@ -16,7 +18,12 @@ public class UserLog {
     private String userLogParameter;
     private String userLogMethodReturnValue;
     private String userLogDetail;
-    private Date userLogOperateTime;
+    /**
+     * 加上注解，让对象在被转化成JSON时（为了传给前段）按规定格式转化（默认会有毫秒）
+     * 还有时区默认是GMT，咱们是东八区。
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Timestamp userLogOperateTime;
 
     public UserLog() {
         user = new User();
@@ -86,11 +93,11 @@ public class UserLog {
         this.userLogDetail = userLogDetail;
     }
 
-    public Date getUserLogOperateTime() {
+    public Timestamp getUserLogOperateTime() {
         return userLogOperateTime;
     }
 
-    public void setUserLogOperateTime(Date userLogOperateTime) {
+    public void setUserLogOperateTime(Timestamp userLogOperateTime) {
         this.userLogOperateTime = userLogOperateTime;
     }
 

@@ -25,27 +25,19 @@ public class AlgoUtil {
     private static final CommonErrorCode E4004 = CommonErrorCode.E_4004;
 
     //获取资源文件目录的绝对路径
-    private static final String RESPATH =
+    public static final String RESPATH =
             Thread.currentThread().getContextClassLoader().getResource("").getPath();
 
     //算法的类名
-    private static final String ALGOCLASSNAME = "Main";
+    public static final String ALGOCLASSNAME = "Main";
 
     //算法的入口（方法）
-    private static final String ALGOENTRY = "run";
+    public static final String ALGOENTRY = "run";
 
     //算法文件后缀名
-    private static final String ALGOTXTSUFFIX = "java";
+    public static final String ALGOTXTSUFFIX = "java";
     //编译后的算法文件后缀名
-    private static final String ALGOBINSUFFIX = "class";
-
-    //class文件所在的根目录
-    //为target/algo/算法id
-    private String root;
-
-    public void setRoot(String root) {
-        this.root = root;
-    }
+    public static final String ALGOBINSUFFIX = "class";
 
 
     /**
@@ -174,7 +166,7 @@ public class AlgoUtil {
 
         //算法文件所在位置
         String algoFilePath =
-                algoParentPath + "/" + algo.getAlgorithmFileName() + "." + ALGOTXTSUFFIX;
+                algoParentPath + "/" + algo.getAlgorithmId() + "." + ALGOTXTSUFFIX;
 
         //返回的结果
         Object ret;
@@ -251,9 +243,11 @@ public class AlgoUtil {
             fos.write(packageBytes);
             //再将原始文件内容写入到temp
             //存放每次读取的内容
-            byte[] bytes = new byte[fis.available()];
-            while (fis.read(bytes) != -1) {
-                fos.write(bytes);
+            byte[] bytes = new byte[2048];
+            //不获取读到的长度，会把整个byte数组都写进去，但最后一次读这个byte数组没读完会有些不正常的值，导致出错。
+            int len;
+            while ((len = fis.read(bytes)) != -1) {
+                fos.write(bytes, 0, len);
             }
 
             fos.flush();

@@ -11,7 +11,7 @@ public enum CommonErrorCode implements ErrorCode {
     /**
      * 用户模块错误:E_1xxx
      */
-    E_1001(1001,"登录失败!"),
+    E_1001(1001,"登录失败"),
     E_1002(1002,"该邮箱已注册"),
     E_1003(1003,"非法邮箱"),
     E_1004(1004,"验证码错误"),
@@ -43,12 +43,18 @@ public enum CommonErrorCode implements ErrorCode {
      * 通用异常
      */
     E_5001(5001,"错误的请求参数"),
+    E_5002(5002,"非法数据传入"),
 
     /**
      * 系统异常
      */
     E_6001(6001,"系统出现异常"),
 
+    /**
+     * 算法service异常
+     */
+    E_7001(7001, "该算法名已存在"),
+    E_7002(7002, "该算法测试不通过"),
     ;
 
     private final int code;

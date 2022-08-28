@@ -1,6 +1,7 @@
 package com.bluedot.service;
 
 import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.ErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
@@ -10,6 +11,7 @@ import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
 import com.bluedot.queue.outQueue.impl.ServiceControllerQueue;
+import com.bluedot.utils.constants.OperationConstants;
 
 import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;
@@ -29,27 +31,64 @@ public abstract class BaseService<T> {
     protected EntityInfo<T> entityInfo;
     protected CommonResult commonResult;
 
+    /**
+     * Service监听器调用具体Service时用的构造方法
+     * @param data Controller层传进来的数据
+     */
     public BaseService(Data data) {
         fillAttribute(data);
-        doService();
+        if (check()){
+            //检查通过
+            doService();
+        }else {
+            //检查未通过
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_5002);
+        }
+
         ServiceControllerQueue.getInstance().put(data.getKey(), commonResult);
     }
 
-    public BaseService(HttpSession session,Map<String,Object> map,String operation,CommonResult commonResult){
-        paramList = map;
+    /**
+     * 各Service之间互相调用时的构造方法
+     * @param session 调用者的Session
+     * @param entityInfo 调用者的entityInfo
+     */
+    protected BaseService(HttpSession session, EntityInfo<?> entityInfo){
         this.session = session;
-        this.operation = operation;
-        entityInfo = new EntityInfo<>();
-
-        doService();
-        commonResult = this.commonResult;
+        this.entityInfo = new EntityInfo<>();
+        this.entityInfo.setKey(entityInfo.getKey());
     }
 
+    /**
+     *
+     * @param map
+     * @param operation
+     * @return
+     */
+    protected CommonResult doOtherService(Map<String,Object> map, String operation){
+        this.paramList = map;
+        this.operation = operation;
+        if (check()){
+            //检查通过
+            doService();
+        }else {
+            //检查未通过
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_5002);
+        }
+        return commonResult;
+    }
+
+    /**
+     * 将data中的数据封装到baseService的属性中
+     * @param data Controller层传进来的数据
+     */
     private void fillAttribute(Data data){
         paramList = data.getMap();
         session = data.getSession();
         operation = data.getOperation();
         entityInfo = new EntityInfo<>();
+        commonResult = new CommonResult();
+        entityInfo.setKey(data.getKey());
     }
 
     /**
@@ -57,34 +96,39 @@ public abstract class BaseService<T> {
      */
     abstract protected void doService();
 
+    /**
+     * 负责对传进来的paramList数据进行检查
+     */
+    protected boolean check(){
+        return true;
+    }
+
     protected void update(){
-        entityInfo.setKey(1L);
-        entityInfo.setOperation("update");
+        entityInfo.setOperation(OperationConstants.UPDATE);
         commonResult = doMapper();
     }
 
     protected void delete(){
-        entityInfo.setKey(1L);
-        entityInfo.setOperation("delete");
+        entityInfo.setOperation(OperationConstants.DELETE);
         commonResult = doMapper();
     }
 
     protected void insert(){
-        entityInfo.setKey(1L);
-        entityInfo.setOperation("insert");
+        entityInfo.setOperation(OperationConstants.INSERT);
         commonResult = doMapper();
     }
 
     protected void select(){
-        entityInfo.setKey(1L);
-        entityInfo.setOperation("select");
+        entityInfo.setOperation(OperationConstants.SELECT);
         commonResult = doMapper();
     }
 
+    /**
+     * 分页查询
+     */
     protected void selectPage(){
         // 查询当前页的对应数据
-        entityInfo.setKey(1L);
-        entityInfo.setOperation("select");
+        entityInfo.setOperation(OperationConstants.SELECT);
         doMapper();
 
         Condition condition = entityInfo.getCondition();
@@ -106,9 +150,8 @@ public abstract class BaseService<T> {
         condition.addFields("count(*)");
         condition.addView(entityInfo.getCondition().getViews().get(0));
 
-        entityInfo.setKey(1L);
         entityInfo.setCondition(condition);
-        entityInfo.setOperation("select");
+        entityInfo.setOperation(OperationConstants.SELECT);
         CommonResult commonResult = doMapper();
 
         return (long) commonResult.getData();
@@ -116,17 +159,34 @@ public abstract class BaseService<T> {
 
     protected void invokeMethod(String methodName,Object obj){
         List<String> permissionList = (List<String>) session.getAttribute("permissionList");
-        if (permissionList.contains(methodName)){
+        if ("login".equals(operation) || permissionList.contains(methodName)){
             //存在此权限，执行响应方法
+
+            Method method = null;
             try {
-                Method method = obj.getClass().getMethod(methodName);
-                method.invoke(obj);
+                method = obj.getClass().getDeclaredMethod(methodName);
             } catch (NoSuchMethodException e) {
-                throw new UserException(CommonErrorCode.E_5001);
+                commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
+                e.printStackTrace();
+            }
+            method.setAccessible(true);
+            try {
+                method.invoke(obj);
             } catch (IllegalAccessException e) {
-                throw new UserException(CommonErrorCode.E_5001);
+                commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
+                e.printStackTrace();
             } catch (InvocationTargetException e) {
-                throw new UserException(CommonErrorCode.E_5001);
+                //处理抛出的UserException
+                if (e.getTargetException() instanceof UserException){
+                    //如果抛出的异常是UserException，则在此处理
+                    UserException userException = (UserException) e.getTargetException();
+                    ErrorCode errorCode = userException.getErrorCode();
+                    commonResult = CommonResult.commonErrorCode(errorCode);
+                }else {
+                    //其他异常处理
+                    commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
+                    e.printStackTrace();
+                }
             }
         }else {
             // 没有权限，则设置枚举异常结果
@@ -140,7 +200,6 @@ public abstract class BaseService<T> {
         //每隔1秒判断MS队列中是否有处理结果
         while (!MapperServiceQueue.getInstance().getKeys().contains(entityInfo.getKey())){
             try {
-                System.out.println("正在睡觉");
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();

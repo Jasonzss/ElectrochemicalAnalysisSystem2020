@@ -8,8 +8,6 @@ package com.bluedot.pojo.entity;
 public class Permission {
     private Integer permissionId;
     private String permissionName;
-    private String serviceName;
-    private String url;
 
     public Integer getPermissionId() {
         return permissionId;
@@ -27,29 +25,11 @@ public class Permission {
         this.permissionName = permissionName;
     }
 
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
     @Override
     public String toString() {
         return "Permission{" +
                 "permissionId=" + permissionId +
                 ", permissionName='" + permissionName + '\'' +
-                ", serviceName='" + serviceName + '\'' +
-                ", url='" + url + '\'' +
                 '}';
     }
 }

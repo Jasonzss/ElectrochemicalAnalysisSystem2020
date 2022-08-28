@@ -14,8 +14,10 @@ public class ExpData {
     private MaterialType materialType;
     private String expMaterialName;
     private Double expMaterialSolubility;
-    private Double[][] expOriginalPointData ;
-    private Double[][] expNewestPointData ;
+    private Double[] expVoltagePointData;
+    private Double[] expOriginalCurrentPointData ;
+    private Double[] expNewestCurrentPointData ;
+    private String orderOfMagnitudes;
     private Double expOriginalCurrent;
     private Double expOriginalPotential;
     private Double expNewestCurrent;
@@ -73,20 +75,36 @@ public class ExpData {
         this.expMaterialSolubility = expMaterialSolubility;
     }
 
-    public Double[][] getExpOriginalPointData() {
-        return expOriginalPointData;
+    public Double[] getExpVoltagePointData() {
+        return expVoltagePointData;
     }
 
-    public void setExpOriginalPointData(Double[][] expOriginalPointData) {
-        this.expOriginalPointData = expOriginalPointData;
+    public void setExpVoltagePointData(Double[] expVoltagePointData) {
+        this.expVoltagePointData = expVoltagePointData;
     }
 
-    public Double[][] getExpNewestPointData() {
-        return expNewestPointData;
+    public Double[] getExpOriginalCurrentPointData() {
+        return expOriginalCurrentPointData;
     }
 
-    public void setExpNewestPointData(Double[][] expNewestPointData) {
-        this.expNewestPointData = expNewestPointData;
+    public void setExpOriginalCurrentPointData(Double[] expOriginalCurrentPointData) {
+        this.expOriginalCurrentPointData = expOriginalCurrentPointData;
+    }
+
+    public Double[] getExpNewestCurrentPointData() {
+        return expNewestCurrentPointData;
+    }
+
+    public void setExpNewestCurrentPointData(Double[] expNewestCurrentPointData) {
+        this.expNewestCurrentPointData = expNewestCurrentPointData;
+    }
+
+    public String getOrderOfMagnitudes() {
+        return orderOfMagnitudes;
+    }
+
+    public void setOrderOfMagnitudes(String orderOfMagnitudes) {
+        this.orderOfMagnitudes = orderOfMagnitudes;
     }
 
     public Double getExpOriginalCurrent() {
@@ -177,8 +195,10 @@ public class ExpData {
                 ", materialType=" + materialType +
                 ", expMaterialName='" + expMaterialName + '\'' +
                 ", expMaterialSolubility=" + expMaterialSolubility +
-                ", expOriginalPointData=" + Arrays.toString(expOriginalPointData) +
-                ", expNewestPointData=" + Arrays.toString(expNewestPointData) +
+                ", expVoltagePointData=" + Arrays.toString(expVoltagePointData) +
+                ", expOriginalCurrentPointData=" + Arrays.toString(expOriginalCurrentPointData) +
+                ", expNewestCurrentPointData=" + Arrays.toString(expNewestCurrentPointData) +
+                ", orderOfMagnitudes='" + orderOfMagnitudes + '\'' +
                 ", expOriginalCurrent=" + expOriginalCurrent +
                 ", expOriginalPotential=" + expOriginalPotential +
                 ", expNewestCurrent=" + expNewestCurrent +

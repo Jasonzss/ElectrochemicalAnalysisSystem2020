@@ -1,7 +1,10 @@
 package com.bluedot.service;
 
+import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Report;
+
+import javax.servlet.http.HttpSession;
 
 /**
  * @Author Jason
@@ -13,12 +16,21 @@ public class ModelService extends BaseService<Report> {
         super(data);
     }
 
+    public ModelService(HttpSession session, EntityInfo<?> entityInfo) {
+        super(session, entityInfo);
+    }
+
     /**
      * 负责在ModelService中个根据父类属性分析调用哪些方法来解决请求
      */
     @Override
     protected void doService() {
 
+    }
+
+    @Override
+    protected boolean check() {
+        return true;
     }
 
     /**

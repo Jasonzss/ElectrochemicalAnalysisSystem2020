@@ -1,11 +1,13 @@
 package com.bluedot.pojo.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Date;
 
 /**
  * @Author Jason
- * @CreationDate 2022/07/29 - 0:55
+ * @CreationDate  2022/07/29 - 0:55
  * @Description ：
  */
 public class Report {
@@ -15,10 +17,20 @@ public class Report {
     private Algorithm pretreatmentAlgorithm;
     private Algorithm reportDataModel;
     private String reportResultModel;
-    private Byte[] reportTrainingSetGraph;
-    private Byte[] reportTestSetGraph;
-    private Date reportCreateTime;
-    private Date reportLastUpdateTime;
+    private byte[] reportTrainingSetGraph;
+    private byte[] reportTestSetGraph;
+    /**
+     * 加上注解，让对象在被转化成JSON时（为了传给前段）按规定格式转化（默认会有毫秒）
+     * 还有时区默认是GMT，咱们是东八区。
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Timestamp reportCreateTime;
+    /**
+     * 加上注解，让对象在被转化成JSON时（为了传给前段）按规定格式转化（默认会有毫秒）
+     * 还有时区默认是GMT，咱们是东八区。
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Timestamp reportLastUpdateTime;
     private User user;
     private String trainingSetData;
     private String testSetData;
@@ -85,35 +97,35 @@ public class Report {
         this.reportResultModel = reportResultModel;
     }
 
-    public Byte[] getReportTrainingSetGraph() {
+    public byte[] getReportTrainingSetGraph() {
         return reportTrainingSetGraph;
     }
 
-    public void setReportTrainingSetGraph(Byte[] reportTrainingSetGraph) {
+    public void setReportTrainingSetGraph(byte[] reportTrainingSetGraph) {
         this.reportTrainingSetGraph = reportTrainingSetGraph;
     }
 
-    public Byte[] getReportTestSetGraph() {
+    public byte[] getReportTestSetGraph() {
         return reportTestSetGraph;
     }
 
-    public void setReportTestSetGraph(Byte[] reportTestSetGraph) {
+    public void setReportTestSetGraph(byte[] reportTestSetGraph) {
         this.reportTestSetGraph = reportTestSetGraph;
     }
 
-    public Date getReportCreateTime() {
+    public Timestamp getReportCreateTime() {
         return reportCreateTime;
     }
 
-    public void setReportCreateTime(Date reportCreateTime) {
+    public void setReportCreateTime(Timestamp reportCreateTime) {
         this.reportCreateTime = reportCreateTime;
     }
 
-    public Date getReportLastUpdateTime() {
+    public Timestamp getReportLastUpdateTime() {
         return reportLastUpdateTime;
     }
 
-    public void setReportLastUpdateTime(Date reportLastUpdateTime) {
+    public void setReportLastUpdateTime(Timestamp reportLastUpdateTime) {
         this.reportLastUpdateTime = reportLastUpdateTime;
     }
 

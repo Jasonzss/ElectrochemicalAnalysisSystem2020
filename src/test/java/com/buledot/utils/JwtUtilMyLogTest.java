@@ -19,7 +19,7 @@ import static com.bluedot.utils.JwtUtil.*;
  * @date 2022/8/16 15:22
  * @created:
  */
-public class JwtUtilTest {
+public class JwtUtilMyLogTest {
 
     @Test
     public void test() throws InterruptedException {
