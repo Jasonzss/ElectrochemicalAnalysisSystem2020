@@ -25,14 +25,14 @@ public class BaseMapperTest {
     @Test
     public void testInsert() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
-        EntityInfo<User> entityInfo=new EntityInfo();
+        EntityInfo<User> entityInfo = new EntityInfo();
         entityInfo.setKey(1L);
         entityInfo.setOperation("insert");
-        ArrayList<User> list=new ArrayList<>();
+        ArrayList<User> list = new ArrayList<>();
         User user = new User();
         user.setUserAge(12);
-        user.setUserEmail("2418972236@qq.com");
-//        user.setUserImg(new Byte[]{1,2,3});
+        user.setUserEmail("444444@qq.com");
+//        user.setUserImg(new Byte[]{1, 2, 3});
         user.setUserName("lisi");
         user.setUserSalt("213");
         user.setUserPassword("123");
@@ -72,7 +72,6 @@ public class BaseMapperTest {
         User user = new User();
         user.setUserAge(14);
         user.setUserEmail("2386@qq.com");
-//        user.setUserImg(new Byte[]{1,2,3});
         user.setUserName("lisi");
         user.setUserSalt("213");
         user.setUserPassword("123");
