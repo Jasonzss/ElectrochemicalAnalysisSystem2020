@@ -72,7 +72,7 @@ public class PermissionService extends BaseService<Permission>{
 
     @Override
     protected boolean check() {
-        return false;
+        return true;
     }
 
     /**
@@ -165,13 +165,15 @@ public class PermissionService extends BaseService<Permission>{
      * 新增角色
      */
     private void insertRole(){
-        int[] permissionIds = (int[])paramList.get("permissionIds");
+        ArrayList permissionIds = (ArrayList)paramList.get("permissionIds");
         String roleName = (String) paramList.get("roleName");
         String roleDesc = (String) paramList.get("roleDesc");
         Role role=new Role();
         role.setRoleName(roleName);
         role.setRoleDesc(roleDesc);
-        insert();
+        paramList.put("role",role);
+        new RoleService(session,entityInfo).doOtherService(paramList,"insert");
+
         // 封装Condition
         Condition condition = new Condition();
         condition.setReturnType("Role");
@@ -181,22 +183,26 @@ public class PermissionService extends BaseService<Permission>{
         fields.add("role.role_id");
         List<Term> andCondition=new ArrayList<>();
         andCondition.add(new Term("role","role_name",roleName, TermType.EQUAL));
+        condition.setViews(views);
+        condition.setFields(fields);
+        condition.setAndCondition(andCondition);
         entityInfo.setCondition(condition);
         select();
-        Role role1= (Role) commonResult.getData();
+        ArrayList<Role> roleArrayList= (ArrayList<Role>) commonResult.getData();
+        Role role1= roleArrayList.get(roleArrayList.size()-1);
         Integer roleId = role1.getRoleId();
 
         ArrayList<RolePermission> rolePermissionArrayList = new ArrayList<>();
-        for (int permissionId : permissionIds) {
+        for (Object permissionId : permissionIds) {
             RolePermission rolePermission1 = new RolePermission();
             rolePermission1.setRoleId(roleId);
-            rolePermission1.setPermissionId(permissionId);
+            rolePermission1.setPermissionId((Integer) permissionId);
             rolePermissionArrayList.add(rolePermission1);
         }
-        HashMap<String,Object> map=new HashMap<>();
-        map.put("rolePermissionArrayList",rolePermissionArrayList);
 
-        new RolePermissionService(session,entityInfo).doOtherService(map,"insert");
+        paramList.put("rolePermissionArrayList",rolePermissionArrayList);
+
+        new RolePermissionService(session,entityInfo).doOtherService(paramList,"insert");
     }
     /**
      * 修改角色权限
