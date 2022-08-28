@@ -40,9 +40,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
     @Override
     protected void doService() {
         //从session获得useremail
-        sessionUseremail = String.valueOf(session.getAttribute("userEmail"));
+        sessionUseremail = (String) session.getAttribute("userEmail");
         //前端传来的username，可能为空
-        String paraUseremail = String.valueOf(paramList.get("userEmail"));
+        String paraUseremail = (String) paramList.get("userEmail");
         //如果paraUseremail为空，表示此操作为管理员的操作
         Boolean isAdmin = paraUseremail == null ? true : false;
         //执行的方法名
@@ -64,7 +64,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
-
+        System.out.println(method);
         invokeMethod(method, this);
     }
 
@@ -78,22 +78,19 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
 
         //拿到参数
-        String algorithmName = (String) paramList.get("algorithmName");
-        Integer algorithmType = (Integer) paramList.get("algorithmType");
-        Integer algorithmLanguage = (Integer) paramList.get("algorithmLanguage");
+        Object algorithmName = paramList.get("algorithmName");
+        Object algorithmType = paramList.get("algorithmType");
+        Object algorithmLanguage = paramList.get("algorithmLanguage");
 
-
-        //添加查询表的条件
-        if (algorithmName != null || !algorithmName.isEmpty()) {
+        if (algorithmName instanceof String && !((String) algorithmName).isEmpty()) {
             condition.addAndConditionWithView(new Term(table, "algorithm_name", algorithmName, TermType.EQUAL));
         }
-        if (algorithmType != null) {
-            condition.addAndConditionWithView(new Term(table, "algorithm_type", algorithmType, TermType.EQUAL));
+        if (algorithmType instanceof Integer) {
+            condition.addAndConditionWithView(new Term(table, "algorithm_name", algorithmType, TermType.EQUAL));
         }
-        if (algorithmLanguage != null) {
-            condition.addAndConditionWithView(new Term(table, "algorithm_language", algorithmLanguage, TermType.EQUAL));
+        if (algorithmLanguage instanceof Integer) {
+            condition.addAndConditionWithView(new Term(table, "algorithm_name", algorithmLanguage, TermType.EQUAL));
         }
-
 
         entityInfo.setCondition(condition);
         selectPage();
@@ -107,20 +104,18 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
 
         //拿到参数
-        String algorithmName = (String) paramList.get("algorithmName");
-        Integer algorithmType = (Integer) paramList.get("algorithmType");
-        Integer algorithmLanguage = (Integer) paramList.get("algorithmLanguage");
+        Object algorithmName = paramList.get("algorithmName");
+        Object algorithmType = paramList.get("algorithmType");
+        Object algorithmLanguage = paramList.get("algorithmLanguage");
 
-
-        //添加查询表的条件
-        if (algorithmName != null || !algorithmName.isEmpty()) {
+        if (algorithmName instanceof String && !((String) algorithmName).isEmpty()) {
             condition.addAndConditionWithView(new Term(table, "algorithm_name", algorithmName, TermType.EQUAL));
         }
-        if (algorithmType != null) {
-            condition.addAndConditionWithView(new Term(table, "algorithm_type", algorithmType, TermType.EQUAL));
+        if (algorithmType instanceof Integer) {
+            condition.addAndConditionWithView(new Term(table, "algorithm_name", algorithmType, TermType.EQUAL));
         }
-        if (algorithmLanguage != null) {
-            condition.addAndConditionWithView(new Term(table, "algorithm_language", algorithmLanguage, TermType.EQUAL));
+        if (algorithmLanguage instanceof Integer) {
+            condition.addAndConditionWithView(new Term(table, "algorithm_name", algorithmLanguage, TermType.EQUAL));
         }
 
         //确保删除的是自己的，所以添加一个useremail
@@ -228,7 +223,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
                     entityInfo.addEntity(algorithm);
 
                     //删除文件
-                    File file = new File(AlgoUtil.RESPATH + "algo/src/" + algorithmId + ".java");
+                    File file = new File(AlgoUtil.RESPATH + "algo/java/" + algorithmId + ".java");
                     if (file.exists()) {
                         file.delete();
                     }
@@ -259,7 +254,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
                     entityInfo.addEntity(algorithm);
 
                     //删除文件
-                    File file = new File(AlgoUtil.RESPATH + "algo/src/" + algorithmId + ".java");
+                    File file = new File(AlgoUtil.RESPATH + "algo/java/" + algorithmId + ".java");
                     if (file.exists()) {
                         file.delete();
                     }
@@ -331,7 +326,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
             id = ((Algorithm) data).getAlgorithmId();
         }
         //添加文件
-        File file = new File(AlgoUtil.RESPATH + "algo/src/" + id + ".java");
+        File file = new File(AlgoUtil.RESPATH + "algo/java/" + id + ".java");
         try {
             item.write(file);
         } catch (Exception e) {
@@ -345,12 +340,12 @@ public class AlgorithmService extends BaseService<Algorithm> {
         //创建一个临时文件去测试
         File tempFile = null;
         try {
-            tempFile = new File(AlgoUtil.RESPATH + "algo/src/" + algo.getAlgorithmId() + ".java");
+            tempFile = new File(AlgoUtil.RESPATH + "algo/java/" + algo.getAlgorithmId() + ".java");
             //要是有算法在测试就会占用这个id，所以看看这个文件在不在，存在就让id-1，继续判断直到有个可以用的
             while (tempFile.exists()) {
                 algo.setAlgorithmId(algo.getAlgorithmId() - 1);
             }
-            tempFile = new File(AlgoUtil.RESPATH + "algo/src/" + algo.getAlgorithmId() + ".java");
+            tempFile = new File(AlgoUtil.RESPATH + "algo/java/" + algo.getAlgorithmId() + ".java");
             //将上传的文件写入到临时文件
             item.write(tempFile);
             //根据算法类型穿不同的测试数据来测试
