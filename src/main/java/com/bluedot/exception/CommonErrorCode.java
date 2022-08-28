@@ -56,6 +56,12 @@ public enum CommonErrorCode implements ErrorCode {
      */
     E_7001(7001, "该算法名已存在"),
     E_7002(7002, "该算法测试不通过"),
+    /**
+     * 算法service异常
+     */
+    E_8001(8001,"mapper操作类型错误"),
+    E_8002(8002,"自动生成的sql语句为空"),
+    E_8003(8003,"更新数据错误"),
     ;
 
     private final int code;

@@ -16,7 +16,6 @@ public class AlgoUtilTest {
     public  void testDataProcess(){
         Algorithm algorithm = new Algorithm();
         algorithm.setAlgorithmId(1);
-        algorithm.setAlgorithmFileName("1378799690@qq.com_1");
         Double[] data=new Double[]{1.0,2.0,3.0,4.2,5.1,3.9,3.1,1.7};
         Double[] doubles = AlgoUtil.dataProcess(algorithm, data);
         for (Double aDouble : doubles) {
@@ -27,7 +26,6 @@ public class AlgoUtilTest {
     public void testFiltering(){
         Algorithm algorithm = new Algorithm();
         algorithm.setAlgorithmId(1);
-        algorithm.setAlgorithmFileName("Filtering");
         Double[] a=new Double[]{-2.882e-6
                 , -2.848e-6
                 , -2.818e-6

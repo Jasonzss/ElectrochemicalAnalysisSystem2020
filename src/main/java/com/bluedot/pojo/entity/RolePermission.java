@@ -9,15 +9,35 @@ import java.util.ArrayList;
  * @date 2022/8/21 13:57
  */
 public class RolePermission {
+    private Integer roleId;
+    private Integer permissionId;
     private Role role;
     private ArrayList<Permission> permissionArrayList;
 
     public RolePermission() {
     }
 
-    public RolePermission(Role role, ArrayList<Permission> permissionArrayList) {
+    public RolePermission(Integer roleId, Integer permissionId, Role role, ArrayList<Permission> permissionArrayList) {
+        this.roleId = roleId;
+        this.permissionId = permissionId;
         this.role = role;
         this.permissionArrayList = permissionArrayList;
+    }
+
+    public Integer getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Integer roleId) {
+        this.roleId = roleId;
+    }
+
+    public Integer getPermissionId() {
+        return permissionId;
+    }
+
+    public void setPermissionId(Integer permissionId) {
+        this.permissionId = permissionId;
     }
 
     public Role getRole() {
