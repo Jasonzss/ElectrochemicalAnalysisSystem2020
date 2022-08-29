@@ -44,8 +44,7 @@ public class MapperMonitor extends Monitor<ServiceMapperQueue> {
      * @param entityInfo
      */
     private void MapperInstance(EntityInfo entityInfo){
-       BaseMapper basemapper = new BaseMapper(entityInfo);
-       basemapper=null;
+        new BaseMapper(entityInfo);
     }
     @Override
     public void run() {
