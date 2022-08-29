@@ -9,6 +9,7 @@ import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Role;
 import com.bluedot.pojo.entity.RolePermission;
+import com.bluedot.pojo.entity.UserRole;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
@@ -55,7 +56,14 @@ public class RolePermissionService extends BaseService<RolePermission>{
     }
 
     private void insertRolePermission(){
-        ArrayList<RolePermission> rolePermissionArrayList= (ArrayList<RolePermission>) paramList.get("rolePermissionArrayList");
+        ArrayList<Integer> permissionIds = (ArrayList<Integer>) paramList.get("permissionIds");
+        ArrayList<RolePermission> rolePermissionArrayList = new ArrayList<>();
+        for (int permissionId : permissionIds) {
+            RolePermission rolePermission = new RolePermission();
+            rolePermission.setRoleId((Integer) paramList.get("roleId"));
+            rolePermission.setPermissionId(permissionId);
+            rolePermissionArrayList.add(rolePermission);
+        }
         entityInfo.setEntity(rolePermissionArrayList);
         insert();
     }

@@ -91,7 +91,7 @@ public class Executor {
                 TableInfo tableInfo = MapperInit.getConfiguration().getClassToTableInfoMap().get(Class.forName(entity));
                 //表主键名
                 String primaryName = tableInfo.getPrimaryKeys().get(0).getName();
-                logger.info("获取主表主键名"+primaryName);
+                logger.debug("获取主表主键名"+primaryName);
                 Map<Object,Object> map=new HashMap();
                 //查询结果
                 List<E> result = new ArrayList<>();
@@ -113,7 +113,7 @@ public class Executor {
                     String rowObjectType = mappedStatement.getReturnType();
                     if (rowObjectType.endsWith("Long")) {
                         rowObject = (E) resultSet.getObject(1);
-                        logger.info("每一行查询结果："+rowObject);
+                        logger.debug("每一行查询结果："+rowObject);
                         result.add(rowObject);
                         return result;
                     }
@@ -227,7 +227,7 @@ public class Executor {
                     }
 
                 }
-                logger.info("查询结果:"+result.toString());
+                logger.debug("查询结果:"+result.toString());
                 return result;
             } catch (Exception exc) {
                 logger.error("封装查询结果，出现异常:"+exc.getMessage());
@@ -279,7 +279,7 @@ public class Executor {
                 }
 
             Integer res = (Integer)  preparedStatement.executeUpdate();
-                logger.info("更新数据库结果行数:"+res);
+                logger.debug("更新数据库结果行数:"+res);
                 return res;
 
         } catch (Exception e) {
@@ -287,7 +287,7 @@ public class Executor {
             e.printStackTrace();
             throw new RuntimeException(e);
         }finally {
-            logger.info("更新数据库完成，归还数据库连接");
+            logger.debug("更新数据库完成，归还数据库连接");
             dataSource.returnConnection(connection);
         }
     }

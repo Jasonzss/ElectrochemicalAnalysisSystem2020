@@ -20,7 +20,7 @@ public class MyDataSourceImpl implements MyDataSource {
     private static  String PASSWORD;
     private static int initCount = 5;
     private static int minCount = 5;
-    private static int maxCount = 30;
+    private static int maxCount = 15;
     private static int createdCount;
     private static int increasingCount = 2;
     private static int maxWaitingTime = 500;
@@ -81,11 +81,11 @@ public class MyDataSourceImpl implements MyDataSource {
         try {
             Class.forName(DRIVER);
             Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-            logger.debug("创建数据库连接，连接池容量---》："+conns.size()+"-----createdCount为 "+createdCount);
             return connection;
 
         } catch (Exception e) {
-            throw new RuntimeException("数据库连接失败：" + e.getMessage());
+            logger.error("数据库连接失败："+ e.getMessage());
+            throw new RuntimeException("数据库连接失败："+ e.getMessage());
         }
     }
 
@@ -110,7 +110,6 @@ public class MyDataSourceImpl implements MyDataSource {
             if (createdCount > minCount && conns.contains(conn)) {
                 try {
                     conns.remove(conn);
-                    logger.debug("关闭数据库连接："+conn);
                     conn.close();
                     createdCount--;
                 } catch (SQLException e) {

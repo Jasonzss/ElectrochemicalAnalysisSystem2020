@@ -43,7 +43,7 @@ public class BaseMapper {
      * @return:
      **/
     public BaseMapper(EntityInfo entityInfo) {
-        logger.info("进入BaseMapper构造器");
+        logger.debug("进入BaseMapper构造器");
         this.entityInfo=entityInfo;
         entityList = entityInfo.getEntity();
         doMapper();
@@ -77,7 +77,7 @@ public class BaseMapper {
         //结果封装
         commonResult = new CommonResult();
         commonResult.setData(object);
-        logger.info("mapper层操作结果："+commonResult+",并将结果通过队列  返回给service层");
+        logger.debug("mapper层操作结果："+commonResult+",并将结果通过队列  返回给service层");
         //将结果通过队列  返回给service
         com.bluedot.queue.outQueue.impl.MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
     }
@@ -94,7 +94,7 @@ public class BaseMapper {
         String sql = generateSelectSqL(condition, parameters);
         MappedStatement mappedStatement = new MappedStatement();
         mappedStatement.setSql(sql);
-        logger.info("自动生成的查询sql语句："+sql);
+        logger.debug("自动生成的查询sql语句："+sql);
         String view=condition.getViews().get(0);
         if (view.startsWith("`")){
             view=view.substring(1,view.length()-1);
@@ -419,7 +419,7 @@ public class BaseMapper {
         StringBuilder sql = new StringBuilder();
         callback.generateSqlExecutor(fields, tableInfo, primaryKeys, sql, mappedStatement, params);
         sql.setCharAt(sql.length() - 1, ' ');
-        logger.info(entityInfo.getOperation()+"生成的sql:"+sql.toString());
+        logger.debug(entityInfo.getOperation()+"生成的sql:"+sql.toString());
         mappedStatement.setSql(sql.toString());
         return this.executor.doUpdate(mappedStatement, params.toArray());
     }
