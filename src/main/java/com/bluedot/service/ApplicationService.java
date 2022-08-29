@@ -213,38 +213,7 @@ public class ApplicationService extends BaseService<Application>{
      * 用户查询申请
      */
     private void listPersonalApplication(){
-        Condition condition = new Condition();
-
-        // 分页查询
-        if (paramList.containsKey("pageSize")){
-            condition.setSize((Integer) paramList.get("pageSize"));
-        }
-        if (paramList.containsKey("pageNo")){
-            condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
-        }
-
-        // 查询申请的类型
-        if (paramList.get("applicationTyoe") != null){
-            condition.addAndConditionWithView(new Term("application","application_type",paramList.get("applicationType"),TermType.EQUAL));
-        }
-
-        // 用户查找
-        if (paramList.containsKey("userEmail")){
-            condition.addAndConditionWithView(new Term("application","user_email",paramList.get("userEmail"),TermType.EQUAL));
-        }
-
-        // 可能添加的筛选条件:开始时间/截止时间/申请状态
-        if (paramList.get("beginTime") != null){
-            condition.addAndConditionWithView(new Term("application","application_time",paramList.get("beginTime"),TermType.GREATER));
-        }
-        if (paramList.get("endTime") != null){
-            condition.addAndConditionWithView(new Term("application","application_time",paramList.get("endTime"),TermType.Less));
-        }
-        if (paramList.get("applicationStatus") != null){
-            condition.addAndConditionWithView(new Term("application","application_status",paramList.get("applicationStatus"),TermType.EQUAL));
-        }
-
-        entityInfo.setCondition(condition);
+        listApplication();
     }
 
     /**
