@@ -26,7 +26,7 @@ import java.util.*;
  * @date 2022/8/16 16:37
  */
 public class Executor {
-    private Logger logger= LogUtil.getLogger();
+    private final Logger logger = LogUtil.getLogger();
     //数据库连接池
     private MyDataSource dataSource;
     //数据库连接
@@ -102,18 +102,26 @@ public class Executor {
                 //封装数据
                 while (resultSet.next()) {
                     //行数据主键值
-                    Object primaryValue = resultSet.getObject(primaryName);
-                    //返回值类型vo
-                    String rowObjectType = mappedStatement.getReturnType();
+                    Object primaryValue =null;
+                    if (sql.indexOf("count(*)") ==-1){
+                        primaryValue = resultSet.getObject(primaryName);
+                    }
                     //每一行结果
                     E rowObject = null;
-                    if (mappedStatement.getView().equals(mappedStatement.getReturnType()) && map.containsKey(primaryValue)) {
+                    //返回值类型vo
+                    String rowObjectType = mappedStatement.getReturnType();
+                    if (rowObjectType.endsWith("Long")) {
+                        rowObject = (E) resultSet.getObject(1);
+                        logger.info("每一行查询结果："+rowObject);
+                        result.add(rowObject);
+                        return result;
+                    }
+                    if (mappedStatement.getView().equals(mappedStatement.getReturnType()) && sql.indexOf("count(*)") ==-1&& map.containsKey(primaryValue)) {
                         rowObject = (E) map.get(primaryValue);
                     } else {
                         rowObject = (E) Class.forName(Configuration.getProperty(SessionConstants.ENTITY_PACKAGENAME)+"."+rowObjectType).newInstance();
                     }
                     Object listEntity = null;
-
 
                     Field[] fields = rowObject.getClass().getDeclaredFields();
                     Map<String, Object> foreignKeyEntityMap = new HashMap<>();
@@ -178,11 +186,6 @@ public class Executor {
                         }
                     }
                     //封装数据
-                    if (rowObjectType.endsWith("Long")) {
-                        rowObject = (E) resultSet.getObject(1);
-                        logger.info("查询结果："+rowObject);
-                    }
-                    else {
                         for (int i = 0; i < resultSetMetaData.getColumnCount(); i++) {
 
                             String columnName = resultSetMetaData.getColumnLabel(i + 1);
@@ -214,8 +217,8 @@ public class Executor {
                                 }
                             }
                         }
-                    }
-                    if (mappedStatement.getView().equals(mappedStatement.getReturnType()) && !map.containsKey(primaryValue)) {
+
+                    if (sql.indexOf("count(*)") ==-1&&mappedStatement.getView().equals(mappedStatement.getReturnType()) && !map.containsKey(primaryValue)) {
                         map.put(primaryValue, rowObject);
                     }
                     if (!result.contains(rowObject)) {

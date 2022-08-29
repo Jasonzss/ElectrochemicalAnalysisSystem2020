@@ -26,7 +26,7 @@ import java.util.List;
  * @date 2022/8/16 16:15
  */
 public class BaseMapper {
-    private Logger logger= LogUtil.getLogger();
+    private final Logger logger = LogUtil.getLogger();
     //mapper执行器
     private Executor executor = new Executor(MapperInit.getConfiguration());
     //mapper实体类属性
@@ -77,7 +77,7 @@ public class BaseMapper {
         //结果封装
         commonResult = new CommonResult();
         commonResult.setData(object);
-        logger.info("mapper层操作结果："+object+",并将结果通过队列  返回给service层");
+        logger.info("mapper层操作结果："+commonResult+",并将结果通过队列  返回给service层");
         //将结果通过队列  返回给service
         com.bluedot.queue.outQueue.impl.MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
     }
@@ -222,15 +222,17 @@ public class BaseMapper {
 
                 sql.append("delete from ").append(tableInfo.getTableName()).append(" where ");
                 for (ColumnInfo columnInfo : primaryKeys) {
-                    sql.append(StringUtil.humpToLine(columnInfo.getName())).append(" in( ");
-                    for (Object o : typeList) {
-                        if (ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName()))!=null){
-                            sql.append(" ?,");
-                            params.add(ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName())));
+                    if (ReflectUtil.invokeGet(typeList.get(0), StringUtil.lineToHump(columnInfo.getName()))!=null) {
+                        sql.append(StringUtil.humpToLine(columnInfo.getName())).append(" in( ");
+                        for (Object o : typeList) {
+                            if (ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName())) != null) {
+                                sql.append(" ?,");
+                                params.add(ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName())));
+                            }
                         }
+                        sql.setCharAt(sql.length() - 1, ')');
+                        sql.append(" ");
                     }
-                    sql.setCharAt(sql.length()-1,')');
-                    sql.append(" ");
                 }
             }
         });
@@ -429,22 +431,24 @@ public class BaseMapper {
      * @return: java.lang.String
      **/
     public static String generateSelectSqL(Condition condition, List<Object> list) {
-        String view=condition.getViews().get(0);
-        if (view.startsWith("`")){
-            view=view.substring(1,view.length()-1);
+        if (!condition.getFields().contains("count(*)")){
+            String view=condition.getViews().get(0);
+            if (view.startsWith("`")){
+                view=view.substring(1,view.length()-1);
+            }
+            view=StringUtil.tableNameToClassName(view);
+            String entity = Configuration.getProperty(SessionConstants.ENTITY_PACKAGENAME)+"."+view;
+            TableInfo tableInfo = null;
+            try {
+                tableInfo = MapperInit.getConfiguration().getClassToTableInfoMap().get(Class.forName(entity));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            //表主键名
+            String primaryName = tableInfo.getPrimaryKeys().get(0).getName();
+            List<String> fields = condition.getFields();
+            fields.add(tableInfo.getTableName()+"."+primaryName);
         }
-        view=StringUtil.tableNameToClassName(view);
-        String entity = Configuration.getProperty(SessionConstants.ENTITY_PACKAGENAME)+"."+view;
-        TableInfo tableInfo = null;
-        try {
-            tableInfo = MapperInit.getConfiguration().getClassToTableInfoMap().get(Class.forName(entity));
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        //表主键名
-        String primaryName = tableInfo.getPrimaryKeys().get(0).getName();
-        List<String> fields = condition.getFields();
-        fields.add(tableInfo.getTableName()+"."+primaryName);
         StringBuffer select = new StringBuffer("select ");
         List<String> views = condition.getViews();
         if (condition.getFields().size() == 0) {

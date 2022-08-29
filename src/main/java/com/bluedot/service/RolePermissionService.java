@@ -43,12 +43,19 @@ public class RolePermissionService extends BaseService<RolePermission>{
      * 修改角色权限
      */
     private void updateRolePermissions(){
-        int[] permissionIds = (int[])paramList.get("permissionIds");
+
         RolePermission rolePermission = new RolePermission();
         rolePermission.setRoleId((Integer) paramList.get("roleId"));
         entityInfo.addEntity(rolePermission);
         delete();
 
+
+
+        insert();
+    }
+
+    private void insertRolePermission(){
+        ArrayList<Integer> permissionIds = (ArrayList<Integer>) paramList.get("permissionIds");
         ArrayList<RolePermission> rolePermissionArrayList = new ArrayList<>();
         for (int permissionId : permissionIds) {
             RolePermission rolePermission1 = new RolePermission();
@@ -59,14 +66,7 @@ public class RolePermissionService extends BaseService<RolePermission>{
         entityInfo.setEntity(rolePermissionArrayList);
         insert();
     }
-
-    private void insertRolePermission(){
-        List rolePermissionArrayList= (List) paramList.get("rolePermissionArrayList");
-        entityInfo.setEntity(rolePermissionArrayList);
-        insert();
-    }
     private void deleteRolePermission(){
-        int[] permissionIds = (int[])paramList.get("permissionIds");
         RolePermission rolePermission = new RolePermission();
         rolePermission.setRoleId((Integer) paramList.get("roleId"));
         entityInfo.addEntity(rolePermission);
