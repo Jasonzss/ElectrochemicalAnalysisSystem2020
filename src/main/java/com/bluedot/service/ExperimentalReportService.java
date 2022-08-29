@@ -71,11 +71,7 @@ public class ExperimentalReportService extends BaseService<Report>{
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
-    }
-
-    @Override
-    protected boolean check() {
-        return false;
+        invokeMethod(methodName,this);
     }
 
     /**

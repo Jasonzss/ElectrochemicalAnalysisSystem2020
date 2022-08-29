@@ -21,9 +21,9 @@ import java.util.*;
  * @CreationDate 2022/8/19 17:51
  * @Description ：
  */
-@WebFilter(urlPatterns = "/*",filterName = "登录过滤器",initParams = {
-        @WebInitParam(name = "UserService",value = "login,insert")
-})
+//@WebFilter(urlPatterns = "/*",filterName = "登录过滤器",initParams = {
+//        @WebInitParam(name = "UserService",value = "login,insert")
+//})
 public class LoginFilter implements Filter {
     /**
      * 过滤器名

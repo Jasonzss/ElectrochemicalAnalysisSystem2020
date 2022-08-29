@@ -63,11 +63,7 @@ public class ApplicationService extends BaseService<Application>{
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
-    }
-
-    @Override
-    protected boolean check() {
-        return false;
+        invokeMethod(methodName,this);
     }
 
     /**

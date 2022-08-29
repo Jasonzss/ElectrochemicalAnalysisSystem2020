@@ -7,6 +7,7 @@ import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.PageInfo;
 import com.bluedot.pojo.Dto.Data;
+import com.bluedot.pojo.entity.User;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
@@ -159,7 +160,7 @@ public abstract class BaseService<T> {
 
     protected void invokeMethod(String methodName,Object obj){
         List<String> permissionList = (List<String>) session.getAttribute("permissionList");
-        if ("login".equals(operation) || permissionList.contains(methodName)){
+//        if ("login".equals(operation) || permissionList.contains(methodName)){
             //存在此权限，执行响应方法
 
             Method method = null;
@@ -173,25 +174,23 @@ public abstract class BaseService<T> {
             try {
                 method.invoke(obj);
             } catch (IllegalAccessException e) {
-                commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
                 e.printStackTrace();
+                commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
             } catch (InvocationTargetException e) {
+                e.printStackTrace();
                 //处理抛出的UserException
                 if (e.getTargetException() instanceof UserException){
                     //如果抛出的异常是UserException，则在此处理
-                    UserException userException = (UserException) e.getTargetException();
-                    ErrorCode errorCode = userException.getErrorCode();
-                    commonResult = CommonResult.commonErrorCode(errorCode);
+                    commonResult = CommonResult.commonErrorCode(((UserException) e.getTargetException()).getErrorCode());
                 }else {
                     //其他异常处理
                     commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
-                    e.printStackTrace();
                 }
             }
-        }else {
-            // 没有权限，则设置枚举异常结果
-            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_3001);
-        }
+//        }else {
+//            // 没有权限，则设置枚举异常结果
+//            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_3001);
+//        }
     }
 
     private CommonResult doMapper(){

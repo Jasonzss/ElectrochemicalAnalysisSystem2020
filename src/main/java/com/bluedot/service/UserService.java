@@ -325,17 +325,17 @@ public class UserService extends BaseService<User> {
      * 登录
      */
     private void login(){
-        //获取登录的参数
-        String authCode = (String) session.getAttribute(SessionConstants.IMG_AUTH_CODE);
-        System.out.println(authCode);
-
-        //判断图片验证码是否正确
-        if (!authCode.equalsIgnoreCase((String) paramList.get("imgAuthCode"))){
-            throw new UserException(CommonErrorCode.E_1004);
-        }
-
-        //session中移除图片验证码
-        session.removeAttribute("imgAuthCode");
+//        //获取登录的参数
+//        String authCode = (String) session.getAttribute(SessionConstants.IMG_AUTH_CODE);
+//        System.out.println(authCode);
+//
+//        //判断图片验证码是否正确
+//        if (!authCode.equalsIgnoreCase((String) paramList.get("imgAuthCode"))){
+//            throw new UserException(CommonErrorCode.E_1004);
+//        }
+//
+//        //session中移除图片验证码
+//        session.removeAttribute("imgAuthCode");
 
         //根据邮箱查询用户
         getPersonalUser();

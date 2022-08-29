@@ -80,7 +80,13 @@ public class BaseMapper {
     private Object select(Condition condition) {
         List<Object> parameters = new ArrayList<>();
         //生成sqL语句并得到填充后的参数数组
-        String sql = generateSelectSqL(condition, parameters);
+        String sql = null;
+        try {
+            sql = generateSelectSqL(condition, parameters);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
         MappedStatement mappedStatement = new MappedStatement();
         mappedStatement.setSql(sql);
         System.out.println(sql);
@@ -420,6 +426,8 @@ public class BaseMapper {
      * @return: java.lang.String
      **/
     public static String generateSelectSqL(Condition condition, List<Object> list) {
+        System.out.println(condition.getSize());
+        System.out.println(condition.getStartIndex());
         String view=condition.getViews().get(0);
         if (view.startsWith("`")){
             view=view.substring(1,view.length()-1);
