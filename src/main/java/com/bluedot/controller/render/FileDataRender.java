@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -36,7 +37,13 @@ public class FileDataRender {
                     ImageIO.write(((BufferedImage) map.get("file")), "png", response.getOutputStream());
                     break;
                 case CommonResult.INPUT_STREAM_IMAGE:
-                    response.getOutputStream().write(((InputStream) map.get("file")).read());
+                    InputStream inputStream = (InputStream) map.get("file");
+                    byte[] buffer = new byte[1024];
+                    int len = -1;
+                    while ((len = inputStream.read(buffer)) != -1){
+                        response.getOutputStream().write(buffer,0,len);
+                    }
+//                    response.getOutputStream().write(((InputStream) map.get("file")).read());
                     break;
                 case CommonResult.FILE:
                     response.getOutputStream().write(new FileInputStream((File) map.get("file")).read());
