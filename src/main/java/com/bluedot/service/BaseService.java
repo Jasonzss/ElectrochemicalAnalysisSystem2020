@@ -6,6 +6,7 @@ import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.PageInfo;
+import com.bluedot.monitor.impl.ServiceMapperMonitor;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
@@ -18,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * @Author Jason
@@ -197,14 +199,10 @@ public abstract class BaseService<T> {
     private CommonResult doMapper(){
         //将待BaseMapper处理的数据加入到SMQueue中
         ServiceMapperQueue.getInstance().put(entityInfo);
-        //每隔1秒判断MS队列中是否有处理结果
-        while (!MapperServiceQueue.getInstance().getKeys().contains(entityInfo.getKey())){
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        //将当前线程加入到ServiceMapperMonitor中等待唤醒
+        ServiceMapperMonitor.getInstance().addThread(entityInfo.getKey(),Thread.currentThread());
+        //当前线程暂停执行
+        LockSupport.park();
         //返回Mapper处理结果
         return MapperServiceQueue.getInstance().take(entityInfo.getKey());
     }
