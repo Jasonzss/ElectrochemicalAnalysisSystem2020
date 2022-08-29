@@ -53,11 +53,7 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
-    }
-
-    @Override
-    protected boolean check() {
-        return false;
+        invokeMethod(methodName,this);
     }
 
     /**
