@@ -1,12 +1,16 @@
 package com.bluedot.mapper;
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Configuration;
 import com.bluedot.mapper.bean.MappedStatement;
 import com.bluedot.mapper.bean.TableInfo;
 import com.bluedot.mapper.dataSource.MyDataSource;
+import com.bluedot.utils.LogUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.StringUtil;
 import com.bluedot.utils.constants.SessionConstants;
+import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -22,6 +26,7 @@ import java.util.*;
  * @date 2022/8/16 16:37
  */
 public class Executor {
+    private Logger logger= LogUtil.getLogger();
     //数据库连接池
     private MyDataSource dataSource;
     //数据库连接
@@ -57,7 +62,7 @@ public class Executor {
             if (StringUtil.isNotEmpty(sql)) {
                 preparedStatement =  connection.prepareStatement(sql);
             } else {
-                throw new RuntimeException(" sql is null.");
+                throw new UserException(CommonErrorCode.E_8002);
             }
 
             try {
@@ -85,21 +90,15 @@ public class Executor {
                 TableInfo tableInfo = MapperInit.getConfiguration().getClassToTableInfoMap().get(Class.forName(entity));
                 //表主键名
                 String primaryName = tableInfo.getPrimaryKeys().get(0).getName();
-
+                logger.info("获取主表主键名"+primaryName);
                 Map<Object,Object> map=new HashMap();
                 //查询结果
                 List<E> result = new ArrayList<>();
                 if (null == resultSet) {
+                    logger.warn("查询结果为空");
                     return null;
                 }
                 ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-//                if (mappedStatement.getView().equals(mappedStatement.getReturnType())){
-//
-//                }else {
-//                    while (resultSet.next()){
-//
-//                    }
-//                }
                 //封装数据
                 while (resultSet.next()) {
                     //行数据主键值
@@ -181,6 +180,7 @@ public class Executor {
                     //封装数据
                     if (rowObjectType.endsWith("Long")) {
                         rowObject = (E) resultSet.getObject(1);
+                        logger.info("查询结果："+rowObject);
                     }
                     else {
                         for (int i = 0; i < resultSetMetaData.getColumnCount(); i++) {
@@ -189,8 +189,6 @@ public class Executor {
                             Object columnValue = resultSet.getObject(i + 1);
 
                             String columnClassName = StringUtil.lineToHump(columnName);
-//                            Field declaredField = rowObject.getClass().getDeclaredField(columnClassName);
-//                            declaredField.setAccessible(true);
                             //基本类型封装
                             Field[] declaredFields = rowObject.getClass().getDeclaredFields();
                             for (Field declaredField : declaredFields) {
@@ -198,7 +196,6 @@ public class Executor {
                                     ReflectUtil.invokeSet(rowObject, columnClassName, columnValue);
                                 }
                             }
-
 
                             for (Object o : foreignKeyEntityList) {
                                 Field[] declaredFields1 = o.getClass().getDeclaredFields();
@@ -226,13 +223,15 @@ public class Executor {
                     }
 
                 }
-
+                logger.info("查询结果:"+result.toString());
                 return result;
             } catch (Exception exc) {
+                logger.error("封装查询结果，出现异常:"+exc.getMessage());
                 exc.printStackTrace();
                 return null;
             }
         } catch (Exception e) {
+            logger.error("封装查询结数据库，出现异常:"+e.getMessage());
             throw new RuntimeException(e);
         }finally {
             dataSource.returnConnection(connection);
@@ -254,10 +253,9 @@ public class Executor {
             if (StringUtil.isNotEmpty(sql)) {
                 preparedStatement =  connection.prepareStatement(sql);
             } else {
-                throw new RuntimeException(" sql is null.");
+                throw new UserException(CommonErrorCode.E_8002);
             }
 
-            try {
                 if (null != parameter) {
                     if (parameter.getClass().isArray()) {
                         Object[] params = (Object[]) parameter;
@@ -274,17 +272,16 @@ public class Executor {
                         preparedStatement.setObject(1, parameter);
                     }
                 }
-            } catch (SQLException throwable) {throwable.printStackTrace();}
 
             Integer res = (Integer)  preparedStatement.executeUpdate();
-            if (null != res) {
+                logger.info("更新数据库结果行数:"+res);
                 return res;
-            } else {
-                throw new RuntimeException("更新数据错误");
-            }
+
         } catch (Exception e) {
+            logger.error("更新数据异常："+e.getMessage());
             throw new RuntimeException(e);
         }finally {
+            logger.info("更新数据库完成，归还数据库连接");
             dataSource.returnConnection(connection);
         }
     }
