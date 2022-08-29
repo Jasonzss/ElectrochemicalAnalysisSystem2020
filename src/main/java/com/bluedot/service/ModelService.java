@@ -1,5 +1,7 @@
 package com.bluedot.service;
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Report;
@@ -25,7 +27,15 @@ public class ModelService extends BaseService<Report> {
      */
     @Override
     protected void doService() {
+        String methodName = null;
 
+        if ("insert".equals(operation)) {
+            methodName = "modeling";
+        } else {
+            throw new UserException(CommonErrorCode.E_5001);
+        }
+
+        invokeMethod(methodName,this);
     }
 
     @Override
