@@ -17,6 +17,7 @@ import com.bluedot.utils.constants.OperationConstants;
 import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.LockSupport;
@@ -131,15 +132,16 @@ public abstract class BaseService<T> {
     protected void selectPage(){
         // 查询当前页的对应数据
         entityInfo.setOperation(OperationConstants.SELECT);
-        doMapper();
+        commonResult = doMapper();
 
         Condition condition = entityInfo.getCondition();
         // 设置pageInfo，并将查询到的数据填入
-        PageInfo<T> pageInfo = new PageInfo<T>();
-        if (((List<T>) commonResult.getData()).size() == 0){
+        PageInfo pageInfo = new PageInfo();
+        System.out.println("Data:"+commonResult.getData());
+        if (commonResult.getData() == null){
             commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
         }else {
-            pageInfo.setDataList((List<T>) commonResult.getData());
+            pageInfo.setDataList(Collections.singletonList(commonResult.getData()));
             pageInfo.setPageSize(condition.getSize());
             // 调用getCount查询数据总数量
             pageInfo.setTotalDataSize(getCount());
@@ -157,18 +159,26 @@ public abstract class BaseService<T> {
         condition.addFields("count(*)");
         condition.addView(entityInfo.getCondition().getViews().get(0));
 
+        //进行查询逻辑
         entityInfo.setCondition(condition);
         entityInfo.setOperation(OperationConstants.SELECT);
         CommonResult commonResult = doMapper();
 
+        //返回结果
         return (long) commonResult.getData();
     }
 
     protected void invokeMethod(String methodName,Object obj){
-        List<String> permissionList = (List<String>) session.getAttribute("permissionList");
-        if ("login".equals(operation) || permissionList.contains(methodName)){
-            //存在此权限，执行响应方法
+        //判断是否存在Session
+        if (!OperationConstants.LOGIN.equals(operation) && session == null){
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1011);
+            return;
+        }
 
+        List<String> permissionList = (List<String>) session.getAttribute("permissionList");
+
+        if (OperationConstants.LOGIN.equals(operation) || permissionList.contains(methodName)){
+            //存在此权限，执行响应方法
             Method method = null;
             try {
                 method = obj.getClass().getDeclaredMethod(methodName);
