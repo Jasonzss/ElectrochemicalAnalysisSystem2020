@@ -307,14 +307,14 @@ public class UserService extends BaseService<User> {
         // 判断搜索用户的各项属性
         if (paramList.size() != 0){
             if (paramList.containsKey("userName")){
-                condition.addOrConditionWithView(new Term("user","userName",paramList.get("userName"), TermType.LIKE));
+                condition.addOrConditionWithView(new Term("user","user_name",paramList.get("userName"), TermType.LIKE));
             }
             if (paramList.containsKey("roleId")){
-                condition.addOrConditionWithView(new Term("user_role","roleId",paramList.get("roleId"),TermType.EQUAL));
+                condition.addOrConditionWithView(new Term("user_role","role_id",paramList.get("roleId"),TermType.EQUAL));
                 condition.addViewCondition("user_email","user_role");
             }
             if (paramList.containsKey("userEmail")){
-                condition.addOrConditionWithView(new Term("user", "userEmail", paramList.get("userEmail"), TermType.EQUAL));
+                condition.addOrConditionWithView(new Term("user", "user_email", paramList.get("userEmail"), TermType.EQUAL));
             }
         }
 
@@ -334,6 +334,9 @@ public class UserService extends BaseService<User> {
     private void login(){
         //获取登录的参数
         String authCode = (String) session.getAttribute(SessionConstants.IMG_AUTH_CODE);
+        if (authCode == null){
+            throw new UserException(CommonErrorCode.E_1010);
+        }
         System.out.println(authCode);
 
         //判断图片验证码是否正确
@@ -403,8 +406,18 @@ public class UserService extends BaseService<User> {
         String content;
         String authCode = EmailUtil.makeCode(6);
 
-        getPersonalUser();
+        //查询此邮箱对应的用户
+        try{
+            getPersonalUser();
+        }catch (UserException e){
+            if (e.getErrorCode() != CommonErrorCode.E_1005){
+                //当抛出的异常为1005以外的其他异常才解决，1005异常不做处理
+                throw new UserException(e.getErrorCode());
+            }
+        }
         User user = (User) commonResult.getData();
+
+        //判断此邮箱是否已经注册
         if(user == null){
             //邮箱未注册,发送注册验证码
             title = userEmail+" 的注册邮件";
@@ -444,6 +457,7 @@ public class UserService extends BaseService<User> {
     private void logout(){
         //移除session
         session.invalidate();
+        commonResult = CommonResult.successResult("登出成功",true);
     }
 
     /**
@@ -470,7 +484,7 @@ public class UserService extends BaseService<User> {
         };
         ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(5,new ThreadPoolExecutor.CallerRunsPolicy());
         //定时一分钟
-        long delay  = 60 * 1000L;
+        long delay  = 20 * 1000L;
         executor.schedule(task, delay, TimeUnit.MILLISECONDS);
         executor.shutdown();
     }
