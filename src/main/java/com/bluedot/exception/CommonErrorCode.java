@@ -55,6 +55,8 @@ public enum CommonErrorCode implements ErrorCode {
      */
     E_7001(7001, "该算法名已存在"),
     E_7002(7002, "该算法测试不通过"),
+    E_7003(7003, "该算法不存在"),
+    E_7004(7004, "存在不属于该用户的算法"),
     ;
 
     private final int code;
