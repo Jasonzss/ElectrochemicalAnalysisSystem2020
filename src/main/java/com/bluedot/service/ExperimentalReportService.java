@@ -11,16 +11,18 @@ import com.bluedot.pojo.entity.Algorithm;
 import com.bluedot.pojo.entity.Application;
 import com.bluedot.pojo.entity.Report;
 import com.bluedot.pojo.entity.ReportPageVo;
+import com.bluedot.utils.ImageUtil;
 import com.bluedot.utils.ReflectUtil;
 import org.apache.commons.fileupload.FileItem;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.util.*;
 
 import static com.bluedot.pojo.vo.CommonResult.BUFFERED_IMAGE;
+import static com.bluedot.pojo.vo.CommonResult.INPUT_STREAM_IMAGE;
 
 /**
  * @author FireRain
@@ -73,7 +75,11 @@ public class ExperimentalReportService extends BaseService<Report>{
                 }
                 break;
             case "selectImage":
-                methodName = "getReportImage";
+                if (paramList.get("imageType") == "test") {
+                    methodName = "getReportTestSetGraph";
+                }else if (paramList.get("imageType") == "train"){
+                    methodName = "getReportTestSetGraph";
+                }
                 break;
             default:
                 throw new UserException(CommonErrorCode.E_5001);
@@ -254,24 +260,46 @@ public class ExperimentalReportService extends BaseService<Report>{
     }
 
     /**
-     * 获取实验报告图片
+     * 获取实验报告测试集图片
      */
-    private void getReportImage(){
+    private void getReportTestSetGraph(){
         Condition condition = new Condition();
         condition.addAndConditionWithView(new Term("report","report_id",paramList.get("reportId"), TermType.EQUAL));
-        condition.addFields("report_training_set_graph");
         condition.addFields("report_test_set_graph");
+
+        condition.setReturnType("Report");
 
         entityInfo.setCondition(condition);
 
+        select();
+
         Report report = ((List<Report>)commonResult.getData()).get(0);
         byte[] reportTestSetGraph = report.getReportTestSetGraph();
-        byte[] reportTrainingSetGraph = report.getReportTrainingSetGraph();
+
+        commonResult.setFileData("test.jpg",new ByteArrayInputStream(reportTestSetGraph));
+        commonResult.setRespContentType(INPUT_STREAM_IMAGE);
+    }
+
+    /**
+     * 获取实验报告训练集图片
+     */
+    private void getReportTrainingSetGraph(){
+        Condition condition = new Condition();
+        condition.addAndConditionWithView(new Term("report","report_id",paramList.get("reportId"), TermType.EQUAL));
+        condition.addFields("report_training_set_graph");
+
+        condition.setReturnType("Report");
+
+        entityInfo.setCondition(condition);
 
         select();
 
-        commonResult.setFileData("test.jpg",reportTestSetGraph);
-        commonResult.setFileData("train.jpg",reportTrainingSetGraph);
-        commonResult.setRespContentType(BUFFERED_IMAGE);
+        Report report = ((List<Report>)commonResult.getData()).get(0);
+        byte[] reportTrainingSetGraph = report.getReportTrainingSetGraph();
+
+        commonResult.setFileData("train.jpg",new ByteArrayInputStream(reportTrainingSetGraph));
+        commonResult.setRespContentType(INPUT_STREAM_IMAGE);
     }
+
+
 }
