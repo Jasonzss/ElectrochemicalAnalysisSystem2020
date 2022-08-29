@@ -7,13 +7,20 @@ import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
+import com.bluedot.pojo.entity.Algorithm;
 import com.bluedot.pojo.entity.Application;
 import com.bluedot.pojo.entity.Report;
+import com.bluedot.pojo.entity.ReportPageVo;
 import com.bluedot.utils.ReflectUtil;
 import org.apache.commons.fileupload.FileItem;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.bluedot.pojo.vo.CommonResult.BUFFERED_IMAGE;
 
 /**
  * @author FireRain
@@ -36,9 +43,6 @@ public class ExperimentalReportService extends BaseService<Report>{
         String methodName = null;
 
         switch (operation){
-            case "insert":
-                methodName = "createReport";
-                break;
             case "delete":
                 if (isPersonal()){
                     methodName = "deletePersonalReport";
@@ -68,6 +72,8 @@ public class ExperimentalReportService extends BaseService<Report>{
                     }
                 }
                 break;
+            case "selectImage":
+                methodName = "getReportImage";
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
@@ -85,38 +91,11 @@ public class ExperimentalReportService extends BaseService<Report>{
     }
 
     /**
-     * 保存实验报告
-     */
-    private void createReport(){
-        // 将数据填充到实体类中
-        Report report = new Report();
-        ReflectUtil.invokeSetters(paramList,report);
-
-        entityInfo.addEntity(report);
-        insert();
-    }
-
-    /**
      * 用户删除实验报告
      */
     private void deletePersonalReport(){
         paramList.put("userEmail",session.getAttribute("userEmail"));
-        if (paramList.get("reportId") instanceof List){
-            // list类型id，则删除多条数据
-            List<Integer> listData = (List<Integer>)paramList.get("reportId");
-            listData.forEach(data -> {
-                Report report = new Report();
-                report.setReportId(data);
-                entityInfo.addEntity(report);
-            });
-        }else if (paramList.get("reportId") instanceof Integer){
-            // int类型id，则删除一个
-            Integer intData = (Integer) paramList.get("reportId");
-            Report report = new Report();
-            report.setReportId(intData);
-            entityInfo.addEntity(report);
-        }
-        delete();
+        deleteReport();
     }
 
     /**
@@ -145,11 +124,7 @@ public class ExperimentalReportService extends BaseService<Report>{
      * 用户修改实验报告基本数据
      */
     private void updatePersonalReport(){
-        Report report = new Report();
-        ReflectUtil.invokeSetters(paramList,report);
-
-        entityInfo.addEntity(report);
-        update();
+        updateReport();
     }
 
     /**
@@ -167,31 +142,7 @@ public class ExperimentalReportService extends BaseService<Report>{
      * 用户查询实验报告
      */
     private void listPersonalReport(){
-        Condition condition = new Condition();
-
-        // 分页
-        if (paramList.containsKey("pageSize") && paramList.get("pageSize") != null){
-            condition.setSize((Integer) paramList.get("pageSize"));
-        }
-        if (paramList.containsKey("pageNo") && paramList.get("pageNo") != null){
-            condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
-        }
-
-        // 筛选条件:标题/物质名称
-        if (paramList.get("reportTitle") != null){
-            condition.addAndConditionWithView(new Term("report","report_title",paramList.get("reportTitle"),TermType.EQUAL));
-        }
-        if (paramList.get("reportMaterialName") != null){
-            condition.addAndConditionWithView(new Term("report","report_material_name",paramList.get("reportMaterialName"),TermType.EQUAL));
-        }
-
-        // 用户查询
-        if (paramList.containsKey("userEmail")){
-            condition.addAndConditionWithView(new Term("report","user_email",paramList.get("userEmail"),TermType.EQUAL));
-        }
-
-        entityInfo.setCondition(condition);
-        select();
+        listReport();
     }
 
     /**
@@ -199,13 +150,26 @@ public class ExperimentalReportService extends BaseService<Report>{
      */
     private void listReport(){
         Condition condition = new Condition();
+        condition.addView("report");
+        condition.setReturnType("Report");
+
+        condition.addFields("report_id");
+        condition.addFields("report_title");
+        condition.addFields("report_material_name");
+        condition.addFields("pretreatment_algorithm_id");
+        condition.addFields("report_data_model_id");
+        condition.addFields("report_result_model");
+        condition.addFields("user_email");
+        condition.addFields("report_desc");
+        condition.addFields("report_create_time");
+        condition.addFields("report_last_update_time");
 
         // 分页
         if (paramList.containsKey("pageSize") && paramList.get("pageSize") != null){
             condition.setSize((Integer) paramList.get("pageSize"));
         }
         if (paramList.containsKey("pageNo") && paramList.get("pageNo") != null){
-            condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
+            condition.setStartIndex(((long)(int)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
         }
 
         // 筛选条件:标题/物质名称
@@ -223,6 +187,38 @@ public class ExperimentalReportService extends BaseService<Report>{
 
         entityInfo.setCondition(condition);
         select();
+
+        Report report = ((List<Report>) commonResult.getData()).get(0);
+
+        Integer pretreatmentAlgorithmId = report.getPretreatmentAlgorithmId();
+        Integer reportDataModelId = report.getReportDataModelId();
+
+        //查reportDataModelId
+        Map<String,Object> pretreatmentAlgorithmMap = new HashMap<>();
+        pretreatmentAlgorithmMap.put("algorithmId",pretreatmentAlgorithmId);
+        doOtherService(pretreatmentAlgorithmMap,"select");
+        Algorithm pretreatmentAlgorithm = ((List<Algorithm>)commonResult.getData()).get(0);
+
+        //查pretreatmentAlgorithmId
+        Map<String,Object> reportDataModelMap = new HashMap<>();
+        reportDataModelMap.put("algorithmId",reportDataModelId);
+        doOtherService(reportDataModelMap,"select");
+        Algorithm reportDataModelAlgorith = ((List<Algorithm>)commonResult.getData()).get(0);
+
+
+        ReportPageVo reportPageVo = new ReportPageVo();
+        reportPageVo.setUserEmail(report.getUser().getUserEmail());
+        reportPageVo.setReportDesc(report.getReportDesc());
+        reportPageVo.setReportTitle(report.getReportTitle());
+        reportPageVo.setReportCreateTime(report.getReportCreateTime());
+        reportPageVo.setReportLastUpdateTime(report.getReportLastUpdateTime());
+        reportPageVo.setReportResultModel(report.getReportResultModel());
+        reportPageVo.setReportMaterialName(report.getReportMaterialName());
+        reportPageVo.setReportId(report.getReportId());
+        reportPageVo.setPretreatmentAlgorithmName(pretreatmentAlgorithm.getAlgorithmName());
+        reportPageVo.setReportDataModelName(reportDataModelAlgorith.getAlgorithmName());
+
+        commonResult.setData(reportPageVo);
     }
 
 
@@ -230,11 +226,7 @@ public class ExperimentalReportService extends BaseService<Report>{
      * 查询实验报告详情信息
      */
     private void getPersonalReportInfo(){
-        Condition condition = new Condition();
-        condition.addAndConditionWithView(new Term("report","report_id",paramList.get("reportId"), TermType.EQUAL));
-
-        entityInfo.setCondition(condition);
-        select();
+        getReportInfo();
     }
 
     /**
@@ -244,8 +236,41 @@ public class ExperimentalReportService extends BaseService<Report>{
         Condition condition = new Condition();
         condition.addAndConditionWithView(new Term("report","report_id",paramList.get("reportId"), TermType.EQUAL));
 
+        condition.addFields("training_set_data");
+        condition.addFields("test_set_data");
+        condition.addFields("rc2");
+        condition.addFields("rmsec");
+        condition.addFields("maec");
+        condition.addFields("rp2");
+        condition.addFields("rmsep");
+        condition.addFields("maep");
+        condition.addFields("rpd");
+
+        condition.setReturnType("ReportInfoVo");
+
         entityInfo.setCondition(condition);
         select();
     }
 
+    /**
+     * 获取实验报告图片
+     */
+    private void getReportImage(){
+        Condition condition = new Condition();
+        condition.addAndConditionWithView(new Term("report","report_id",paramList.get("reportId"), TermType.EQUAL));
+        condition.addFields("report_training_set_graph");
+        condition.addFields("report_test_set_graph");
+
+        entityInfo.setCondition(condition);
+
+        Report report = ((List<Report>)commonResult.getData()).get(0);
+        byte[] reportTestSetGraph = report.getReportTestSetGraph();
+        byte[] reportTrainingSetGraph = report.getReportTrainingSetGraph();
+
+        select();
+
+        commonResult.setFileData("test.jpg",reportTestSetGraph);
+        commonResult.setFileData("train.jpg",reportTrainingSetGraph);
+        commonResult.setRespContentType(BUFFERED_IMAGE);
+    }
 }
