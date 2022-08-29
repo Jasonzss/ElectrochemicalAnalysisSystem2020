@@ -74,6 +74,7 @@ public class ExperimentalReportService extends BaseService<Report>{
                 break;
             case "selectImage":
                 methodName = "getReportImage";
+                break;
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
