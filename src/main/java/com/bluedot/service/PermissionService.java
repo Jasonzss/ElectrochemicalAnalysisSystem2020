@@ -3,12 +3,11 @@ package com.bluedot.service;
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
+import com.bluedot.mapper.bean.PageInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
-import com.bluedot.pojo.entity.Permission;
-import com.bluedot.pojo.entity.Role;
-import com.bluedot.pojo.entity.RolePermission;
+import com.bluedot.pojo.entity.*;
 import com.bluedot.pojo.vo.CommonResult;
 
 
@@ -85,21 +84,20 @@ public class PermissionService extends BaseService<Permission>{
 
         Condition condition1 = new Condition();
         condition1.setReturnType("User");
-        condition1.addView("user_role");
+        condition1.addView("user");
         condition1.addFields("user_email");
+        entityInfo.setCondition(condition1);
         select();
-        ArrayList<String> arrayList= (ArrayList<String>) commonResult.getData();
+        ArrayList<User> arrayList= (ArrayList<User>) commonResult.getData();
         int start= (int) ((pageNo-1)*pageSize);
         int end=start+pageSize;
-        for (int i = start; i <= end; i++) {
-            String userEmail=arrayList.get(i);
-
+        List<String> list=new ArrayList<>();
+        for (int i = start; i < end; i++) {
+            list.add(arrayList.get(i).getUserEmail());
         }
 
         // 封装Condition
         Condition condition = new Condition();
-        condition.setStartIndex((pageNo-1)*pageSize);
-        condition.setSize(pageSize);
         condition.setReturnType("UserRole");
         List<String> views = new ArrayList<>();
         views.add("`user_role`");
@@ -111,13 +109,23 @@ public class PermissionService extends BaseService<Permission>{
         viewCondition.add("role_id");
         condition.setViewCondition(viewCondition);
         List<String> fields = new ArrayList<>();
-        fields.add("user.*");
-        fields.add("GROUP_CONCAT(role.role_name) as role_name");
+        fields.add("user.user_email");
+        fields.add("role.*");
         condition.setFields(fields);
 
-
+        condition.addAndConditionWithView(new Term("`user_role`","user_email",list,TermType.IN));
         entityInfo.setCondition(condition);
-        selectPage();
+        select();
+        // 设置pageInfo，并将查询到的数据填入
+        PageInfo<UserRole> pageInfo = new PageInfo<UserRole>();
+        pageInfo.setDataList((List<UserRole>) commonResult.getData());
+        pageInfo.setPageSize(pageSize);
+
+        pageInfo.setTotalDataSize((long) arrayList.size());
+        pageInfo.setTotalPageSize(pageInfo.getTotalDataSize() /pageInfo.getPageSize());
+        pageInfo.setCurrentPageNo(Math.toIntExact(pageNo));
+
+        commonResult = CommonResult.successResult("分页查询",pageInfo);
     }
     /**
      * 查询所有角色
