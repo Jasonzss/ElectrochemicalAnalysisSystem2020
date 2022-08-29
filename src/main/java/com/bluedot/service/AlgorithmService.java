@@ -9,8 +9,10 @@ import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Algorithm;
 import com.bluedot.pojo.entity.User;
 import com.bluedot.utils.AlgoUtil;
+import com.bluedot.utils.LogUtil;
 import com.bluedot.utils.ReflectUtil;
 import org.apache.commons.fileupload.FileItem;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.sql.Timestamp;
@@ -31,6 +33,8 @@ public class AlgorithmService extends BaseService<Algorithm> {
      */
     String sessionUserEmail;
     String table = "algorithm";
+
+    Logger logger = LogUtil.getLogger();
 
     public AlgorithmService(Data data) {
         super(data);
@@ -154,12 +158,6 @@ public class AlgorithmService extends BaseService<Algorithm> {
         entityInfo.addEntity(algo);
         update();
     }
-    private void updateAlgorithm() {
-        String[] blackArr = {
-                "algorithmCreateTime", "algorithmUpdateTime"
-        };
-        doUpdate(blackArr);
-    }
 
     private Boolean isOwner() {
         List<Integer> ids = new ArrayList<>();
@@ -196,6 +194,12 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
         return true;
     }
+    private void updateAlgorithm() {
+        String[] blackArr = {
+                "algorithmCreateTime", "algorithmUpdateTime"
+        };
+        doUpdate(blackArr);
+    }
 
     private void updatePersonalAlgorithm() {
         //不允许的修改项
@@ -227,7 +231,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
                     //删除文件
                     File file = new File(AlgoUtil.RESPATH + "algo/java/" + algorithmId + ".java");
                     if (file.exists()) {
-                        file.delete();
+                        if (!file.delete()) {
+                           logger.warn("算法文件删除失败！！");
+                        }
                     }
                 } else {
                     throw new UserException(CommonErrorCode.E_5001);
@@ -298,7 +304,8 @@ public class AlgorithmService extends BaseService<Algorithm> {
         Integer id = null;
         Object data = commonResult.getData();
         if (data instanceof List) {
-            ((List<Algorithm>) data).get(0);
+            //得到该算法名的id
+            id = ((List<Algorithm>) data).get(0).getAlgorithmId();
         }
         //添加文件
         File file = new File(AlgoUtil.RESPATH + "algo/java/" + id + ".java");
@@ -339,7 +346,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            tempFile.delete();
+            if (!tempFile.delete()) {
+                logger.warn("文件删除失败");
+            }
         }
     }
     //根据算法类型返回不同的数据用于测试
@@ -353,7 +362,22 @@ public class AlgorithmService extends BaseService<Algorithm> {
     protected boolean check() {
         Algorithm algo = new Algorithm();
         ReflectUtil.invokeSettersIncludeEntity(paramList, algo);
-        return algo.getAlgorithmDesc() == null || algo.getAlgorithmDesc().length() <= 50;
+        String desc = algo.getAlgorithmDesc();
+        int descMaxLen = 50;
+        String name = algo.getAlgorithmName();
+        int nameMaxLen = 20;
+        if (desc != null) {
+            if (desc.length() == 0 || desc.length() > descMaxLen) {
+                return false;
+            }
+        }
+        if (name != null) {
+            if (name.length() == 0 || name.length() > nameMaxLen) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }
