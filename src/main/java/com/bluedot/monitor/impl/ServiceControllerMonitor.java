@@ -52,7 +52,7 @@ public class ServiceControllerMonitor extends Monitor<ControllerServiceQueue> {
             LogUtil.getLogger().debug("ServiceControllerMonitor初始化");
             instance = new ServiceControllerMonitor();
             instance.queue = ControllerServiceQueue.getInstance();
-            instance.executors = new ThreadPoolExecutor(4,
+            instance.executors = new ThreadPoolExecutor(10,
                     POLLER_THREAD_COUNT * 8,
                     2, TimeUnit.SECONDS,
                     new BlockQueue<Runnable>(10),
@@ -67,6 +67,7 @@ public class ServiceControllerMonitor extends Monitor<ControllerServiceQueue> {
     public void run() {
         while (!queue.isEmpty()) {
             Data poll = queue.take();
+            LogUtil.getLogger().debug("ServiceControllerMonitor取出数据--key:"+poll.getKey());
             //分配线程任务处理数据
             executors.execute(() -> {
                 String serViceName = poll.getServiceName();
