@@ -1,12 +1,16 @@
 package com.bluedot.mapper;
 
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.*;
 import com.bluedot.mapper.callBack.MyCallback;
 import com.bluedot.pojo.vo.CommonResult;
+import com.bluedot.utils.LogUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.StringUtil;
 import com.bluedot.utils.constants.SessionConstants;
+import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.sql.Date;
@@ -22,12 +26,15 @@ import java.util.List;
  * @date 2022/8/16 16:15
  */
 public class BaseMapper {
+    private Logger logger= LogUtil.getLogger();
     //mapper执行器
     private Executor executor = new Executor(MapperInit.getConfiguration());
     //mapper实体类属性
     private List entityList;
     //mapper层返回结果
     private CommonResult commonResult;
+    //操作实体
+    private EntityInfo entityInfo;
     /**
      * @description:构造器传入，属性赋值
      * @author: zlj
@@ -36,8 +43,10 @@ public class BaseMapper {
      * @return:
      **/
     public BaseMapper(EntityInfo entityInfo) {
+        logger.info("进入BaseMapper构造器");
+        this.entityInfo=entityInfo;
         entityList = entityInfo.getEntity();
-        doMapper(entityInfo);
+        doMapper();
     }
     /**
      * @description:调用方法
@@ -46,7 +55,7 @@ public class BaseMapper {
      * @param: [entityInfo]
      * @return:
      **/
-    private void doMapper(EntityInfo entityInfo) {
+    private void doMapper() {
         Object object = null;
 //        根据查询类型，调用方法
         switch (entityInfo.getOperation()) {
@@ -62,12 +71,14 @@ public class BaseMapper {
             case "select":
                 object = select(entityInfo.getCondition());
                 break;
+            default:
+                throw new UserException(CommonErrorCode.E_8001);
         }
         //结果封装
         commonResult = new CommonResult();
         commonResult.setData(object);
-        //将结果通过队列  返回给service层
-        System.out.println(commonResult.toString());
+        logger.info("mapper层操作结果："+object+",并将结果通过队列  返回给service层");
+        //将结果通过队列  返回给service
         com.bluedot.queue.outQueue.impl.MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
     }
     /**
@@ -89,16 +100,14 @@ public class BaseMapper {
         }
         MappedStatement mappedStatement = new MappedStatement();
         mappedStatement.setSql(sql);
-        System.out.println(sql);
+        logger.info("自动生成的查询sql语句："+sql);
         String view=condition.getViews().get(0);
         if (view.startsWith("`")){
             view=view.substring(1,view.length()-1);
         }
         view=StringUtil.tableNameToClassName(view);
-        System.out.println("---------->"+view);
         mappedStatement.setView(view);
         mappedStatement.setReturnType(condition.getReturnType());
-
         return this.executor.doQuery(mappedStatement,parameters);
     }
     /**
@@ -414,7 +423,7 @@ public class BaseMapper {
         StringBuilder sql = new StringBuilder();
         callback.generateSqlExecutor(fields, tableInfo, primaryKeys, sql, mappedStatement, params);
         sql.setCharAt(sql.length() - 1, ' ');
-        System.out.println(sql.toString());
+        logger.info(entityInfo.getOperation()+"生成的sql:"+sql.toString());
         mappedStatement.setSql(sql.toString());
         return this.executor.doUpdate(mappedStatement, params.toArray());
     }

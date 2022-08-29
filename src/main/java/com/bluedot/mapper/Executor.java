@@ -283,7 +283,6 @@ public class Executor {
                 throw new RuntimeException("更新数据错误");
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }finally {
             dataSource.returnConnection(connection);

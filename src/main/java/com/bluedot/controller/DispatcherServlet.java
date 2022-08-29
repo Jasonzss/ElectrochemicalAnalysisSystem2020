@@ -64,10 +64,10 @@ public class DispatcherServlet extends HttpServlet {
         requestHandler = new MainRequestHandler();
         log.debug("初始化请求处理器：" + requestHandler);
         //初始化监听器
-        executorService.scheduleAtFixedRate(ControllerMonitor.getInstance(), 3, 1, TimeUnit.SECONDS);
-        executorService.scheduleAtFixedRate(ServiceControllerMonitor.getInstance(), 0, 1, TimeUnit.SECONDS);
-        executorService.scheduleAtFixedRate(ServiceMapperMonitor.getInstance(), 2, 1, TimeUnit.SECONDS);
-        executorService.scheduleAtFixedRate(MapperMonitor.getInstance(), 1, 1, TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(ControllerMonitor.getInstance(), 300, 100, TimeUnit.MILLISECONDS);
+        executorService.scheduleWithFixedDelay(ServiceControllerMonitor.getInstance(), 0, 100, TimeUnit.MILLISECONDS);
+        executorService.scheduleWithFixedDelay(ServiceMapperMonitor.getInstance(), 200, 100, TimeUnit.MILLISECONDS);
+        executorService.scheduleWithFixedDelay(MapperMonitor.getInstance(), 100, 100, TimeUnit.MILLISECONDS);
     }
 
     @Override
