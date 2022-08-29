@@ -6,6 +6,7 @@ import com.bluedot.monitor.Monitor;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.utils.LogUtil;
+import org.slf4j.Logger;
 
 /**
  * @Author SDJin
@@ -44,13 +45,17 @@ public class MapperMonitor extends Monitor<ServiceMapperQueue> {
      * @param entityInfo
      */
     private void MapperInstance(EntityInfo entityInfo){
+
        BaseMapper basemapper = new BaseMapper(entityInfo);
        basemapper=null;
     }
     @Override
     public void run() {
         while (!queue.isEmpty()){
+            Logger logger = LogUtil.getLogger();
+
             EntityInfo poll = queue.take();
+            logger.debug("mapperMonitor---->"+poll.getKey());
             MapperInstance(poll);
         }
     }

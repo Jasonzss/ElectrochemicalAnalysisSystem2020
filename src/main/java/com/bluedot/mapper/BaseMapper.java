@@ -431,7 +431,8 @@ public class BaseMapper {
      * @return: java.lang.String
      **/
     public static String generateSelectSqL(Condition condition, List<Object> list) {
-        if (!condition.getFields().contains("count(*)")){
+
+        if (!condition.getFields().contains("count(*)")  ){
             String view=condition.getViews().get(0);
             if (view.startsWith("`")){
                 view=view.substring(1,view.length()-1);
@@ -446,8 +447,18 @@ public class BaseMapper {
             }
             //表主键名
             String primaryName = tableInfo.getPrimaryKeys().get(0).getName();
-            List<String> fields = condition.getFields();
-            fields.add(tableInfo.getTableName()+"."+primaryName);
+            if (!condition.getFields().contains(tableInfo.getTableName()+"."+primaryName)){
+                List<String> fields = condition.getFields();
+                boolean flag=true;
+                for (String field : fields) {
+                    if (field.indexOf("GROUP_CONCAT")!=-1) {
+                        flag=false;
+                    }
+                }
+                if (flag){
+                    fields.add(tableInfo.getTableName()+"."+primaryName);
+                }
+            }
         }
         StringBuffer select = new StringBuffer("select ");
         List<String> views = condition.getViews();
@@ -524,34 +535,42 @@ public class BaseMapper {
                         list.add(o);
                     }
                 }
-                else {
+                else if (andTerm.getTermType()!=TermType.GROUOBY){
                     list.add(andTerm.getValue());
                 }
-                select.append(andTerm.getViewName() + "." + andTerm.getFieldName() + " ");
-                switch (andTerm.getTermType()) {
-                    case EQUAL:
-                        select.append("= ? and ");
-                        break;
-                    case LIKE:
-                        select.append("like %?% and ");
-                        break;
-                    case IN: {
-                        select.append("in (");
-                        List<Object> value = (List<Object>) andTerm.getValue();
-                        int size = value.size();
-                        for (int i = 0; i < size; i++) {
-                            select.append(" '?' ,");
+                if (andTerm.getTermType()!=TermType.GROUOBY){
+                    select.append(andTerm.getViewName() + "." + andTerm.getFieldName() + " ");
+                    switch (andTerm.getTermType()) {
+                        case EQUAL:
+                            select.append("= ? and ");
+                            break;
+                        case LIKE:
+                            select.append("like %?% and ");
+                            break;
+                        case IN: {
+                            select.append("in (");
+                            List<Object> value = (List<Object>) andTerm.getValue();
+                            int size = value.size();
+                            for (int i = 0; i < size; i++) {
+                                select.append(" ?  ,");
+                            }
+                            select.delete(select.length() - 1, select.length());
+                            select.append(") and ");
+                            break;
                         }
-                        select.delete(select.length() - 1, select.length());
-                        select.append(") and ");
-                        break;
+                        case GREATER:
+                            select.append("> ? and ");
+                            break;
+                        case Less:
+                            select.append("< ? and ");
+                            break;
                     }
-                    case GREATER:
-                        select.append("> ? and ");
-                        break;
-                    case Less:
-                        select.append("< ? and ");
-                        break;
+                }
+                else {
+                    int and = select.indexOf("and");
+                    select.delete(and,select.length()-1);
+                    select.append(" GROUP BY "+andTerm.getViewName()+ "." + andTerm.getFieldName()+"     ");
+
                 }
             }
             select.delete(select.length() - 4, select.length() - 1);

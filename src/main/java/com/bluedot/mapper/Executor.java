@@ -40,9 +40,10 @@ public class Executor {
             //获取数据库连接
             connection=dataSource.getConnection();
             if(connection==null){
-                throw  new RuntimeException("连接失败");
+                logger.error("Executor:获取数据库连接为null");
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -103,7 +104,7 @@ public class Executor {
                 while (resultSet.next()) {
                     //行数据主键值
                     Object primaryValue =null;
-                    if (sql.indexOf("count(*)") ==-1){
+                    if (sql.indexOf("count(*)") ==-1 && sql.indexOf("GROUP")==-1){
                         primaryValue = resultSet.getObject(primaryName);
                     }
                     //每一行结果
@@ -234,7 +235,8 @@ public class Executor {
                 return null;
             }
         } catch (Exception e) {
-            logger.error("封装查询结数据库，出现异常:"+e.getMessage());
+            logger.error("执行查询sql，出现异常:"+e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException(e);
         }finally {
             dataSource.returnConnection(connection);
@@ -282,6 +284,7 @@ public class Executor {
 
         } catch (Exception e) {
             logger.error("更新数据异常："+e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException(e);
         }finally {
             logger.info("更新数据库完成，归还数据库连接");

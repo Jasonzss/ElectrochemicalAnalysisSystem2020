@@ -1,5 +1,7 @@
 package com.bluedot.service;
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.UserRole;
@@ -20,19 +22,24 @@ public class UserRoleService extends BaseService<UserRole>{
 
     @Override
     protected void doService() {
-        String methodName="updateUserRoles";
+        String methodName=null;
+        switch (operation){
+            case "delete":
+                methodName="deleteUserRole";
+                break;
+            case "insert":
+                methodName="insertUserRole";
+                break;
+            default:
+                throw new UserException(CommonErrorCode.E_4001);
+        }
         invokeMethod(methodName,this);
     }
 
     /**
-     * 修改用户角色
+     * 插入用户角色
      */
-    private void updateUserRoles(){
-        UserRole userRole = new UserRole();
-        userRole.setUserEmail((String) paramList.get("userEmail"));
-        entityInfo.addEntity(userRole);
-        delete();
-
+    private void insertUserRole(){
         ArrayList<Integer> roleIds = (ArrayList<Integer>) paramList.get("roleIds");
         ArrayList<UserRole> userRoleArrayList1 = new ArrayList<>();
         for (int roleId : roleIds) {
@@ -43,6 +50,14 @@ public class UserRoleService extends BaseService<UserRole>{
         }
         entityInfo.setEntity(userRoleArrayList1);
         insert();
-        commonResult= CommonResult.successResult("修改用户角色成功",commonResult.getData());
+    }
+    /**
+     * 删除用户角色
+     */
+    private void deleteUserRole(){
+        UserRole userRole = new UserRole();
+        userRole.setUserEmail((String) paramList.get("userEmail"));
+        entityInfo.addEntity(userRole);
+        delete();
     }
 }

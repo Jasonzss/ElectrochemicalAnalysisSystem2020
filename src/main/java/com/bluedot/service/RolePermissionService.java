@@ -55,14 +55,7 @@ public class RolePermissionService extends BaseService<RolePermission>{
     }
 
     private void insertRolePermission(){
-        ArrayList<Integer> permissionIds = (ArrayList<Integer>) paramList.get("permissionIds");
-        ArrayList<RolePermission> rolePermissionArrayList = new ArrayList<>();
-        for (int permissionId : permissionIds) {
-            RolePermission rolePermission1 = new RolePermission();
-            rolePermission1.setRoleId((Integer) paramList.get("roleId"));
-            rolePermission1.setPermissionId(permissionId);
-            rolePermissionArrayList.add(rolePermission1);
-        }
+        ArrayList<RolePermission> rolePermissionArrayList= (ArrayList<RolePermission>) paramList.get("rolePermissionArrayList");
         entityInfo.setEntity(rolePermissionArrayList);
         insert();
     }
