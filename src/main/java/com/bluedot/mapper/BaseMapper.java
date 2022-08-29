@@ -435,8 +435,6 @@ public class BaseMapper {
      * @return: java.lang.String
      **/
     public static String generateSelectSqL(Condition condition, List<Object> list) {
-        System.out.println(condition.getSize());
-        System.out.println(condition.getStartIndex());
         String view=condition.getViews().get(0);
         if (view.startsWith("`")){
             view=view.substring(1,view.length()-1);
