@@ -105,7 +105,7 @@ public class ApplicationService extends BaseService<Application>{
 
         // 添加申请数据
         Application application = new Application();
-        ReflectUtil.invokeSetters(paramList,application);
+        ReflectUtil.invokeSettersIncludeEntity(paramList,application);
 
         entityInfo.addEntity(application);
         insert();
@@ -138,14 +138,14 @@ public class ApplicationService extends BaseService<Application>{
      */
     private void updatePersonalApplication(){
         //申请内容是map数据，则转json
-        if (paramList.get("applicationContent") != null || paramList.get("applicationContent") instanceof Map){
+        if (paramList.get("applicationContent") != null && paramList.get("applicationContent") instanceof Map){
             // 获取到请求参数中的申请内容，转换为json格式,并替换
             Map<String,Object> applicationContent = (Map<String, Object>) paramList.get("applicationContent");
             paramList.replace("applicationContent",convertMapToJson(applicationContent));
         }
 
         Application application = new Application();
-        ReflectUtil.invokeSetters(paramList,application);
+        ReflectUtil.invokeSettersIncludeEntity(paramList,application);
 
         entityInfo.addEntity(application);
         update();
@@ -157,7 +157,7 @@ public class ApplicationService extends BaseService<Application>{
     @SuppressWarnings("rawtypes")
     private void updateApplication(){
         Application application = new Application();
-        ReflectUtil.invokeSetters(paramList,application);
+        ReflectUtil.invokeSettersIncludeEntity(paramList,application);
 
         // 拒绝理由为空，即同意申请，则执行申请内容中的操作
         if (application.getApplicationRejectReason() != null && application.getApplicationStatus() == 1){
@@ -222,16 +222,19 @@ public class ApplicationService extends BaseService<Application>{
     private void listApplication(){
         Condition condition = new Condition();
 
+        condition.addView("application");
+        condition.setReturnType("application");
+
         // 分页查询
-        if (paramList.containsKey("pageSize")){
+        if (paramList.get("pageSize") != null){
             condition.setSize((Integer) paramList.get("pageSize"));
         }
-        if (paramList.containsKey("pageNo")){
-            condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
+        if (paramList.get("pageNo") != null){
+            condition.setStartIndex(((long)(int)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
         }
 
         // 查询申请的类型
-        if (paramList.get("applicationTyoe") != null){
+        if (paramList.get("applicationType") != null){
             condition.addAndConditionWithView(new Term("application","application_type",paramList.get("applicationType"),TermType.EQUAL));
         }
 
@@ -252,6 +255,8 @@ public class ApplicationService extends BaseService<Application>{
         }
 
         entityInfo.setCondition(condition);
+
+        select();
     }
 
 }
