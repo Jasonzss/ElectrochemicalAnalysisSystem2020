@@ -57,7 +57,9 @@ public class UserRole {
     @Override
     public String toString() {
         return "UserRole{" +
-                "user=" + user +
+                "userEmail='" + userEmail + '\'' +
+                ", roleId=" + roleId +
+                ", user=" + user +
                 ", roleArrayList=" + roleArrayList +
                 '}';
     }

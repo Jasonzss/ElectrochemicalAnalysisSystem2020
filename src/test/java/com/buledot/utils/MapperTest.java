@@ -19,7 +19,44 @@ import java.util.List;
 
 public class MapperTest {
 
-//    @Test
+    @Test
+    public void test3() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+
+        // 封装Condition
+        Condition condition = new Condition();
+        condition.setReturnType("UserRole");
+        List<String> views = new ArrayList<>();
+        views.add("`role`");
+        views.add("`user_role`");
+
+        condition.setViews(views);
+        List<String> viewCondition=new ArrayList<>();
+        viewCondition.add("role_id");
+
+        condition.setViewCondition(viewCondition);
+        List<String> fields = new ArrayList<>();
+        fields.add("user_role.user_email");
+        fields.add("GROUP_CONCAT(role.role_name) as role_name");
+        condition.setFields(fields);
+
+        //以and为连接符的查询条件
+        List<Term> andCondition=new ArrayList<>();
+        List<String> list=new ArrayList<>();
+        list.add("2418972236@qq.com");
+        list.add("123@qq.com");
+
+
+        andCondition.add(new Term("`user_role`","user_email",list,TermType.IN));
+        andCondition.add(new Term("`user_role`","user_email",null,TermType.GROUOBY));
+        condition.setAndCondition(andCondition);
+        EntityInfo<Object> entityInfo = new EntityInfo<>();
+        entityInfo.setCondition(condition);
+        entityInfo.setOperation("select");
+        BaseMapper baseMapper=new BaseMapper(entityInfo);
+    }
+
+    @Test
     public void testPermission() throws SQLException, IOException, ClassNotFoundException {
         //模拟根据条件生成select语句
         Condition condition = new Condition();
@@ -52,7 +89,7 @@ public class MapperTest {
         BaseMapper baseMapper=new BaseMapper(entityInfo);
     }
 
-//    @Test
+    @Test
     public void testUpdate() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
 
@@ -100,7 +137,7 @@ public class MapperTest {
         new BaseMapper(expDataEntityInfo);
     }
 
-//    @Test
+    @Test
     public void testTablesSelect() throws SQLException, IOException, ClassNotFoundException {
         //模拟根据条件生成select语句
         Condition condition = new Condition();
@@ -153,7 +190,7 @@ public class MapperTest {
     }
 
 
-//    @org.junit.Test
+    @org.junit.Test
     public void testSelect() throws SQLException, IOException, ClassNotFoundException {
         new MapperInit("database.properties");
         //模拟根据条件生成select语句

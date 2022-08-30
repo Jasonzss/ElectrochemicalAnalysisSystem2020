@@ -2,6 +2,8 @@ package com.bluedot.mapper.dataSource.impl;
 
 import com.bluedot.mapper.bean.Configuration;
 import com.bluedot.mapper.dataSource.MyDataSource;
+import com.bluedot.utils.LogUtil;
+import org.slf4j.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,17 +13,17 @@ import java.util.concurrent.*;
 
 
 public class MyDataSourceImpl implements MyDataSource {
-
+    private Logger logger=LogUtil.getLogger();
     private static  String DRIVER;
     private static  String URL;
     private static  String USERNAME;
     private static  String PASSWORD;
     private static int initCount = 5;
     private static int minCount = 5;
-    private static int maxCount = 20;
+    private static int maxCount = 15;
     private static int createdCount;
     private static int increasingCount = 2;
-    private static int maxWaitingTime = 5000;
+    private static int maxWaitingTime = 500;
     private static int maxIdleTime = 20000;
     private LinkedList<Connection> conns = new LinkedList<>();
     private static final Object MONITOR = new Object();
@@ -78,17 +80,19 @@ public class MyDataSourceImpl implements MyDataSource {
     private Connection createConnection() {
         try {
             Class.forName(DRIVER);
-            return DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            return connection;
 
         } catch (Exception e) {
-            throw new RuntimeException("数据库连接失败：" + e.getMessage());
+            logger.error("数据库连接失败："+ e.getMessage());
+            throw new RuntimeException("数据库连接失败："+ e.getMessage());
         }
     }
 
     private synchronized void autoAdd() {
         //增长步长默认为2
         if (createdCount == maxCount) {
-            throw new RuntimeException("连接池中连接已达最大数量,无法再次创建连接");
+            logger.error("连接池中连接已达最大数量,无法再次创建连接");
         }
         //临界时判断增长个数
         for (int i = 0; i < increasingCount; i++) {

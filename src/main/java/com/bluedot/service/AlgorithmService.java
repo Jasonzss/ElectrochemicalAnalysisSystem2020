@@ -15,11 +15,9 @@ import org.apache.commons.fileupload.FileItem;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Project ElectrochemicalAnalysisSystem2020
@@ -31,10 +29,24 @@ public class AlgorithmService extends BaseService<Algorithm> {
     /**
      * 当前登录用户的邮箱。
      */
-    String sessionUserEmail;
-    String table = "algorithm";
+    private String sessionUserEmail;
+    private final String table = "algorithm";
 
-    Logger logger = LogUtil.getLogger();
+    private final Logger logger = LogUtil.getLogger();
+
+    private final String ID_FIELD_STR = "algorithmId";
+    private final String ID_COL_STR = "algorithm_id";
+    private final String NAME_FIELD_STR = "algorithmName";
+    private final String NAME_COL_STR = "algorithm_name";
+    private final String TYPE_FIELD_STR = "algorithmType";
+    private final String TYPE_COL_STR = "algorithm_type";
+    private final String LANGUAGE_FIELD_STR = "algorithmLanguage";
+    private final String LANGUAGE_COL_STR = "algorithm_language";
+    private final String DESC_FIELD_STR = "algorithmDesc";
+    private final String STATUS_FIELD_STR = "algorithmStatus";
+    private final String CREATE_TIME_FIELD_STR = "algorithmCreateTime";
+    private final String UPDATE_TIME_FIELD_STR = "algorithmUpdateTime";
+
 
     public AlgorithmService(Data data) {
         super(data);
@@ -58,10 +70,12 @@ public class AlgorithmService extends BaseService<Algorithm> {
                 method = isAdmin ? "listAlgorithm" : "listPersonalAlgorithm";
                 break;
             case "update":
-                method = isAdmin ? "updateAlgorithm" : "updatePersonalAlgorithm";
+                method = isAdmin ? "updateAlgorithm" :
+                        "updatePersonalAlgorithm";
                 break;
             case "delete":
-                method = isAdmin ? "deleteAlgorithm" : "deletePersonalAlgorithm";
+                method = isAdmin ? "deleteAlgorithm" :
+                        "deletePersonalAlgorithm";
                 break;
             case "insert":
                 method = "insertAlgorithm";
@@ -87,18 +101,21 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
 
         //拿到参数
-        Object algorithmName = paramList.get("algorithmName");
-        Object algorithmType = paramList.get("algorithmType");
-        Object algorithmLanguage = paramList.get("algorithmLanguage");
+        Object algorithmName = paramList.get(NAME_FIELD_STR);
+        Object algorithmType = paramList.get(TYPE_FIELD_STR);
+        Object algorithmLanguage = paramList.get(LANGUAGE_FIELD_STR);
 
         if (algorithmName instanceof String && !((String) algorithmName).isEmpty()) {
-            condition.addAndConditionWithView(new Term(table, "algorithm_name", algorithmName, TermType.EQUAL));
+            condition.addAndConditionWithView(new Term(table, NAME_COL_STR
+                    , algorithmName, TermType.EQUAL));
         }
         if (algorithmType instanceof Integer) {
-            condition.addAndConditionWithView(new Term(table, "algorithm_name", algorithmType, TermType.EQUAL));
+            condition.addAndConditionWithView(new Term(table, TYPE_COL_STR
+                    , algorithmType, TermType.EQUAL));
         }
         if (algorithmLanguage instanceof Integer) {
-            condition.addAndConditionWithView(new Term(table, "algorithm_name", algorithmLanguage, TermType.EQUAL));
+            condition.addAndConditionWithView(new Term(table, LANGUAGE_COL_STR
+                    , algorithmLanguage, TermType.EQUAL));
         }
 
 
@@ -107,36 +124,130 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
     private void listAlgorithm() {
         doSelectPage(getSameSelectCondition());
+        transformListResult();
     }
 
     private void listPersonalAlgorithm() {
         Condition condition = getSameSelectCondition();
         //确保删除的是自己的，所以添加一个useremail
-        condition.addAndConditionWithView(new Term(table, "user_email", sessionUserEmail, TermType.EQUAL));
+        condition.addAndConditionWithView(new Term(table, "user_email",
+                sessionUserEmail, TermType.EQUAL));
         doSelectPage(condition);
+        transformListResult();
+    }
 
+    /**
+     * 根据id查出算法，供其他模块使用
+     */
+    private void selectAlgorithmById() {
+        if (paramList.get(ID_FIELD_STR) instanceof Integer) {
+            Condition condition = new Condition();
+            condition.addAndConditionWithView(new Term(table, ID_COL_STR, paramList.get(ID_FIELD_STR), TermType.EQUAL));
+
+            entityInfo.setCondition(condition);
+            select();
+            transformListResult();
+        }else {
+            throw new UserException(CommonErrorCode.E_5001);
+        }
+    }
+
+    /**
+     * 算法查询结果的渲染，对algorithmType，algorithmStatus，algorithmLanguage的转化（数字转文字）
+     */
+    private void transformListResult() {
+        Map<String, Object> ret = new HashMap<>(Algorithm.class.getFields().length);
+        String[] needTrans = new String[]{TYPE_FIELD_STR, STATUS_FIELD_STR, LANGUAGE_FIELD_STR};
+
+        if (commonResult.getData() instanceof List) {
+            List<Algorithm> algos = (List<Algorithm>) commonResult.getData();
+            Field[] fields = Algorithm.class.getFields();
+            //遍历查询的每一个实体类对象
+            for (Algorithm algo: algos) {
+                //遍历每一个属性
+                for (Field field: fields) {
+                    try {
+                        //属性名
+                        String name = field.getName();
+                        //属性值
+                        Object value = field.get(algo);
+                        //如果有需要转换的，就转换
+                        if (Arrays.asList(needTrans).contains(name) && value != null) {
+                            value = getTransformResult(name, (Integer) value);
+                        }
+                        ret.put(name, value);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+            }
+        }
+
+        commonResult.setData(ret);
+
+    }
+
+    private String getTransformResult(String key, Integer num) {
+        Map<String, Map<Integer, String>> transformRule = getTransformRule();
+        return transformRule.get(key).get(num);
+    }
+
+    private Map<String, Map<Integer, String>> getTransformRule() {
+        Map<String, Map<Integer, String>> ret = new HashMap<>(3);
+
+        Map<Integer, String> algorithmTypeRule = new HashMap<>(3);
+        algorithmTypeRule.put(0, "预处理算法");
+        algorithmTypeRule.put(1, "数据处理算法");
+        algorithmTypeRule.put(2, "数据模型算法");
+        ret.put(TYPE_FIELD_STR, algorithmTypeRule);
+
+        Map<Integer, String> algorithmStatusRule = new HashMap<>(3);
+        algorithmStatusRule.put(0, "私有");
+        algorithmStatusRule.put(1, "审核中");
+        algorithmStatusRule.put(2, "公开");
+        ret.put(STATUS_FIELD_STR, algorithmStatusRule);
+
+        Map<Integer, String> algorithmLanguageRule = new HashMap<>(3);
+        algorithmStatusRule.put(0, "Java");
+        algorithmStatusRule.put(1, "Matlab");
+        algorithmStatusRule.put(2, "Python");
+        ret.put(LANGUAGE_FIELD_STR, algorithmLanguageRule);
+
+        return ret;
     }
 
     /**
      * 这个算法（算法名）是否存在
      */
     private Boolean isExists() {
-        if (paramList.get("algorithmName") instanceof String) {
+        if (paramList.get(NAME_FIELD_STR) instanceof String) {
             Condition condition = new Condition();
-            String algorithmName = (String) paramList.get("algorithmName");
+            String algorithmName = (String) paramList.get(NAME_FIELD_STR);
             //where algorithmName = xxx
-            condition.addAndConditionWithView(new Term(table, "algorithm_name", algorithmName, TermType.EQUAL));
+            condition.addAndConditionWithView(new Term(table, NAME_COL_STR
+                    , algorithmName, TermType.EQUAL));
             entityInfo.setCondition(condition);
             select();
 
             return commonResult.getData() != null;
-        }else {
+        } else {
             throw new UserException(CommonErrorCode.E_5001);
         }
     }
 
     private void doUpdate(String[] blackArr) {
-        if (!check()) {
+        //赋值给实体类
+        Algorithm algo = new Algorithm();
+        // 覆盖修改时间
+        algo.setAlgorithmUpdateTime(new Timestamp(System.currentTimeMillis()));
+        ReflectUtil.invokeSettersIncludeEntity(paramList, algo);
+
+        //判断字符串变量长度是否为0，是就抛出变量非法异常
+        if (algo.getAlgorithmDesc() != null && algo.getAlgorithmDesc().isEmpty()) {
+            throw new UserException(CommonErrorCode.E_5002);
+        }
+        if (algo.getAlgorithmName() != null && algo.getAlgorithmName().isEmpty()) {
             throw new UserException(CommonErrorCode.E_5002);
         }
         //判断是否包含不允许的修改项
@@ -149,11 +260,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
         if (isExists()) {
             throw new UserException(CommonErrorCode.E_7001);
         }
-        //赋值给实体类
-        Algorithm algo = new Algorithm();
-        // 覆盖修改时间
-        algo.setAlgorithmUpdateTime(new Timestamp(System.currentTimeMillis()));
-        ReflectUtil.invokeSettersIncludeEntity(paramList, algo);
+
         //添加实体类
         entityInfo.addEntity(algo);
         update();
@@ -161,28 +268,30 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
     private Boolean isOwner() {
         List<Integer> ids = new ArrayList<>();
-        Object algorithmId = paramList.get("algorithmId");
+        Object algorithmId = paramList.get(ID_FIELD_STR);
         Object algorithm = paramList.get("algorithm");
         //获取id
         //update中就一个id
         if (algorithmId instanceof Integer) {
             ids.add((Integer) algorithmId);
-        }else if (algorithm instanceof List) {
-            for (Map<String, Object> map: (List<Map<String, Object>>) algorithm) {
-                if (map.get("algorithmId") instanceof Integer) {
-                    ids.add((Integer) map.get("algorithmId"));
+        } else if (algorithm instanceof List) {
+            for (Map<String, Object> map :
+                    (List<Map<String, Object>>) algorithm) {
+                if (map.get(ID_FIELD_STR) instanceof Integer) {
+                    ids.add((Integer) map.get(ID_FIELD_STR));
                 }
             }
         }
         //从数据库里根据id查询
         Condition condition = new Condition();
-        condition.addAndConditionWithView(new Term(table, "algorithm_id", ids, TermType.IN));
+        condition.addAndConditionWithView(new Term(table, ID_COL_STR, ids
+                , TermType.IN));
         entityInfo.setCondition(condition);
         select();
 
         if (commonResult.getData() instanceof List) {
             List<Algorithm> algos = (List<Algorithm>) commonResult.getData();
-            for (Algorithm algo: algos) {
+            for (Algorithm algo : algos) {
                 if (!sessionUserEmail.equals(algo.getUser().getUserName())) {
                     return false;
                 }
@@ -196,7 +305,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
     }
     private void updateAlgorithm() {
         String[] blackArr = {
-                "algorithmCreateTime", "algorithmUpdateTime"
+                CREATE_TIME_FIELD_STR, UPDATE_TIME_FIELD_STR
         };
         doUpdate(blackArr);
     }
@@ -204,9 +313,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
     private void updatePersonalAlgorithm() {
         //不允许的修改项
         String[] blackArr = {
-                "algorithmCreateTime", "algorithmUpdateTime", "algorithmStatus"
+                CREATE_TIME_FIELD_STR, UPDATE_TIME_FIELD_STR, STATUS_FIELD_STR
         };
-        //TODO 判断数据是否是该用户的
+        //判断数据是否是该用户的
         if (!isOwner()) {
             throw new UserException(CommonErrorCode.E_7004);
         }
@@ -217,22 +326,26 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
 
     private void doDelete() {
+        //更新中得判断字符串长度是不是0
+
         Object algorithmPara = paramList.get("algorithm");
         List<Map<String, Object>> list;
         if (algorithmPara instanceof List) {
             list = (List<Map<String, Object>>) algorithmPara;
-            for (Map<String, Object> map: list) {
+            for (Map<String, Object> map : list) {
                 if (map.containsKey("algorithmId")) {
                     Algorithm algorithm = new Algorithm();
                     Integer algorithmId = (Integer) map.get("algorithmId");
                     algorithm.setAlgorithmId(algorithmId);
+
                     entityInfo.addEntity(algorithm);
 
                     //删除文件
-                    File file = new File(AlgoUtil.RESPATH + "algo/java/" + algorithmId + ".java");
+                    File file =
+                            new File(AlgoUtil.RESPATH + "algo/java/" + algorithmId + ".java");
                     if (file.exists()) {
                         if (!file.delete()) {
-                           logger.warn("算法文件删除失败！！");
+                            logger.warn("算法文件删除失败！！");
                         }
                     }
                 } else {
@@ -240,10 +353,11 @@ public class AlgorithmService extends BaseService<Algorithm> {
                 }
             }
             delete();
-        }else {
+        } else {
             throw new UserException(CommonErrorCode.E_5001);
         }
     }
+
     private void deleteAlgorithm() {
         doDelete();
     }
@@ -258,12 +372,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
     }
 
     private void insertAlgorithm() {
-        if (!check()) {
-            throw new UserException(CommonErrorCode.E_5002);
-        }
-
         String[] required = {
-                "algorithmName", "algorithmLanguage", "algorithmType", "algorithmDesc"
+                NAME_FIELD_STR, LANGUAGE_FIELD_STR, TYPE_FIELD_STR,
+                DESC_FIELD_STR
         };
         Algorithm algo = new Algorithm();
         Map<String, Object> para = new HashMap<>(required.length);
@@ -298,7 +409,8 @@ public class AlgorithmService extends BaseService<Algorithm> {
         //添加完查看这条数据项的id
         Condition condition = new Condition();
         //因为算法名唯一，所以通过查算法名可以得到id
-        condition.addAndConditionWithView(new Term(table, "algorithm_name", algo.getAlgorithmName(), TermType.EQUAL));
+        condition.addAndConditionWithView(new Term(table, NAME_COL_STR,
+                algo.getAlgorithmName(), TermType.EQUAL));
         entityInfo.setCondition(condition);
         select();
         Integer id = null;
@@ -320,22 +432,31 @@ public class AlgorithmService extends BaseService<Algorithm> {
         //测试用类
         algo.setAlgorithmId(-1);
         //创建一个临时文件去测试
-        File tempFile = new File(AlgoUtil.RESPATH + "algo/java/" + algo.getAlgorithmId() + ".java");
+        File tempFile =
+                new File(AlgoUtil.RESPATH + "algo/java/" + algo.getAlgorithmId() + ".java");
         try {
             //要是有算法在测试就会占用这个id，所以看看这个文件在不在，存在就让id-1，继续判断直到有个可以用的
             while (tempFile.exists()) {
                 algo.setAlgorithmId(algo.getAlgorithmId() - 1);
             }
-            tempFile = new File(AlgoUtil.RESPATH + "algo/java/" + algo.getAlgorithmId() + ".java");
+            tempFile =
+                    new File(AlgoUtil.RESPATH + "algo/java/" + algo.getAlgorithmId() + ".java");
             //将上传的文件写入到临时文件
             item.write(tempFile);
             //根据算法类型穿不同的测试数据来测试
             try {
                 switch (algo.getAlgorithmType()) {
-                    case 0: AlgoUtil.preprocess(algo, (Double[][]) getData(algo));break;
-                    case 1: AlgoUtil.dataProcess(algo, (Double[]) getData(algo));break;
-                    case 2: AlgoUtil.modeling(algo, (Double[][]) getData(algo));break;
-                    default: throw new UserException(CommonErrorCode.E_5001);
+                    case 0:
+                        AlgoUtil.preprocess(algo, (Double[][]) getData(algo));
+                        break;
+                    case 1:
+                        AlgoUtil.dataProcess(algo, (Double[]) getData(algo));
+                        break;
+                    case 2:
+                        AlgoUtil.modeling(algo, (Double[][]) getData(algo));
+                        break;
+                    default:
+                        throw new UserException(CommonErrorCode.E_5001);
                 }
                 //只要在AlgoUtil执行方法的过程中没报错，得到结果就算是测试通过了
                 return true;
@@ -362,21 +483,42 @@ public class AlgorithmService extends BaseService<Algorithm> {
     protected boolean check() {
         Algorithm algo = new Algorithm();
         ReflectUtil.invokeSettersIncludeEntity(paramList, algo);
+        Integer id = algo.getAlgorithmId();
+        int idMin = 1;
         String desc = algo.getAlgorithmDesc();
         int descMaxLen = 50;
         String name = algo.getAlgorithmName();
         int nameMaxLen = 20;
-        if (desc != null) {
-            if (desc.length() == 0 || desc.length() > descMaxLen) {
+        Integer language = algo.getAlgorithmLanguage();
+        Integer[] languageRange = new Integer[]{0, 1, 2};
+        Integer status = algo.getAlgorithmStatus();
+        Integer[] statusRange = new Integer[]{0, 1, 2};
+        Integer type = algo.getAlgorithmType();
+        Integer[] typeRange = new Integer[]{0, 1, 2};
+        if (id != null && id < idMin) {
+            return false;
+        }
+        if (desc != null && desc.length() > descMaxLen) {
+            return false;
+        }
+        if (name != null && name.length() > nameMaxLen) {
+            return false;
+        }
+        if (language != null) {
+            if (!Arrays.asList(languageRange).contains(language)) {
                 return false;
             }
         }
-        if (name != null) {
-            if (name.length() == 0 || name.length() > nameMaxLen) {
+        if (status != null) {
+            if (!Arrays.asList(statusRange).contains(status)) {
                 return false;
             }
         }
-
+        if (type != null) {
+            if (!Arrays.asList(typeRange).contains(type)) {
+                return false;
+            }
+        }
         return true;
     }
 

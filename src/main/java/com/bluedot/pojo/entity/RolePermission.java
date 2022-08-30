@@ -59,7 +59,9 @@ public class RolePermission {
     @Override
     public String toString() {
         return "RolePermission{" +
-                "role=" + role +
+                "roleId=" + roleId +
+                ", permissionId=" + permissionId +
+                ", role=" + role +
                 ", permissionArrayList=" + permissionArrayList +
                 '}';
     }

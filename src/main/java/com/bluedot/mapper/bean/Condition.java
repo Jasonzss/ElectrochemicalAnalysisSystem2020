@@ -174,4 +174,18 @@ public class Condition {
     public void setOrCondition(List<Term> orCondition) {
         this.orCondition = orCondition;
     }
+
+    @Override
+    public String toString() {
+        return "Condition{" +
+                "returnType='" + returnType + '\'' +
+                ", views=" + views +
+                ", viewCondition=" + viewCondition +
+                ", fields=" + fields +
+                ", andCondition=" + andCondition +
+                ", orCondition=" + orCondition +
+                ", startIndex=" + startIndex +
+                ", size=" + size +
+                '}';
+    }
 }
