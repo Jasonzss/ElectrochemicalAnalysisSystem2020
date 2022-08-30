@@ -14,6 +14,8 @@ public class Data {
     private String serviceName;
     //请求的操作类型
     private String operation;
+    //请求IP地址
+    private String ip;
     //操作者的Session
     private HttpSession session;
 
@@ -38,6 +40,13 @@ public class Data {
     }
 
 
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
 
     public Data(Integer priority, HashMap<String, Object> map, Long key, String serviceName, String operation) {
         this.priority = priority;

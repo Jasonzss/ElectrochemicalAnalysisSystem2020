@@ -432,7 +432,6 @@ public class BaseMapper {
      **/
     public static String generateSelectSqL(Condition condition, List<Object> list) {
 
-        if (!condition.getFields().contains("count(*)")  ){
             String view=condition.getViews().get(0);
             if (view.startsWith("`")){
                 view=view.substring(1,view.length()-1);
@@ -447,19 +446,17 @@ public class BaseMapper {
             }
             //表主键名
             String primaryName = tableInfo.getPrimaryKeys().get(0).getName();
-            if (!condition.getFields().contains(tableInfo.getTableName()+"."+primaryName)){
                 List<String> fields = condition.getFields();
                 boolean flag=true;
                 for (String field : fields) {
-                    if (field.indexOf("GROUP_CONCAT")!=-1) {
+                    if (field.indexOf("GROUP")!=-1||field.indexOf(primaryName)!=-1|| field.indexOf("*")!=-1) {
                         flag=false;
                     }
                 }
                 if (flag){
                     fields.add(tableInfo.getTableName()+"."+primaryName);
                 }
-            }
-        }
+
         StringBuffer select = new StringBuffer("select ");
         List<String> views = condition.getViews();
         if (condition.getFields().size() == 0) {

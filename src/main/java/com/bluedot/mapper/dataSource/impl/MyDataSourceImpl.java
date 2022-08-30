@@ -133,6 +133,7 @@ public class MyDataSourceImpl implements MyDataSource {
                 return getConnection();
             }
             try {
+                logger.debug("当前线程已阻塞，连接池已满,createdCount:"+createdCount+" 连接池幸存数量："+conns.size());
                 MONITOR.wait(maxWaitingTime);
             } catch (InterruptedException e) {
                 e.printStackTrace();

@@ -178,11 +178,13 @@ public class Executor {
                             foreignKeyEntityList.add(listEntity);
                         }
                         else {
+                            String name = field.getName();
                             if(field.get(rowObject)==null){
-                                String name = field.getName();
                                 Object foreignKeyEntity = field.getType().newInstance();
                                 ReflectUtil.invokeSet(rowObject, name, foreignKeyEntity);
                                 foreignKeyEntityMap.put(name, foreignKeyEntity);
+                            }else {
+                                foreignKeyEntityMap.put(name,field.get(rowObject));
                             }
                         }
                     }

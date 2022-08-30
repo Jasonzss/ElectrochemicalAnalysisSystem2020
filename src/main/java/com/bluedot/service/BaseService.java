@@ -18,6 +18,7 @@ import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.LockSupport;
@@ -31,8 +32,10 @@ public abstract class BaseService<T> {
     protected HttpSession session;
     protected Map<String, Object> paramList;
     protected String operation;
+    protected String ip;
     protected EntityInfo<T> entityInfo;
     protected CommonResult commonResult;
+    protected Map<String,Object> userLogMap=new HashMap<>();
 
     /**
      * Service监听器调用具体Service时用的构造方法
@@ -42,6 +45,10 @@ public abstract class BaseService<T> {
         fillAttribute(data);
         if (check()){
             //检查通过
+            userLogMap.put("ip",ip);
+            userLogMap.put("session",session);
+            userLogMap.put("entityInfo",entityInfo);
+            userLogMap.put("userLogParameter",paramList.toString());
             doService();
         }else {
             //检查未通过
@@ -68,7 +75,7 @@ public abstract class BaseService<T> {
      * @param operation
      * @return
      */
-    protected CommonResult doOtherService(Map<String,Object> map, String operation){
+    public CommonResult doOtherService(Map<String, Object> map, String operation){
         this.paramList = map;
         this.operation = operation;
         if (check()){
@@ -86,9 +93,11 @@ public abstract class BaseService<T> {
      * @param data Controller层传进来的数据
      */
     private void fillAttribute(Data data){
+        userLogMap.put("userLogClassMethodName",data.getServiceName()+".");
         paramList = data.getMap();
         session = data.getSession();
         operation = data.getOperation();
+        ip=data.getIp();
         entityInfo = new EntityInfo<>();
         commonResult = new CommonResult();
         entityInfo.setKey(data.getKey());
@@ -205,6 +214,8 @@ public abstract class BaseService<T> {
         //当前线程暂停执行
         LockSupport.park();
         //返回Mapper处理结果
-        return MapperServiceQueue.getInstance().take(entityInfo.getKey());
+        CommonResult commonResult=MapperServiceQueue.getInstance().take(entityInfo.getKey());
+        userLogMap.put("userLogMethodReturnValue",commonResult.getData().toString());
+        return commonResult;
     }
 }
