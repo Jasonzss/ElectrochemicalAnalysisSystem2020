@@ -1,8 +1,11 @@
 package com.bluedot.service;
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.UserRole;
+import com.bluedot.pojo.vo.CommonResult;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
@@ -19,19 +22,25 @@ public class UserRoleService extends BaseService<UserRole>{
 
     @Override
     protected void doService() {
-
+        String methodName=null;
+        switch (operation){
+            case "delete":
+                methodName="deleteUserRole";
+                break;
+            case "insert":
+                methodName="insertUserRole";
+                break;
+            default:
+                throw new UserException(CommonErrorCode.E_4001);
+        }
+        invokeMethod(methodName,this);
     }
 
     /**
-     * 修改用户角色
+     * 插入用户角色
      */
-    private void updateUserRoles(){
-        int[] roleIds = (int[]) paramList.get("roleIds");
-        UserRole userRole = new UserRole();
-        userRole.setUserEmail((String) paramList.get("userEmail"));
-
-        entityInfo.addEntity(userRole);
-        delete();
+    private void insertUserRole(){
+        ArrayList<Integer> roleIds = (ArrayList<Integer>) paramList.get("roleIds");
         ArrayList<UserRole> userRoleArrayList1 = new ArrayList<>();
         for (int roleId : roleIds) {
             UserRole userRole1 = new UserRole();
@@ -39,7 +48,16 @@ public class UserRoleService extends BaseService<UserRole>{
             userRole1.setUserEmail((String) paramList.get("userEmail"));
             userRoleArrayList1.add(userRole1);
         }
-//        entityInfo.setEntity(userRoleArrayList1);
+        entityInfo.setEntity(userRoleArrayList1);
         insert();
+    }
+    /**
+     * 删除用户角色
+     */
+    private void deleteUserRole(){
+        UserRole userRole = new UserRole();
+        userRole.setUserEmail((String) paramList.get("userEmail"));
+        entityInfo.addEntity(userRole);
+        delete();
     }
 }
