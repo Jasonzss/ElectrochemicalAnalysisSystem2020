@@ -3,10 +3,12 @@ package com.bluedot.service;
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
+import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Algorithm;
+import com.bluedot.pojo.entity.Application;
 import com.bluedot.pojo.entity.User;
 import com.bluedot.utils.AlgoUtil;
 import com.bluedot.utils.LogUtil;
@@ -14,6 +16,7 @@ import com.bluedot.utils.ReflectUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.slf4j.Logger;
 
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
@@ -50,6 +53,10 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
     public AlgorithmService(Data data) {
         super(data);
+    }
+
+    public AlgorithmService(HttpSession session, EntityInfo<Application> entityInfo) {
+        super(session, entityInfo);
     }
 
 
