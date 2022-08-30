@@ -36,13 +36,17 @@ public class FileDataRender {
                     ImageIO.write(((BufferedImage) map.get("file")), "png", response.getOutputStream());
                     break;
                 case CommonResult.INPUT_STREAM_IMAGE:
-                    response.getOutputStream().write(((InputStream) map.get("file")).read());
+                    byte[] bytes = new byte[((InputStream) map.get("file")).available()];
+                    ((InputStream) map.get("file")).read(bytes);
+                    response.getOutputStream().write(bytes);
                     break;
                 case CommonResult.FILE:
-                    response.getOutputStream().write(new FileInputStream((File) map.get("file")).read());
+                    byte[] bytes1 = new byte[(int) ((File) map.get("file")).length()];
+                    new FileInputStream((File) map.get("file")).read(bytes1);
+                    response.getOutputStream().write(bytes1);
                     break;
                 default:
-                    LogUtil.getLogger().error("请求结果CommonResult中ContentType与数据类型不匹配----请求id:{}",((Data)request.getAttribute("Data")).getKey());
+                    LogUtil.getLogger().error("请求结果CommonResult中ContentType与数据类型不匹配----请求id:{}", ((Data) request.getAttribute("Data")).getKey());
             }
             response.getOutputStream().close();
         } catch (IOException e) {
