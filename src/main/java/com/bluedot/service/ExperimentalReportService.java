@@ -139,7 +139,7 @@ public class ExperimentalReportService extends BaseService<Report>{
      */
     private void updateReport(){
         Report report = new Report();
-        ReflectUtil.invokeSetters(paramList,report);
+        ReflectUtil.invokeSettersIncludeEntity(paramList,report);
 
         entityInfo.addEntity(report);
         update();
