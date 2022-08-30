@@ -64,8 +64,8 @@ public class DataFilter implements Filter {
         //设置请求数据对应的key
         data.setKey(requestId.getAndIncrement());
         String contentType = request.getContentType();
-        if (contentType!=null&&"application/json".equals(contentType) || contentType.indexOf("multipart/form-data") != -1) {
-            if ("application/json".equals(request.getContentType())) {
+        if (contentType != null && contentType.indexOf("application/json") != -1 || contentType.indexOf("multipart/form-data") != -1) {
+            if (contentType.indexOf("application/json") != -1) {
                 try {
                     //获取请求中的json数据
                     BufferedReader streamReader = new BufferedReader(new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8));
@@ -106,7 +106,7 @@ public class DataFilter implements Filter {
                     for (FileItem fileItem : fileItems) {
                         if (fileItem.isFormField()) {
                             if ("viewName".equals(fileItem.getFieldName())) {
-                                data.setServiceName("com.bluedot.service." + fileItem.getString("utf-8")+ "Service");
+                                data.setServiceName("com.bluedot.service." + fileItem.getString("utf-8") + "Service");
                             } else if ("operation".equals(fileItem.getFieldName())) {
                                 data.setOperation(fileItem.getString("utf-8"));
                             } else {
@@ -134,7 +134,7 @@ public class DataFilter implements Filter {
                 log.error(e.getMessage());
                 e.printStackTrace();
             }
-        }else {
+        } else {
             log.error("请求ContentType错误---请求用户:{}", request.getSession().getAttribute("userEmail") == null ? "游客" : request.getSession().getAttribute("userEmail"));
             JsonDataRender.renderData(response, CommonResult.errorResult(400, "请求ContentType错误"));
         }
