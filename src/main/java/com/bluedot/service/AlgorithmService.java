@@ -30,9 +30,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
      * 当前登录用户的邮箱。
      */
     private String sessionUserEmail;
-    private String table = "algorithm";
+    private final String table = "algorithm";
 
-    private Logger logger = LogUtil.getLogger();
+    private final Logger logger = LogUtil.getLogger();
 
     private final String ID_FIELD_STR = "algorithmId";
     private final String ID_COL_STR = "algorithm_id";
