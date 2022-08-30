@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.nio.Buffer;
 import java.util.*;
 
@@ -112,7 +113,7 @@ public class ApplicationService extends BaseService<Application>{
     }
 
     /**
-     * 管理员删除申请
+     * 用户撤回申请
      */
     private void deleteApplication(){
         if (paramList.get("applicationId") instanceof List){
@@ -159,48 +160,64 @@ public class ApplicationService extends BaseService<Application>{
         Application application = new Application();
         ReflectUtil.invokeSettersIncludeEntity(paramList,application);
 
-        // 拒绝理由为空，即同意申请，则执行申请内容中的操作
-        if (application.getApplicationRejectReason() != null && application.getApplicationStatus() == 1){
-            // 通过申请id查询到申请
-            Condition condition = new Condition();
-            condition.addAndConditionWithView(new Term("application","application_id",application.getApplicationId(), TermType.EQUAL));
+        try {
+            // 拒绝理由为空，即同意申请，则执行申请内容中的操作
+            if (application.getApplicationRejectReason() == null && application.getApplicationStatus() == 1){
+                // 通过申请id查询到申请
+                Condition condition = new Condition();
+                condition.addView("application");
+                condition.setReturnType("Application");
+                condition.addAndConditionWithView(new Term("application","application_id",application.getApplicationId(), TermType.EQUAL));
+                condition.addAndConditionWithView(new Term("application","application_status",0, TermType.EQUAL));
 
-            entityInfo.setCondition(condition);
-            select();
+                entityInfo.setCondition(condition);
+                select();
 
-            // 获取查询到的申请内容
-            Application selectedApplication = (Application) commonResult.getData();
-            String applicationContent = selectedApplication.getApplicationContent();
+                // 获取查询到的申请内容
+                Application selectedApplication = ((List<Application>) commonResult.getData()).get(0);
+                String applicationContent = selectedApplication.getApplicationContent();
 
-            // 判断申请的类型,然后解析申请内容并执行
-            Integer applicationType = selectedApplication.getApplicationType();
-            ObjectMapper objectMapper = JsonUtil.getObjectMapper();
+                // 判断申请的类型,然后解析申请内容并执行
+                Integer applicationType = selectedApplication.getApplicationType();
+                ObjectMapper objectMapper = JsonUtil.getObjectMapper();
 
-            CommonResult result = null;
-            switch (applicationType){
-                case 0:
-                    // 解封申请：根据userEmail来修改账号状态
-                    HashMap<String, Object> userDataMap = new HashMap<>();
-                    userDataMap.put("userEmail",paramList.get("userEmail"));
-                    userDataMap.put("userStatus",1);
-                    result = new UserService(session,entityInfo).doOtherService(userDataMap,"insert");
-                    break;
-                case 1:
-                    Map materialTypeMap= objectMapper.convertValue(applicationContent,Map.class);
-                    result = new MaterialTypeService(session,entityInfo).doOtherService(materialTypeMap,"insert");
-                    break;
-                case 2:
-                    Map algorithmMap = objectMapper.convertValue(applicationContent,Map.class);
-                    algorithmMap.put("algorithmStatus",1);
-                    //改变算法状态 ?????
-                    break;
-                case 3:
-                    Map bufferSolutionMap = objectMapper.convertValue(applicationContent,Map.class);
-                    result = new BufferSolutionService(session,entityInfo).doOtherService(bufferSolutionMap,"insert");
-                    break;
-                default:
-                    throw new UserException(CommonErrorCode.E_6001);
+                CommonResult result = null;
+                switch (applicationType){
+                    case 0:
+                        // 解封申请：根据userEmail来修改账号状态
+                        HashMap<String, Object> userDataMap = new HashMap<>();
+                        userDataMap.put("userEmail",selectedApplication.getUser().getUserEmail());
+                        userDataMap.put("userStatus",1);
+                        result = new UserService(session,entityInfo).doOtherService(userDataMap,"update");
+                        break;
+                    case 1:
+                        Map materialTypeMap= objectMapper.readValue(applicationContent,Map.class);
+                        result = new MaterialTypeService(session,entityInfo).doOtherService(materialTypeMap,"insert");
+                        break;
+                    case 2:
+                        Map algorithmMap = objectMapper.readValue(applicationContent,Map.class);
+                        algorithmMap.put("algorithmStatus",1);
+                        //改变算法状态
+                        result = new AlgorithmService(session,entityInfo).doOtherService(algorithmMap,"update");
+                        break;
+                    case 3:
+                        Map bufferSolutionMap = objectMapper.readValue(applicationContent,Map.class);
+                        result = new BufferSolutionService(session,entityInfo).doOtherService(bufferSolutionMap,"insert");
+                        break;
+                    default:
+                        throw new UserException(CommonErrorCode.E_6001);
+                }
+                if (result.getData() instanceof Integer){
+                    boolean ifSuccess = (int)result.getData() != 0;
+                    if (ifSuccess){
+
+                    }
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+//            throw new RuntimeException(e);
+            throw new UserException(CommonErrorCode.E_2002);
         }
 
         // 完成审核操作，修改该申请的审核状态
@@ -223,7 +240,7 @@ public class ApplicationService extends BaseService<Application>{
         Condition condition = new Condition();
 
         condition.addView("application");
-        condition.setReturnType("application");
+        condition.setReturnType("Application");
 
         // 分页查询
         if (paramList.get("pageSize") != null){

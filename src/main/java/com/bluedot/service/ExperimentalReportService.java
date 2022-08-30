@@ -78,7 +78,7 @@ public class ExperimentalReportService extends BaseService<Report>{
                 if ("test".equals(paramList.get("imageType")) ) {
                     methodName = "getReportTestSetGraph";
                 }else if ("train".equals(paramList.get("imageType")) ){
-                    methodName = "getReportTestSetGraph";
+                    methodName = "getReportTrainingSetGraph";
                 }
                 break;
             default:
