@@ -207,10 +207,11 @@ public class ApplicationService extends BaseService<Application>{
                     default:
                         throw new UserException(CommonErrorCode.E_6001);
                 }
+                // 解析申请内容，执行操作后的成功与否判断
                 if (result.getData() instanceof Integer){
                     boolean ifSuccess = (int)result.getData() != 0;
-                    if (ifSuccess){
-
+                    if (!ifSuccess) {
+                        throw new UserException(CommonErrorCode.E_2002);
                     }
                 }
             }
