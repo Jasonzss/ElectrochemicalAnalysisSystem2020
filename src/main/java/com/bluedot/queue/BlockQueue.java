@@ -123,7 +123,7 @@ public class BlockQueue<E> extends AbstractQueue<E>
             while (count == items.length) {
                 notFull.await();
             }
-            logger.info("数据 ---> 放入队列: {}",e);
+            logger.debug("数据 ---> 放入队列: {}",e);
             enqueue(e);
         } finally {
             lock.unlock();
@@ -149,6 +149,7 @@ public class BlockQueue<E> extends AbstractQueue<E>
                     }
                     nanos = notFull.awaitNanos(nanos);
                 }
+                logger.debug("Service处理任务 ---> 放入队列: {}",e);
                 enqueue(e);
                 return true;
             } finally {
@@ -169,7 +170,7 @@ public class BlockQueue<E> extends AbstractQueue<E>
             while (count == 0) {
                 notEmpty.await();
             }
-            logger.info("数据 ---> 取出队列");
+            logger.debug("Service处理任务 ---> 取出队列");
             return dequeue();
         } finally {
             lock.unlock();
