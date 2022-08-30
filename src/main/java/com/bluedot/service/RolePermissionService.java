@@ -40,30 +40,8 @@ public class RolePermissionService extends BaseService<RolePermission>{
         invokeMethod(methodName,this);
     }
 
-    /**
-     * 修改角色权限
-     */
-    private void updateRolePermissions(){
-
-        RolePermission rolePermission = new RolePermission();
-        rolePermission.setRoleId((Integer) paramList.get("roleId"));
-        entityInfo.addEntity(rolePermission);
-        delete();
-
-
-
-        insert();
-    }
-
     private void insertRolePermission(){
-        ArrayList<Integer> permissionIds = (ArrayList<Integer>) paramList.get("permissionIds");
-        ArrayList<RolePermission> rolePermissionArrayList = new ArrayList<>();
-        for (int permissionId : permissionIds) {
-            RolePermission rolePermission = new RolePermission();
-            rolePermission.setRoleId((Integer) paramList.get("roleId"));
-            rolePermission.setPermissionId(permissionId);
-            rolePermissionArrayList.add(rolePermission);
-        }
+        ArrayList<RolePermission> rolePermissionArrayList = (ArrayList<RolePermission>) paramList.get("rolePermissionArrayList");
         entityInfo.setEntity(rolePermissionArrayList);
         insert();
     }

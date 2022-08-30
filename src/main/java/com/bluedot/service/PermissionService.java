@@ -9,6 +9,7 @@ import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.*;
 import com.bluedot.pojo.vo.CommonResult;
+import com.bluedot.utils.LogUtil;
 
 
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ public class PermissionService extends BaseService<Permission>{
             default:
                 throw new UserException(CommonErrorCode.E_4001);
         }
+        userLogMap.put("userLogClassMethodName",userLogMap.get("userLogClassMethodName")+methodName);
         invokeMethod(methodName,this);
 
     }
@@ -79,6 +81,7 @@ public class PermissionService extends BaseService<Permission>{
      * 查询所有用户的角色
      */
     private void listUserRoles(){
+
         Long pageNo = Long.valueOf(((Integer)paramList.get("pageNo")).longValue());
         Integer pageSize = (Integer) paramList.get("pageSize");
 
@@ -91,6 +94,7 @@ public class PermissionService extends BaseService<Permission>{
         ArrayList<User> arrayList= (ArrayList<User>) commonResult.getData();
         int start= (int) ((pageNo-1)*pageSize);
         int end=start+pageSize;
+        end= end>arrayList.size() ? arrayList.size():end;
         List<String> list=new ArrayList<>();
         for (int i = start; i < end; i++) {
             list.add(arrayList.get(i).getUserEmail());
@@ -126,6 +130,7 @@ public class PermissionService extends BaseService<Permission>{
         pageInfo.setCurrentPageNo(Math.toIntExact(pageNo));
 
         commonResult = CommonResult.successResult("分页查询",pageInfo);
+        LogUtil.insertUserLog("error","详情",userLogMap);
     }
     /**
      * 查询所有角色
@@ -230,6 +235,7 @@ public class PermissionService extends BaseService<Permission>{
         paramList.put("rolePermissionArrayList",rolePermissionArrayList);
 
         new RolePermissionService(session,entityInfo).doOtherService(paramList,"insert");
+        LogUtil.insertUserLog("error","详情",userLogMap);
     }
     /**
      * 修改角色权限
