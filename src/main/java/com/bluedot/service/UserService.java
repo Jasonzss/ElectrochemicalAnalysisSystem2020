@@ -19,6 +19,7 @@ import org.apache.commons.fileupload.FileItem;
 
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -270,7 +271,7 @@ public class UserService extends BaseService<User> {
             }
         }else {
             //查询图片
-            condition.addFields("userImg");
+            condition.addFields("user_img");
 
             // 执行查询逻辑
             entityInfo.setCondition(condition);
@@ -282,7 +283,7 @@ public class UserService extends BaseService<User> {
                 User user = userList.get(0);
                 byte[] userImg = user.getUserImg();
                 commonResult = CommonResult.successResult("",null);
-                commonResult.setFileData("userImg",userImg);
+                commonResult.setFileData("userImg",new ByteArrayInputStream(userImg));
                 commonResult.setRespContentType(CommonResult.INPUT_STREAM_IMAGE);
             }else {
                 throw new UserException(CommonErrorCode.E_1005);
@@ -484,7 +485,7 @@ public class UserService extends BaseService<User> {
         };
         ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(5,new ThreadPoolExecutor.CallerRunsPolicy());
         //定时一分钟
-        long delay  = 20 * 1000L;
+        long delay  = 60 * 1000L;
         executor.schedule(task, delay, TimeUnit.MILLISECONDS);
         executor.shutdown();
     }
