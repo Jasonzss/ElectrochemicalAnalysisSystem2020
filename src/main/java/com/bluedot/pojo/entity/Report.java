@@ -14,8 +14,11 @@ public class Report {
     private Integer reportId;
     private String reportTitle;
     private String reportMaterialName;
-    private Algorithm pretreatmentAlgorithm;
-    private Algorithm reportDataModel;
+
+    private Integer pretreatmentAlgorithmId;
+
+    private Integer reportDataModelId;
+
     private String reportResultModel;
     private byte[] reportTrainingSetGraph;
     private byte[] reportTestSetGraph;
@@ -43,10 +46,21 @@ public class Report {
     private Double rpd;
     private String reportDesc;
 
-    public Report() {
-        pretreatmentAlgorithm = new Algorithm();
-        reportDataModel = new Algorithm();
-        user = new User();
+
+    public Integer getPretreatmentAlgorithmId() {
+        return pretreatmentAlgorithmId;
+    }
+
+    public void setPretreatmentAlgorithmId(Integer pretreatmentAlgorithmId) {
+        this.pretreatmentAlgorithmId = pretreatmentAlgorithmId;
+    }
+
+    public Integer getReportDataModelId() {
+        return reportDataModelId;
+    }
+
+    public void setReportDataModelId(Integer reportDataModelId) {
+        this.reportDataModelId = reportDataModelId;
     }
 
     public Integer getReportId() {
@@ -71,22 +85,6 @@ public class Report {
 
     public void setReportMaterialName(String reportMaterialName) {
         this.reportMaterialName = reportMaterialName;
-    }
-
-    public Algorithm getPretreatmentAlgorithm() {
-        return pretreatmentAlgorithm;
-    }
-
-    public void setPretreatmentAlgorithm(Algorithm pretreatmentAlgorithm) {
-        this.pretreatmentAlgorithm = pretreatmentAlgorithm;
-    }
-
-    public Algorithm getReportDataModel() {
-        return reportDataModel;
-    }
-
-    public void setReportDataModel(Algorithm reportDataModel) {
-        this.reportDataModel = reportDataModel;
     }
 
     public String getReportResultModel() {
@@ -215,32 +213,5 @@ public class Report {
 
     public void setReportDesc(String reportDesc) {
         this.reportDesc = reportDesc;
-    }
-
-    @Override
-    public String toString() {
-        return "Report{" +
-                "reportId=" + reportId +
-                ", reportTitle='" + reportTitle + '\'' +
-                ", reportMaterialName='" + reportMaterialName + '\'' +
-                ", pretreatmentAlgorithm=" + pretreatmentAlgorithm +
-                ", reportDataModel=" + reportDataModel +
-                ", reportResultModel='" + reportResultModel + '\'' +
-                ", reportTrainingSetGraph=" + Arrays.toString(reportTrainingSetGraph) +
-                ", reportTestSetGraph=" + Arrays.toString(reportTestSetGraph) +
-                ", reportCreateTime=" + reportCreateTime +
-                ", reportLastUpdateTime=" + reportLastUpdateTime +
-                ", user=" + user +
-                ", trainingSetData='" + trainingSetData + '\'' +
-                ", testSetData='" + testSetData + '\'' +
-                ", rc2=" + rc2 +
-                ", rmsec=" + rmsec +
-                ", maec=" + maec +
-                ", rp2=" + rp2 +
-                ", rmsep=" + rmsep +
-                ", maep=" + maep +
-                ", rpd=" + rpd +
-                ", reportDesc='" + reportDesc + '\'' +
-                '}';
     }
 }

@@ -76,5 +76,4 @@ public class BaseMapperTest {
         BaseMapper baseMapper=new BaseMapper(entityInfo);
 
     }
-
 }

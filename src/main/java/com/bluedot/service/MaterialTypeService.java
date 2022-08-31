@@ -54,11 +54,7 @@ public class MaterialTypeService extends BaseService<MaterialType> {
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
-    }
-
-    @Override
-    protected boolean check() {
-        return false;
+        invokeMethod(methodName,this);
     }
 
     /**
@@ -116,14 +112,17 @@ public class MaterialTypeService extends BaseService<MaterialType> {
      */
     private void listMaterialType(){
         Condition condition = new Condition();
-        if (paramList.containsKey("pageSize") || paramList.get("pageSize") != null){
+        condition.addView("material_type");
+        condition.setReturnType("MaterialType");
+
+        if (paramList.containsKey("pageSize")){
             condition.setSize((Integer) paramList.get("pageSize"));
         }
-        if (paramList.containsKey("pageNo") || paramList.get("pageNo") != null){
-            condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
+        if (paramList.containsKey("pageNo")){
+            condition.setStartIndex((long)((int)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
         }
-        if (paramList.containsKey("materialTypeName") && paramList.get("materialTypeName") != null){
-            condition.addOrConditionWithView(new Term("material_type","material_type_id",paramList.get("materialTypeName"),TermType.EQUAL));
+        if (paramList.containsKey("materialTypeName")){
+            condition.addOrConditionWithView(new Term("material_type","material_type_name",paramList.get("materialTypeName"),TermType.EQUAL));
         }
 
         entityInfo.setCondition(condition);
