@@ -21,7 +21,7 @@ import static com.bluedot.utils.JwtUtil.*;
  */
 public class JwtUtilMyLogTest {
 
-    @Test
+//    @Test
     public void test() throws InterruptedException {
         //放入token负载的自定义信息
         HashMap<String, String> map = new HashMap<>();

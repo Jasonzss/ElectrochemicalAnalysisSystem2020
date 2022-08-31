@@ -91,7 +91,13 @@ public class BaseMapper {
     private Object select(Condition condition) {
         List<Object> parameters = new ArrayList<>();
         //生成sqL语句并得到填充后的参数数组
-        String sql = generateSelectSqL(condition, parameters);
+        String sql = null;
+        try {
+            sql = generateSelectSqL(condition, parameters);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
         MappedStatement mappedStatement = new MappedStatement();
         mappedStatement.setSql(sql);
         logger.debug("自动生成的查询sql语句："+sql);
