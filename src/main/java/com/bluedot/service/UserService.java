@@ -10,16 +10,14 @@ import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Permission;
 import com.bluedot.pojo.entity.User;
 import com.bluedot.pojo.vo.CommonResult;
-import com.bluedot.utils.EmailUtil;
-import com.bluedot.utils.ImageUtil;
-import com.bluedot.utils.JwtUtil;
-import com.bluedot.utils.ReflectUtil;
+import com.bluedot.utils.*;
 import com.bluedot.utils.constants.SessionConstants;
 import org.apache.commons.fileupload.FileItem;
 
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
+import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -117,10 +115,10 @@ public class UserService extends BaseService<User> {
         if (paramList.containsKey("userImg")){
             FileItem userImg = (FileItem) paramList.get("userImg");
             //将图片转换为二进制数组
-            Byte[] bytes = ImageUtil.imgToBinary(userImg);
+            byte[] bytes = ImageUtil.imgToBinary(userImg);
             paramList.put("userImg",bytes);
         }
-        
+
         User user = new User();
         ReflectUtil.invokeSettersIncludeEntity(paramList,user);
 
@@ -200,6 +198,9 @@ public class UserService extends BaseService<User> {
         if (user != null){
             //邮箱已注册，无法再注册
             throw new UserException(CommonErrorCode.E_1002);
+        }else {
+            //邮箱未注册，进行新用户的注册
+            user = new User();
         }
 
         //执行插入操作
@@ -263,6 +264,7 @@ public class UserService extends BaseService<User> {
             select();
 
             //重新封装数据
+            //TODO
             List<User> userList = (List<User>) commonResult.getData();
             if (userList.size() != 0){
                 commonResult = CommonResult.successResult("用户信息",userList.get(0));
@@ -282,9 +284,23 @@ public class UserService extends BaseService<User> {
             if (userList.size() != 0){
                 User user = userList.get(0);
                 byte[] userImg = user.getUserImg();
+
                 commonResult = CommonResult.successResult("",null);
-                commonResult.setFileData("userImg",new ByteArrayInputStream(userImg));
                 commonResult.setRespContentType(CommonResult.INPUT_STREAM_IMAGE);
+                if (userImg == null){
+                    try {
+                        //用户未设置头像，返回默认头像
+                        URL url = getClass().getClassLoader().getResource("image/userImg.jpg");
+                        File file = new File(url.toExternalForm().substring(6).replaceAll( "%20"," "));
+                        FileInputStream fileInputStream = new FileInputStream(file);
+                        commonResult.setFileData("userImg",fileInputStream);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }else {
+                    //用户设置了头像，返回用户头像
+                    commonResult.setFileData("userImg",new ByteArrayInputStream(userImg));
+                }
             }else {
                 throw new UserException(CommonErrorCode.E_1005);
             }
