@@ -59,4 +59,15 @@ public class PageInfo {
     public void setDataList(List<Object> dataList) {
         this.dataList = dataList;
     }
+
+    @Override
+    public String toString() {
+        return "PageInfo{" +
+                "pageSize=" + pageSize +
+                ", currentPageNo=" + currentPageNo +
+                ", totalDataSize=" + totalDataSize +
+                ", totalPageSize=" + totalPageSize +
+                ", dataList=" + dataList +
+                '}';
+    }
 }
