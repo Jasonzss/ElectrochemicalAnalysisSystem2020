@@ -21,8 +21,10 @@ import static com.bluedot.utils.JwtUtil.*;
  */
 public class JwtUtilMyLogTest {
 
-//    @Test
+    @Test
     public void test() throws InterruptedException {
+        Connection connection = MyDataSourceImpl.getInstance().getConnection();
+        System.out.println(connection);
         //放入token负载的自定义信息
         HashMap<String, String> map = new HashMap<>();
         map.put("id","2");

@@ -10,7 +10,7 @@ import org.junit.Test;
  */
 public class MainRequestHandlerTest {
     MainRequestHandler mainRequestHandler=new MainRequestHandler();
-//    @Test
+    @Test
     public void test1(){
 
     }

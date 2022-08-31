@@ -172,7 +172,7 @@ public abstract class BaseService<T> {
 
     protected void invokeMethod(String methodName,Object obj){
         List<String> permissionList = (List<String>) session.getAttribute("permissionList");
-//        if ("login".equals(operation) || permissionList.contains(methodName)){
+        if ("login".equals(operation) || permissionList.contains(methodName)){
             //存在此权限，执行响应方法
 
             Method method = null;
@@ -199,10 +199,10 @@ public abstract class BaseService<T> {
                     commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
                 }
             }
-//        }else {
-//            // 没有权限，则设置枚举异常结果
-//            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_3001);
-//        }
+        }else {
+            // 没有权限，则设置枚举异常结果
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_3001);
+        }
     }
 
     private CommonResult doMapper(){

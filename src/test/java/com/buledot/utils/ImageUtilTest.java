@@ -10,7 +10,7 @@ import org.junit.Test;
  * @Description ：
  */
 public class ImageUtilTest {
-//    @Test
+    @Test
     public void imageToBinaryTest(){
 
     }
