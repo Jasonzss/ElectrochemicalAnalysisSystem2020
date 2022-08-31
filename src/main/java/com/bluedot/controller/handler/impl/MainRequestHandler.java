@@ -6,6 +6,7 @@ import com.bluedot.pojo.Dto.Data;
 import com.bluedot.queue.enterQueue.Impl.ControllerServiceQueue;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.queue.outQueue.impl.ServiceControllerQueue;
+import com.bluedot.utils.IpUtil;
 import com.bluedot.utils.LogUtil;
 import org.slf4j.Logger;
 
@@ -36,6 +37,8 @@ public class MainRequestHandler implements RequestHandler {
     public CommonResult handlerRequest(HttpServletRequest request, HttpServletResponse response) {
         //根据request对象将请求参数封装为Data对象
         Data data = (Data) request.getAttribute("Data");
+        String ip = IpUtil.getIpAddr(request);
+        data.setIp(ip);
         System.out.println(data);
         log.debug("开始处理请求---请求id:{}", data.getKey());
         //将Data对象放入ControllerServiceQueue中等待处理

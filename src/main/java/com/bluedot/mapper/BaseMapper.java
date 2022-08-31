@@ -26,7 +26,7 @@ import java.util.List;
  * @date 2022/8/16 16:15
  */
 public class BaseMapper {
-    private Logger logger= LogUtil.getLogger();
+    private final Logger logger = LogUtil.getLogger();
     //mapper执行器
     private Executor executor = new Executor(MapperInit.getConfiguration());
     //mapper实体类属性
@@ -43,7 +43,7 @@ public class BaseMapper {
      * @return:
      **/
     public BaseMapper(EntityInfo entityInfo) {
-        logger.info("进入BaseMapper构造器");
+        logger.debug("进入BaseMapper构造器");
         this.entityInfo=entityInfo;
         entityList = entityInfo.getEntity();
         doMapper();
@@ -77,7 +77,7 @@ public class BaseMapper {
         //结果封装
         commonResult = new CommonResult();
         commonResult.setData(object);
-        logger.info("mapper层操作结果："+object+",并将结果通过队列  返回给service层");
+        logger.debug("mapper层操作结果："+commonResult+",并将结果通过队列  返回给service层");
         //将结果通过队列  返回给service
         com.bluedot.queue.outQueue.impl.MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
     }
@@ -94,7 +94,7 @@ public class BaseMapper {
         String sql = generateSelectSqL(condition, parameters);
         MappedStatement mappedStatement = new MappedStatement();
         mappedStatement.setSql(sql);
-        logger.info("自动生成的查询sql语句："+sql);
+        logger.debug("自动生成的查询sql语句："+sql);
         String view=condition.getViews().get(0);
         if (view.startsWith("`")){
             view=view.substring(1,view.length()-1);
@@ -222,15 +222,17 @@ public class BaseMapper {
 
                 sql.append("delete from ").append(tableInfo.getTableName()).append(" where ");
                 for (ColumnInfo columnInfo : primaryKeys) {
-                    sql.append(StringUtil.humpToLine(columnInfo.getName())).append(" in( ");
-                    for (Object o : typeList) {
-                        if (ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName()))!=null){
-                            sql.append(" ?,");
-                            params.add(ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName())));
+                    if (ReflectUtil.invokeGet(typeList.get(0), StringUtil.lineToHump(columnInfo.getName()))!=null) {
+                        sql.append(StringUtil.humpToLine(columnInfo.getName())).append(" in( ");
+                        for (Object o : typeList) {
+                            if (ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName())) != null) {
+                                sql.append(" ?,");
+                                params.add(ReflectUtil.invokeGet(o, StringUtil.lineToHump(columnInfo.getName())));
+                            }
                         }
+                        sql.setCharAt(sql.length() - 1, ')');
+                        sql.append(" ");
                     }
-                    sql.setCharAt(sql.length()-1,')');
-                    sql.append(" ");
                 }
             }
         });
@@ -417,7 +419,7 @@ public class BaseMapper {
         StringBuilder sql = new StringBuilder();
         callback.generateSqlExecutor(fields, tableInfo, primaryKeys, sql, mappedStatement, params);
         sql.setCharAt(sql.length() - 1, ' ');
-        logger.info(entityInfo.getOperation()+"生成的sql:"+sql.toString());
+        logger.debug(entityInfo.getOperation()+"生成的sql:"+sql.toString());
         mappedStatement.setSql(sql.toString());
         return this.executor.doUpdate(mappedStatement, params.toArray());
     }
@@ -429,22 +431,32 @@ public class BaseMapper {
      * @return: java.lang.String
      **/
     public static String generateSelectSqL(Condition condition, List<Object> list) {
-        String view=condition.getViews().get(0);
-        if (view.startsWith("`")){
-            view=view.substring(1,view.length()-1);
-        }
-        view=StringUtil.tableNameToClassName(view);
-        String entity = Configuration.getProperty(SessionConstants.ENTITY_PACKAGENAME)+"."+view;
-        TableInfo tableInfo = null;
-        try {
-            tableInfo = MapperInit.getConfiguration().getClassToTableInfoMap().get(Class.forName(entity));
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        //表主键名
-        String primaryName = tableInfo.getPrimaryKeys().get(0).getName();
-        List<String> fields = condition.getFields();
-        fields.add(tableInfo.getTableName()+"."+primaryName);
+
+            String view=condition.getViews().get(0);
+            if (view.startsWith("`")){
+                view=view.substring(1,view.length()-1);
+            }
+            view=StringUtil.tableNameToClassName(view);
+            String entity = Configuration.getProperty(SessionConstants.ENTITY_PACKAGENAME)+"."+view;
+            TableInfo tableInfo = null;
+            try {
+                tableInfo = MapperInit.getConfiguration().getClassToTableInfoMap().get(Class.forName(entity));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            //表主键名
+            String primaryName = tableInfo.getPrimaryKeys().get(0).getName();
+                List<String> fields = condition.getFields();
+                boolean flag=true;
+                for (String field : fields) {
+                    if (field.indexOf("GROUP")!=-1||field.indexOf(primaryName)!=-1|| field.indexOf("*")!=-1) {
+                        flag=false;
+                    }
+                }
+                if (flag){
+                    fields.add(tableInfo.getTableName()+"."+primaryName);
+                }
+
         StringBuffer select = new StringBuffer("select ");
         List<String> views = condition.getViews();
         if (condition.getFields().size() == 0) {
@@ -520,34 +532,42 @@ public class BaseMapper {
                         list.add(o);
                     }
                 }
-                else {
+                else if (andTerm.getTermType()!=TermType.GROUOBY){
                     list.add(andTerm.getValue());
                 }
-                select.append(andTerm.getViewName() + "." + andTerm.getFieldName() + " ");
-                switch (andTerm.getTermType()) {
-                    case EQUAL:
-                        select.append("= ? and ");
-                        break;
-                    case LIKE:
-                        select.append("like %?% and ");
-                        break;
-                    case IN: {
-                        select.append("in (");
-                        List<Object> value = (List<Object>) andTerm.getValue();
-                        int size = value.size();
-                        for (int i = 0; i < size; i++) {
-                            select.append(" '?' ,");
+                if (andTerm.getTermType()!=TermType.GROUOBY){
+                    select.append(andTerm.getViewName() + "." + andTerm.getFieldName() + " ");
+                    switch (andTerm.getTermType()) {
+                        case EQUAL:
+                            select.append("= ? and ");
+                            break;
+                        case LIKE:
+                            select.append("like %?% and ");
+                            break;
+                        case IN: {
+                            select.append("in (");
+                            List<Object> value = (List<Object>) andTerm.getValue();
+                            int size = value.size();
+                            for (int i = 0; i < size; i++) {
+                                select.append(" ?  ,");
+                            }
+                            select.delete(select.length() - 1, select.length());
+                            select.append(") and ");
+                            break;
                         }
-                        select.delete(select.length() - 1, select.length());
-                        select.append(") and ");
-                        break;
+                        case GREATER:
+                            select.append("> ? and ");
+                            break;
+                        case Less:
+                            select.append("< ? and ");
+                            break;
                     }
-                    case GREATER:
-                        select.append("> ? and ");
-                        break;
-                    case Less:
-                        select.append("< ? and ");
-                        break;
+                }
+                else {
+                    int and = select.indexOf("and");
+                    select.delete(and,select.length()-1);
+                    select.append(" GROUP BY "+andTerm.getViewName()+ "." + andTerm.getFieldName()+"     ");
+
                 }
             }
             select.delete(select.length() - 4, select.length() - 1);

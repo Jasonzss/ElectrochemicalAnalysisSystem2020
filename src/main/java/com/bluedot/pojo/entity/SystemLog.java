@@ -11,7 +11,6 @@ import java.sql.Timestamp;
  */
 public class SystemLog {
     private Integer systemLogId;
-    private String systemLogType;
     private String systemLogLevel;
     private String systemLogDetails;
     /**
@@ -29,13 +28,6 @@ public class SystemLog {
         this.systemLogId = systemLogId;
     }
 
-    public String getSystemLogType() {
-        return systemLogType;
-    }
-
-    public void setSystemLogType(String systemLogType) {
-        this.systemLogType = systemLogType;
-    }
 
     public String getSystemLogLevel() {
         return systemLogLevel;
@@ -65,7 +57,6 @@ public class SystemLog {
     public String toString() {
         return "SystemLog{" +
                 "systemLogId=" + systemLogId +
-                ", systemLogType='" + systemLogType + '\'' +
                 ", systemLogLevel='" + systemLogLevel + '\'' +
                 ", systemLogDetails='" + systemLogDetails + '\'' +
                 ", systemLogTime=" + systemLogTime +
