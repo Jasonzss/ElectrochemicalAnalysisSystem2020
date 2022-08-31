@@ -43,12 +43,6 @@ public class Report {
     private Double rpd;
     private String reportDesc;
 
-    public Report() {
-        pretreatmentAlgorithm = new Algorithm();
-        reportDataModel = new Algorithm();
-        user = new User();
-    }
-
     public Integer getReportId() {
         return reportId;
     }
