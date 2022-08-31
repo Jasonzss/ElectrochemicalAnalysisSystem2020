@@ -234,4 +234,21 @@ public class MapperTest {
             System.out.println(o);
         }
     }
+
+    @Test
+    public void listUsersTest() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+        Condition condition = new Condition();
+        // 封装Condition
+        condition.setStartIndex(Long.valueOf(0));
+        condition.setSize(Integer.valueOf(8));
+        condition.setReturnType("User");
+        condition.addView("user");
+
+        condition.addAndConditionWithView(new Term("user","user_name","Ja",TermType.LIKE));
+        EntityInfo<Object> entityInfo = new EntityInfo<>();
+        entityInfo.setCondition(condition);
+        entityInfo.setOperation("select");
+        new BaseMapper(entityInfo);
+    }
 }
