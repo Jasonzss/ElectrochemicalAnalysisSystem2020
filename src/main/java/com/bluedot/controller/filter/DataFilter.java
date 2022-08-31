@@ -110,7 +110,7 @@ public class DataFilter implements Filter {
                             } else if ("operation".equals(fileItem.getFieldName())) {
                                 data.setOperation(fileItem.getString("utf-8"));
                             } else {
-                                map.put(fileItem.getFieldName(), fileItem.getString());
+                                map.put(fileItem.getFieldName(), fileItem.getString("utf-8"));
                             }
                         } else {
                             map.put("file", fileItem);
