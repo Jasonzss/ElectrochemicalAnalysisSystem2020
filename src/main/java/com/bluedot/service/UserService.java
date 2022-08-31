@@ -264,7 +264,6 @@ public class UserService extends BaseService<User> {
             select();
 
             //重新封装数据
-            //TODO
             List<User> userList = (List<User>) commonResult.getData();
             if (userList.size() != 0){
                 commonResult = CommonResult.successResult("用户信息",userList.get(0));
@@ -422,17 +421,18 @@ public class UserService extends BaseService<User> {
         String title;
         String content;
         String authCode = EmailUtil.makeCode(6);
+        User user = null;
 
         //查询此邮箱对应的用户
         try{
             getPersonalUser();
+            user = (User) commonResult.getData();
         }catch (UserException e){
             if (e.getErrorCode() != CommonErrorCode.E_1005){
                 //当抛出的异常为1005以外的其他异常才解决，1005异常不做处理
                 throw new UserException(e.getErrorCode());
             }
         }
-        User user = (User) commonResult.getData();
 
         //判断此邮箱是否已经注册
         if(user == null){
