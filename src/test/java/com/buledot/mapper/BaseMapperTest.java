@@ -2,11 +2,7 @@ package com.buledot.mapper;
 
 import com.bluedot.mapper.BaseMapper;
 import com.bluedot.mapper.MapperInit;
-import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
-import com.bluedot.mapper.bean.Term;
-import com.bluedot.mapper.bean.TermType;
-import com.bluedot.pojo.entity.RolePermission;
 import com.bluedot.pojo.entity.User;
 import org.junit.Test;
 
@@ -51,6 +47,7 @@ public class BaseMapperTest {
         User user = new User();
 //        user.setUserAge(12);
         user.setUserEmail("2418972236@qq.com");
+//        user.setUserImg(new Byte[]{1,2,3});
 //        user.setUserName("lisi");
 //        user.setUserSalt("213");
 //        user.setUserPassword("123");
@@ -58,5 +55,25 @@ public class BaseMapperTest {
         list.add(user);
         entityInfo.setEntity(list);
         BaseMapper baseMapper=new BaseMapper(entityInfo);
+    }
+
+    @Test
+    public void testUpdate() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+        EntityInfo<User> entityInfo=new EntityInfo();
+        entityInfo.setKey(1L);
+        entityInfo.setOperation("update");
+        ArrayList<User> list=new ArrayList<>();
+        User user = new User();
+        user.setUserAge(14);
+        user.setUserEmail("2386@qq.com");
+        user.setUserName("lisi");
+        user.setUserSalt("213");
+        user.setUserPassword("123");
+        user.setUserStatus(2);
+        list.add(user);
+        entityInfo.setEntity(list);
+        BaseMapper baseMapper=new BaseMapper(entityInfo);
+
     }
 }

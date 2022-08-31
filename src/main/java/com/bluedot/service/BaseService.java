@@ -186,8 +186,8 @@ public abstract class BaseService<T> {
                 method.invoke(obj);
             } catch (IllegalAccessException e) {
                 commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
-            } catch (InvocationTargetException e) {
                 e.printStackTrace();
+            } catch (InvocationTargetException e) {
                 //处理抛出的UserException
                 if (e.getTargetException() instanceof UserException){
                     //如果抛出的异常是UserException，则在此处理
@@ -197,6 +197,7 @@ public abstract class BaseService<T> {
                 }else {
                     //其他异常处理
                     commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
+                    e.printStackTrace();
                 }
             }
         }else {

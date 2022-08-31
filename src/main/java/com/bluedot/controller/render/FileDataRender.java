@@ -46,7 +46,7 @@ public class FileDataRender {
                     response.getOutputStream().write(bytes1);
                     break;
                 default:
-                    LogUtil.getLogger().error("请求结果CommonResult中ContentType与数据类型不匹配----请求id:{}",( (Data) request.getAttribute("Data")).getKey());
+                    LogUtil.getLogger().error("请求结果CommonResult中ContentType与数据类型不匹配----请求id:{}", ((Data) request.getAttribute("Data")).getKey());
             }
             response.getOutputStream().close();
         } catch (IOException e) {
