@@ -51,7 +51,7 @@ public class ReflectUtil {
      * @param obj 执行set方法的对象
      */
     public static void invokeSettersIncludeEntity(Map<String,Object> map, Object obj){
-        List<Class> classList= Arrays.asList(Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,Character.class,Boolean.class,String.class, Date.class, Timestamp.class, Double[][].class, Byte[].class);
+        List<Class> classList= Arrays.asList(Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,Character.class,Boolean.class,String.class, Date.class, Timestamp.class, Double[][].class, Double[].class, Byte[].class, byte[].class);
         List<String> syntheticList = new ArrayList<>();
         List<String> primitiveList = new ArrayList<>();
 
@@ -62,8 +62,14 @@ public class ReflectUtil {
                 //基本类型
                 primitiveList.add(f.getName());
             }else {
-                //非基本属性
-                syntheticList.add(f.getName());
+                //非基本属性，先反射使用无参构造创建一个对象
+                //调用set方法将对象放入obj的属性中
+                try {
+                    invokeSet(obj,f.getName(),f.getType().newInstance());
+                    syntheticList.add(f.getName());
+                } catch (InstantiationException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
