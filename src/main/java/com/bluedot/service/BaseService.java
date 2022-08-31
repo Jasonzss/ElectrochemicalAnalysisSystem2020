@@ -49,13 +49,19 @@ public abstract class BaseService<T> {
             userLogMap.put("session",session);
             userLogMap.put("entityInfo",entityInfo);
             userLogMap.put("userLogParameter",paramList.toString());
-            doService();
+            try{
+                //尝试抓取UserException
+                doService();
+            }catch (UserException e){
+                commonResult = CommonResult.commonErrorCode(e.getErrorCode());
+            }
         }else {
             //检查未通过
             commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_5002);
         }
-
+        //将结果返回给Controller
         ServiceControllerQueue.getInstance().put(data.getKey(), commonResult);
+
     }
 
     /**
