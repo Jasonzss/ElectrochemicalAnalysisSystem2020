@@ -30,22 +30,15 @@ public class PythonUtil {
     private static final String PYTHON_CMD = "venv/Scripts/python.exe";
 
 
-    public static void main(String[] args) {
-        Double[] data = new Double[]{0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
-                0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
-                0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
-                0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
-//        Map<String, Object> map = (Map<String, Object>) executePythonAlgorithFile("2.py", data,ExecuteReturnType.JSON.value);
-//        map.forEach((k,v)->{
-//            System.out.println("key::"+k);
-//            System.out.println("value::"+v);
-//        });
-        Object o = executePythonAlgorithFile("2.py", data, ExecuteReturnType.PICTURE.value);
-        System.out.println(o);
-    }
-
+    /**
+     * 执行python算法文件
+     * @param fileName 算法文件名
+     * @param data 数组数据
+     * @param type 返回数据类型
+     * @return 算法执行的结果数据
+     */
     @SuppressWarnings("unchecked")
-    public static Object executePythonAlgorithFile(String fileName, Double[] data,String type){
+    public static Object executePythonAlgorithFile(String fileName, Double[] data,ExecuteReturnType type){
         // 自定义map，将数据信息放入map中
         HashMap<String, Object> dataMap = new HashMap<>();
         dataMap.put("data",data);
@@ -59,17 +52,21 @@ public class PythonUtil {
             throw new RuntimeException(e);
         }
 
+
         // 传入json格式数据并执行python程序,获取json数据结果
-        if (Objects.equals(ExecuteReturnType.JSON.value, type)) {
-            String jsonValue = (String) executePython(fileName, jsonData, ExecuteReturnType.JSON);
+        Object result = executePython(fileName, jsonData, type);
+
+        // 根据返回结果类型，转化结果
+        if (result instanceof String){
             // 将json结果转成map返回
             try {
-                return (Map<String,Object>)objectMapper.readValue(jsonValue,Map.class);
+                return (Map<String,Object>)objectMapper.readValue((String) result,Map.class);
             } catch (IOException e) {
+                e.printStackTrace();
                 throw new RuntimeException(e);
             }
-        }else if (Objects.equals(ExecuteReturnType.PICTURE.value,type)){
-            return executePython(fileName, jsonData, ExecuteReturnType.PICTURE);
+        }else if (result instanceof byte[]){
+            return result;
         }else {
             return null;
         }
@@ -93,6 +90,8 @@ public class PythonUtil {
         arg[1] = BASE_PATH + fileName;
         arg[2] = encoderJsonData;
 
+        System.out.println("传入的python程序的参数:"+encoderJsonData);
+
         Object result = null;
         // 执行程序,从流中获取返回数据
         try {
@@ -106,7 +105,7 @@ public class PythonUtil {
                 String jsonResult = br.readLine();
                 // 关闭流
                 br.close();
-                System.out.println("python程序处理后的数据 : "+jsonResult);
+                System.out.println("获取到python算法处理后的Json格式数据 : "+jsonResult);
                 return jsonResult;
             }else if (ExecuteReturnType.PICTURE == type){
                 //如果是图片类型返回结果
@@ -120,7 +119,7 @@ public class PythonUtil {
                 //将输出流中数据转为字节数组
                 byte[] byteResult = byteArrayOutputStream.toByteArray();
 
-                System.out.println("获取到python生成的图片二进制数据：" + Arrays.toString(byteResult));
+                System.out.println("获取到python算法生成的图片二进制数据 ：" + Arrays.toString(byteResult));
 
                 byteArrayOutputStream.close();
                 inputStream.close();
