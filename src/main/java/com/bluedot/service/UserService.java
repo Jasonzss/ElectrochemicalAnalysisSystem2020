@@ -115,7 +115,7 @@ public class UserService extends BaseService<User> {
         if (paramList.containsKey("userImg")){
             FileItem userImg = (FileItem) paramList.get("userImg");
             //将图片转换为二进制数组
-            byte[] bytes = ImageUtil.imgToBinary(userImg);
+            byte[] bytes = ImageUtil.imgToByteArray(userImg);
             paramList.put("userImg",bytes);
         }
 
@@ -167,7 +167,7 @@ public class UserService extends BaseService<User> {
         // 判断是否有图片
         if (paramList.containsKey("userImg")){
             // 将图片转换为数组放入
-            paramList.put("userImg", ImageUtil.imgToBinary((FileItem) paramList.get("userImg")));
+            paramList.put("userImg", ImageUtil.imgToByteArray((FileItem) paramList.get("userImg")));
         }
 
         // 封装User实体
