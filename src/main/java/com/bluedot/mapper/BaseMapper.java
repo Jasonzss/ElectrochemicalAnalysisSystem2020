@@ -498,7 +498,7 @@ public class BaseMapper {
                             select.append("= ? or ");
                             break;
                         case LIKE:
-                            select.append("like %?% or ");
+                            select.append("like ? or ");
                             break;
                         case IN: {
                             select.append("in (");
@@ -542,7 +542,7 @@ public class BaseMapper {
                             select.append("= ? and ");
                             break;
                         case LIKE:
-                            select.append("like %?% and ");
+                            select.append("like ? and ");
                             break;
                         case IN: {
                             select.append("in (");
@@ -590,7 +590,7 @@ public class BaseMapper {
                             select.append("= ? ");
                             break;
                         case LIKE:
-                            select.append("like '%?%' ");
+                            select.append("like ? ");
                             break;
                         case IN: {
                             select.append("in (");

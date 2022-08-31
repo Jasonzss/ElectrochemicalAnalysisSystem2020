@@ -31,10 +31,6 @@ public class Algorithm {
     private Timestamp algorithmUpdateTime;
     private Integer algorithmStatus;
 
-    public Algorithm() {
-        user = new User();
-    }
-
     public Integer getAlgorithmId() {
         return algorithmId;
     }
