@@ -13,7 +13,7 @@ import java.util.List;
  * @Description ：
  */
 public class ConditionTest {
-//    @Test
+    @Test
     public void setFieldsTest(){
         Condition condition = new Condition();
         List<String> list = new ArrayList<>();

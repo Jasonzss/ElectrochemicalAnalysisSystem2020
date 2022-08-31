@@ -14,7 +14,7 @@ import java.util.Map;
  * @Description ：
  */
 public class ReflectUtilTest {
-//    @Test
+    @Test
     public void test(){
         ExpData expData = new ExpData();
         Map<String,Object> map = new HashMap<>();
