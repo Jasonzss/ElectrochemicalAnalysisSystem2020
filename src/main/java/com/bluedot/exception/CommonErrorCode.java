@@ -27,6 +27,7 @@ public enum CommonErrorCode implements ErrorCode {
      * 数据管理模块错误:E_2xxx
      */
     E_2001(2001,"数据管理失败!"),
+    E_2002(2002,"同意申请异常时，出现了异常"),
 
     /**
      * 权限方面的异常

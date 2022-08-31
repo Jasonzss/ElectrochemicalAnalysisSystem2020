@@ -53,11 +53,7 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
             default:
                 throw new UserException(CommonErrorCode.E_5001);
         }
-    }
-
-    @Override
-    protected boolean check() {
-        return false;
+        invokeMethod(methodName,this);
     }
 
     /**
@@ -115,14 +111,17 @@ public class BufferSolutionService extends BaseService<BufferSolution> {
      */
     private void listBufferSolution(){
         Condition condition = new Condition();
-        if (paramList.containsKey("pageSize") && paramList.get("bufferSolutionName") != null){
+        condition.addView("buffer_solution");
+        condition.setReturnType("BufferSolution");
+
+        if (paramList.containsKey("pageSize") && paramList.get("pageSize") != null){
             condition.setSize((Integer) paramList.get("pageSize"));
         }
-        if (paramList.containsKey("pageNo") && paramList.get("bufferSolutionName") != null){
-            condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
+        if (paramList.containsKey("pageNo") && paramList.get("pageSize") != null){
+            condition.setStartIndex(((long)(int)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
         }
         if (paramList.containsKey("bufferSolutionName") && paramList.get("bufferSolutionName") != null){
-            condition.addOrConditionWithView(new Term("buffer_solution","buffer_solution_id",paramList.get("bufferSolutionName"), TermType.EQUAL));
+            condition.addOrConditionWithView(new Term("buffer_solution","buffer_solution_name",paramList.get("bufferSolutionName"), TermType.EQUAL));
         }
 
         entityInfo.setCondition(condition);
