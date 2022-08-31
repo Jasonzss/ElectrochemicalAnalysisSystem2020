@@ -144,7 +144,7 @@ public abstract class BaseService<T> {
         // 设置pageInfo，并将查询到的数据填入
         PageInfo pageInfo = new PageInfo();
         System.out.println("Data:"+commonResult.getData());
-        if (commonResult.getData() == null){
+        if (((Object[]) commonResult.getData()).length == 0){
             commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
         }else {
             pageInfo.setDataList(Collections.singletonList(commonResult.getData()));
@@ -177,7 +177,7 @@ public abstract class BaseService<T> {
 
     protected void invokeMethod(String methodName,Object obj){
         //判断是否存在Session
-        if (!OperationConstants.LOGIN.equals(operation) && session == null){
+        if (!OperationConstants.LOGIN.equals(operation) && session.getAttribute("permissionList") == null){
             commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1011);
             return;
         }
