@@ -263,11 +263,10 @@ public class AlgorithmService extends BaseService<Algorithm> {
                     return ((List<Algorithm>) data).get(0).getAlgorithmId() != paramList.get(ID_FIELD_STR);
                 }
             }
-            return false;
-        } else {
-            //如果没传algorithmName，那就意味着是发送申请来修改Status，那就不会冲突，直接修改就行了
-            return false;
         }
+
+        //如果没传algorithmName，那就意味着是发送申请来修改Status，那就不会冲突，直接修改就行了
+        return false;
     }
 
     private void doUpdate(String[] blackArr) {
@@ -278,7 +277,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
         ReflectUtil.invokeSettersIncludeEntity(paramList, algo);
 
         //判断是否有algorithmId字段，没有就抛出异常
-        if (!(algo.getAlgorithmId() instanceof Integer)) {
+        if (algo.getAlgorithmId() == null) {
             throw new UserException(CommonErrorCode.E_5001);
         }
         //判断字符串变量长度是否为0，是就抛出变量非法异常
