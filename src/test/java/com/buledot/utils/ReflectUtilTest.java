@@ -24,4 +24,14 @@ public class ReflectUtilTest {
         ReflectUtil.invokeSettersIncludeEntity(map,expData);
         System.out.println(expData.toString());
     }
+
+    @Test
+    public void test01(){
+        User user = new User();
+        Map<String,Object> map = new HashMap<>();
+        map.put("userEmail","123@qq.com");
+        map.put("userTel","10086");
+        ReflectUtil.invokeSettersIncludeEntity(map,user);
+        System.out.println(user.toString());
+    }
 }

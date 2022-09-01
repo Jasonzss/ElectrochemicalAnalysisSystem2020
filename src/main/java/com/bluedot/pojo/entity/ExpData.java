@@ -29,12 +29,6 @@ public class ExpData {
     private Timestamp expLastUpdateTime;
     private Integer expDeleteStatus;
 
-    public ExpData() {
-        user = new User();
-        materialType = new MaterialType();
-        bufferSolution = new BufferSolution();
-    }
-
     public Integer getExpDataId() {
         return expDataId;
     }
