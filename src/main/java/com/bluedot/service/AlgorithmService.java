@@ -68,6 +68,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
         String userEmailKey = "userEmail";
         //从session获得useremail
         sessionUserEmail = (String) session.getAttribute(userEmailKey);
+        if (sessionUserEmail == null) {
+            throw new UserException(CommonErrorCode.E_1011);
+        }
         //如果前端没有传来的useremail，表示此操作为管理员的操作
 
         Boolean isAdmin = paramList.get(userEmailKey) == null;
@@ -254,10 +257,16 @@ public class AlgorithmService extends BaseService<Algorithm> {
                     , algorithmName, TermType.EQUAL));
             entityInfo.setCondition(condition);
             select();
-
-            return commonResult.getData() != null;
+            Object data = commonResult.getData();
+            if (data instanceof List) {
+                if (((List<Algorithm>) data).size() != 0) {
+                    return ((List<Algorithm>) data).get(0).getAlgorithmId() != paramList.get(ID_FIELD_STR);
+                }
+            }
+            return false;
         } else {
-            throw new UserException(CommonErrorCode.E_5001);
+            //如果没传algorithmName，那就意味着是发送申请来修改Status，那就不会冲突，直接修改就行了
+            return false;
         }
     }
 
@@ -268,6 +277,10 @@ public class AlgorithmService extends BaseService<Algorithm> {
         algo.setAlgorithmUpdateTime(new Timestamp(System.currentTimeMillis()));
         ReflectUtil.invokeSettersIncludeEntity(paramList, algo);
 
+        //判断是否有algorithmId字段，没有就抛出异常
+        if (!(algo.getAlgorithmId() instanceof Integer)) {
+            throw new UserException(CommonErrorCode.E_5001);
+        }
         //判断字符串变量长度是否为0，是就抛出变量非法异常
         if (algo.getAlgorithmDesc() != null && algo.getAlgorithmDesc().isEmpty()) {
             throw new UserException(CommonErrorCode.E_5002);
@@ -292,6 +305,10 @@ public class AlgorithmService extends BaseService<Algorithm> {
     }
 
     private Boolean isOwner() {
+        //判断是否有algorithmId字段，没有就抛出异常
+        if (!(paramList.get(ID_FIELD_STR) instanceof Integer)) {
+            throw new UserException(CommonErrorCode.E_5001);
+        }
         List<Integer> ids = new ArrayList<>();
         Object algorithmId = paramList.get(ID_FIELD_STR);
         Object algorithm = paramList.get("algorithm");
@@ -320,7 +337,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
         if (commonResult.getData() instanceof List) {
             List<Algorithm> algos = (List<Algorithm>) commonResult.getData();
             for (Algorithm algo : algos) {
-                if (!sessionUserEmail.equals(algo.getUser().getUserName())) {
+                if (!sessionUserEmail.equals(algo.getUser().getUserEmail())) {
                     return false;
                 }
             }
