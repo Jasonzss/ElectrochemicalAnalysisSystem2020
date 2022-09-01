@@ -65,10 +65,18 @@ public class AlgorithmService extends BaseService<Algorithm> {
      */
     @Override
     protected void doService() {
+        String userEmailKey = "userEmail";
         //从session获得useremail
-        sessionUserEmail = (String) session.getAttribute("userEmail");
+        sessionUserEmail = (String) session.getAttribute(userEmailKey);
         //如果前端没有传来的useremail，表示此操作为管理员的操作
-        Boolean isAdmin = paramList.get("userEmail") == null;
+
+        Boolean isAdmin = paramList.get(userEmailKey) == null;
+        //如果不是管理员，传过来的用户邮箱还不一样，那就是有鬼
+        if (!isAdmin) {
+            if (!Objects.equals(sessionUserEmail, paramList.get(userEmailKey))) {
+                throw new UserException(CommonErrorCode.E_5002);
+            }
+        }
         //执行的方法名
         String method;
 
@@ -103,7 +111,11 @@ public class AlgorithmService extends BaseService<Algorithm> {
     private Condition getSameSelectCondition() {
         // 封装Condition
         Condition condition = new Condition();
-        condition.setStartIndex((Long) paramList.get("startIndex"));
+        condition.addView(table);
+        String returnTypeStr = "Algorithm";
+        condition.setReturnType(returnTypeStr);
+
+        condition.setStartIndex(Long.valueOf((Integer) paramList.get("pageNo")));
         condition.setSize((Integer) paramList.get("pageSize"));
 
 
@@ -114,7 +126,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
         if (algorithmName instanceof String && !((String) algorithmName).isEmpty()) {
             condition.addAndConditionWithView(new Term(table, NAME_COL_STR
-                    , algorithmName, TermType.EQUAL));
+                    , algorithmName, TermType.LIKE));
         }
         if (algorithmType instanceof Integer) {
             condition.addAndConditionWithView(new Term(table, TYPE_COL_STR
@@ -131,7 +143,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
     private void listAlgorithm() {
         doSelectPage(getSameSelectCondition());
-        transformListResult();
+//        transformListResult();
     }
 
     private void listPersonalAlgorithm() {
@@ -140,7 +152,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
         condition.addAndConditionWithView(new Term(table, "user_email",
                 sessionUserEmail, TermType.EQUAL));
         doSelectPage(condition);
-        transformListResult();
+//        transformListResult();
     }
 
     /**
@@ -149,11 +161,14 @@ public class AlgorithmService extends BaseService<Algorithm> {
     private void selectAlgorithmById() {
         if (paramList.get(ID_FIELD_STR) instanceof Integer) {
             Condition condition = new Condition();
+            condition.addView(table);
+            String returnTypeStr = "Algorithm";
+            condition.setReturnType(returnTypeStr);
             condition.addAndConditionWithView(new Term(table, ID_COL_STR, paramList.get(ID_FIELD_STR), TermType.EQUAL));
 
             entityInfo.setCondition(condition);
             select();
-            transformListResult();
+//            transformListResult();
         }else {
             throw new UserException(CommonErrorCode.E_5001);
         }
@@ -230,6 +245,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
     private Boolean isExists() {
         if (paramList.get(NAME_FIELD_STR) instanceof String) {
             Condition condition = new Condition();
+            condition.addView(table);
+            String returnTypeStr = "Algorithm";
+            condition.setReturnType(returnTypeStr);
             String algorithmName = (String) paramList.get(NAME_FIELD_STR);
             //where algorithmName = xxx
             condition.addAndConditionWithView(new Term(table, NAME_COL_STR
@@ -291,6 +309,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
         }
         //从数据库里根据id查询
         Condition condition = new Condition();
+        condition.addView(table);
+        String returnTypeStr = "Algorithm";
+        condition.setReturnType(returnTypeStr);
         condition.addAndConditionWithView(new Term(table, ID_COL_STR, ids
                 , TermType.IN));
         entityInfo.setCondition(condition);
@@ -415,6 +436,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
         insert();
         //添加完查看这条数据项的id
         Condition condition = new Condition();
+        condition.addView(table);
+        String returnTypeStr = "Algorithm";
+        condition.setReturnType(returnTypeStr);
         //因为算法名唯一，所以通过查算法名可以得到id
         condition.addAndConditionWithView(new Term(table, NAME_COL_STR,
                 algo.getAlgorithmName(), TermType.EQUAL));
