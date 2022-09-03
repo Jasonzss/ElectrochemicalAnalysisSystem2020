@@ -10,6 +10,4 @@ public class SessionConstants {
     public final static String PERMISSION_LIST = "permissionList";
     public final static String AUTH_CODE = "authCode";
     public final static String IMG_AUTH_CODE = "imgAuthCode";
-    public final static String ENTITY_PACKAGENAME = "po.location";
-
 }

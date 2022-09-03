@@ -9,6 +9,7 @@ import com.bluedot.mapper.dataSource.MyDataSource;
 import com.bluedot.utils.LogUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.StringUtil;
+import com.bluedot.utils.constants.MapperConstants;
 import com.bluedot.utils.constants.SessionConstants;
 import org.slf4j.Logger;
 
@@ -87,7 +88,7 @@ public class Executor {
 
             ResultSet resultSet =  preparedStatement.executeQuery();
             try {
-                String entity = Configuration.getProperty(SessionConstants.ENTITY_PACKAGENAME)+"."+mappedStatement.getView();
+                String entity = Configuration.getProperty(MapperConstants.ENTITY_PACKAGENAME)+"."+mappedStatement.getView();
                 TableInfo tableInfo = MapperInit.getConfiguration().getClassToTableInfoMap().get(Class.forName(entity));
                 //表主键名
                 String primaryName = tableInfo.getPrimaryKeys().get(0).getName();
@@ -120,7 +121,7 @@ public class Executor {
                     if (mappedStatement.getView().equals(mappedStatement.getReturnType()) && sql.indexOf("count(*)") ==-1&& map.containsKey(primaryValue)) {
                         rowObject = (E) map.get(primaryValue);
                     } else {
-                        rowObject = (E) Class.forName(Configuration.getProperty(SessionConstants.ENTITY_PACKAGENAME)+"."+rowObjectType).newInstance();
+                        rowObject = (E) Class.forName(Configuration.getProperty(MapperConstants.ENTITY_PACKAGENAME)+"."+rowObjectType).newInstance();
                     }
                     Object listEntity = null;
 
