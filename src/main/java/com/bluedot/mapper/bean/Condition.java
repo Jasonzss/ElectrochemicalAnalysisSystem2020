@@ -79,6 +79,11 @@ public class Condition {
      * @param andCondition 查询条件
      */
     public void addAndConditionWithView(Term andCondition) {
+        if (andCondition.getTermType().equals(TermType.LIKE)){
+            //如果使用的是Like条件，则为条件字段加“%”
+            String value = (String) andCondition.getValue();
+            andCondition.setValue('%'+value+'%');
+        }
         this.andCondition.add(andCondition);
         addView(andCondition.getViewName());
     }
@@ -88,6 +93,11 @@ public class Condition {
      * @param orCondition 查询条件
      */
     public void addOrConditionWithView(Term orCondition) {
+        if (orCondition.getTermType().equals(TermType.LIKE)){
+            //如果使用的是Like条件，则为条件字段加“%”
+            String value = (String) orCondition.getValue();
+            orCondition.setValue('%'+value+'%');
+        }
         this.orCondition.add(orCondition);
         addView(orCondition.getViewName());
     }

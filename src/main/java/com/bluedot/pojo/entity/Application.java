@@ -24,10 +24,6 @@ public class Application {
     private Integer applicationStatus;
     private String applicationRejectReason;
 
-    public Application() {
-        user = new User();
-    }
-
     public Integer getApplicationId() {
         return applicationId;
     }

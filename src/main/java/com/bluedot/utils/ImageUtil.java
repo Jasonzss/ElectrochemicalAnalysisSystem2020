@@ -209,20 +209,17 @@ public class ImageUtil {
      * @param userImg 图片
      * @return 图片的二进制数组
      */
-    public static Byte[] imgToBinary(FileItem userImg) {
+    public static byte[] imgToByteArray(FileItem userImg) {
         try {
             InputStream is = userImg.getInputStream();
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] bytes = new byte[4240000];
-            Byte[] b = new Byte[4240000];
-            int i = 0;
+            //读写缓冲区
+            byte[] bytes = new byte[1024];
             while (is.read(bytes) != -1){
                 bos.write(bytes);
-                b[i] = bytes[i];
-                i++;
             }
 
-            return b;
+            return bos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
         }

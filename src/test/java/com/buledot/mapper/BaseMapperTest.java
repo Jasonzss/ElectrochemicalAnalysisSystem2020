@@ -2,13 +2,18 @@ package com.buledot.mapper;
 
 import com.bluedot.mapper.BaseMapper;
 import com.bluedot.mapper.MapperInit;
+import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
+import com.bluedot.mapper.bean.Term;
+import com.bluedot.mapper.bean.TermType;
+import com.bluedot.pojo.entity.RolePermission;
 import com.bluedot.pojo.entity.User;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Author SDJin
@@ -75,5 +80,70 @@ public class BaseMapperTest {
         entityInfo.setEntity(list);
         BaseMapper baseMapper=new BaseMapper(entityInfo);
 
+    }
+
+    @Test
+    public void testUser() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+        // 封装Condition
+        Condition condition = new Condition();
+        condition.addFields("user_img");
+        condition.setReturnType("User");
+        // 判断搜索用户的各项属性
+        condition.addAndConditionWithView(new Term("user","user_email","2538506575@qq.com", TermType.EQUAL));
+        EntityInfo<User> entityInfo=new EntityInfo();
+        entityInfo.setCondition(condition);
+        entityInfo.setOperation("select");
+        new BaseMapper(entityInfo);
+    }
+
+    @Test
+    public void testPermission() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+
+        Condition condition = new Condition();
+        condition.addViewCondition("role_id","role_permission");
+        condition.addViewCondition("permission_id","permission");
+        condition.addViewCondition("role_id","user_role");
+        condition.addAndConditionWithView(new Term("user_role", "user_email","2418972236@qq.com", TermType.EQUAL));
+        condition.addFields("permission_name");
+        condition.setReturnType("Permission");
+
+        //执行查询逻辑
+        EntityInfo<RolePermission> entityInfo = new EntityInfo<>();
+        entityInfo.setCondition(condition);
+        entityInfo.setOperation("select");
+        new BaseMapper(entityInfo);
+    }
+
+    @Test
+    public void testExpSelect() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+        Condition condition = new Condition();
+        condition.addAndConditionWithView(new Term("exp_data","exp_data_id",6,TermType.EQUAL));
+        condition.setReturnType("ExpData");
+        //执行查询逻辑
+        EntityInfo<RolePermission> entityInfo = new EntityInfo<>();
+        entityInfo.setCondition(condition);
+        entityInfo.setOperation("select");
+        new BaseMapper(entityInfo);
+    }
+
+    @Test
+    public void testListUsers() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+        Condition condition = new Condition();
+        condition.setSize(5);
+        condition.setStartIndex(10L);
+        condition.addView("user");
+        List<String> list = new ArrayList<>();
+        list.add("userImg");
+        condition.setFieldsInEntityExcept(User.class,list);
+        condition.setReturnType("User");
+        //执行查询逻辑
+        EntityInfo<RolePermission> entityInfo = new EntityInfo<>();
+        entityInfo.setCondition(condition);
+        entityInfo.setOperation("select");
+        new BaseMapper(entityInfo);
     }
 }

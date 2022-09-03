@@ -10,15 +10,14 @@ import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Permission;
 import com.bluedot.pojo.entity.User;
 import com.bluedot.pojo.vo.CommonResult;
-import com.bluedot.utils.EmailUtil;
-import com.bluedot.utils.ImageUtil;
-import com.bluedot.utils.JwtUtil;
-import com.bluedot.utils.ReflectUtil;
+import com.bluedot.utils.*;
 import com.bluedot.utils.constants.SessionConstants;
 import org.apache.commons.fileupload.FileItem;
 
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -45,7 +44,7 @@ public class UserService extends BaseService<User> {
      */
     @Override
     protected void doService() {
-        String userEmail = (String) session.getAttribute("userEmail");
+        String userEmail = (String) session.getAttribute(SessionConstants.USER_EMAIL);
         List<Map<String,Object>> userList = null;
 
         if (paramList.get("user") instanceof List){
@@ -116,10 +115,10 @@ public class UserService extends BaseService<User> {
         if (paramList.containsKey("userImg")){
             FileItem userImg = (FileItem) paramList.get("userImg");
             //将图片转换为二进制数组
-            Byte[] bytes = ImageUtil.imgToBinary(userImg);
+            byte[] bytes = ImageUtil.imgToByteArray(userImg);
             paramList.put("userImg",bytes);
         }
-        
+
         User user = new User();
         ReflectUtil.invokeSettersIncludeEntity(paramList,user);
 
@@ -136,7 +135,7 @@ public class UserService extends BaseService<User> {
         // 判断是否有密码
         if (paramList.containsKey("userPassword")){
             //判断是邮箱验证码修改密码还是密码验证修改
-            if (session.getAttribute("authCode") != null) {
+            if (session.getAttribute(SessionConstants.AUTH_CODE) != null) {
                 //邮箱验证修改密码
                 //获取验证码
                 String authCode = (String) session.getAttribute(SessionConstants.AUTH_CODE);
@@ -168,7 +167,7 @@ public class UserService extends BaseService<User> {
         // 判断是否有图片
         if (paramList.containsKey("userImg")){
             // 将图片转换为数组放入
-            paramList.put("userImg", ImageUtil.imgToBinary((FileItem) paramList.get("userImg")));
+            paramList.put("userImg", ImageUtil.imgToByteArray((FileItem) paramList.get("userImg")));
         }
 
         // 封装User实体
@@ -199,6 +198,9 @@ public class UserService extends BaseService<User> {
         if (user != null){
             //邮箱已注册，无法再注册
             throw new UserException(CommonErrorCode.E_1002);
+        }else {
+            //邮箱未注册，进行新用户的注册
+            user = new User();
         }
 
         //执行插入操作
@@ -270,7 +272,7 @@ public class UserService extends BaseService<User> {
             }
         }else {
             //查询图片
-            condition.addFields("userImg");
+            condition.addFields("user_img");
 
             // 执行查询逻辑
             entityInfo.setCondition(condition);
@@ -281,9 +283,23 @@ public class UserService extends BaseService<User> {
             if (userList.size() != 0){
                 User user = userList.get(0);
                 byte[] userImg = user.getUserImg();
+
                 commonResult = CommonResult.successResult("",null);
-                commonResult.setFileData("userImg",userImg);
                 commonResult.setRespContentType(CommonResult.INPUT_STREAM_IMAGE);
+                if (userImg == null){
+                    try {
+                        //用户未设置头像，返回默认头像
+                        URL url = getClass().getClassLoader().getResource("image/userImg.jpg");
+                        File file = new File(url.toExternalForm().substring(6).replaceAll( "%20"," "));
+                        FileInputStream fileInputStream = new FileInputStream(file);
+                        commonResult.setFileData("userImg",fileInputStream);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }else {
+                    //用户设置了头像，返回用户头像
+                    commonResult.setFileData("userImg",new ByteArrayInputStream(userImg));
+                }
             }else {
                 throw new UserException(CommonErrorCode.E_1005);
             }
@@ -294,7 +310,6 @@ public class UserService extends BaseService<User> {
      * 管理员权限的查询用户
      */
     private void listUsers(){
-        //TODO int 转 Long
         Long pageNo = Long.valueOf(((Integer)paramList.get("pageNo")).longValue());
         Integer pageSize = (Integer) paramList.get("pageSize");
 
@@ -302,19 +317,27 @@ public class UserService extends BaseService<User> {
         Condition condition = new Condition();
         condition.setStartIndex((pageNo-1)*pageSize);
         condition.setSize(pageSize);
+        condition.setReturnType("User");
+        condition.addView("user");
 
         // 判断搜索用户的各项属性
         if (paramList.size() != 0){
             if (paramList.containsKey("userName")){
-                condition.addOrConditionWithView(new Term("user","userName",paramList.get("userName"), TermType.LIKE));
+                condition.addOrConditionWithView(new Term("user","user_name",paramList.get("userName"), TermType.LIKE));
             }
             if (paramList.containsKey("roleId")){
-                condition.addOrConditionWithView(new Term("user_role","roleId",paramList.get("roleId"),TermType.EQUAL));
+                condition.addOrConditionWithView(new Term("user_role","role_id",paramList.get("roleId"),TermType.EQUAL));
+                condition.addViewCondition("user_email","user_role");
             }
             if (paramList.containsKey("userEmail")){
-                condition.addOrConditionWithView(new Term("user", "userEmail", paramList.get("userEmail"), TermType.EQUAL));
+                condition.addOrConditionWithView(new Term("user", "user_email", paramList.get("userEmail"), TermType.EQUAL));
             }
         }
+
+        //设置不查询图片
+        List<String> list = new ArrayList<>();
+        list.add("userImg");
+        condition.setFieldsInEntityExcept(User.class,list);
 
         // 执行修改逻辑
         entityInfo.setCondition(condition);
@@ -327,6 +350,9 @@ public class UserService extends BaseService<User> {
     private void login(){
         //获取登录的参数
         String authCode = (String) session.getAttribute(SessionConstants.IMG_AUTH_CODE);
+        if (authCode == null){
+            throw new UserException(CommonErrorCode.E_1010);
+        }
         System.out.println(authCode);
 
         //判断图片验证码是否正确
@@ -335,7 +361,7 @@ public class UserService extends BaseService<User> {
         }
 
         //session中移除图片验证码
-        session.removeAttribute("imgAuthCode");
+        session.removeAttribute(SessionConstants.IMG_AUTH_CODE);
 
         //根据邮箱查询用户
         getPersonalUser();
@@ -395,9 +421,20 @@ public class UserService extends BaseService<User> {
         String title;
         String content;
         String authCode = EmailUtil.makeCode(6);
+        User user = null;
 
-        getPersonalUser();
-        User user = (User) commonResult.getData();
+        //查询此邮箱对应的用户
+        try{
+            getPersonalUser();
+            user = (User) commonResult.getData();
+        }catch (UserException e){
+            if (e.getErrorCode() != CommonErrorCode.E_1005){
+                //当抛出的异常为1005以外的其他异常才解决，1005异常不做处理
+                throw new UserException(e.getErrorCode());
+            }
+        }
+
+        //判断此邮箱是否已经注册
         if(user == null){
             //邮箱未注册,发送注册验证码
             title = userEmail+" 的注册邮件";
@@ -437,6 +474,7 @@ public class UserService extends BaseService<User> {
     private void logout(){
         //移除session
         session.invalidate();
+        commonResult = CommonResult.successResult("登出成功",true);
     }
 
     /**

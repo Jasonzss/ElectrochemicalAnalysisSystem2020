@@ -1,5 +1,8 @@
 package com.bluedot.pojo.entity;
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.UserException;
+
 import java.util.Arrays;
 
 /**
@@ -50,6 +53,10 @@ public class User {
         this.userStatus = userStatus;
     }
 
+    public void setUserStatus(String userStatus){
+        this.userStatus = Integer.valueOf(userStatus);
+    }
+
     public String getUserName() {
         return userName;
     }
@@ -66,6 +73,16 @@ public class User {
         this.userSex = userSex;
     }
 
+    public void setUserSex(String userSex){
+        if ("男".equals(userSex)){
+            this.userSex = new Integer(1);
+        }else if ("女".equals(userSex)){
+            this.userSex = new Integer(0);
+        }else {
+            throw new UserException(CommonErrorCode.E_5002);
+        }
+    }
+
     public Integer getUserAge() {
         return userAge;
     }
@@ -74,12 +91,20 @@ public class User {
         this.userAge = userAge;
     }
 
+    public void setUserAge(String userAge){
+        this.userAge = Integer.valueOf(userAge);
+    }
+
     public Long getUserTel() {
         return userTel;
     }
 
     public void setUserTel(Long userTel) {
         this.userTel = userTel;
+    }
+
+    public void setUserTel(String userTel){
+        this.userTel = Long.valueOf(userTel);
     }
 
     public byte[] getUserImg() {
