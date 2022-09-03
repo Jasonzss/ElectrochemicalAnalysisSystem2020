@@ -93,7 +93,7 @@ public class PythonUtil {
             jsonData = objectMapper.writeValueAsString(dataMap);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            throw new UserException(CommonErrorCode.E_9002);
+            throw new UserException(CommonErrorCode.E_10002);
         }
 
         // 传入json格式数据并执行python程序,获取json数据结果
@@ -106,7 +106,7 @@ public class PythonUtil {
                 return (Map<String,Object>)objectMapper.readValue((String) result,Map.class);
             } catch (IOException e) {
                 e.printStackTrace();
-                throw new UserException(CommonErrorCode.E_9002);
+                throw new UserException(CommonErrorCode.E_10002);
             }
         }else if (result instanceof byte[]){
             return result;
@@ -166,11 +166,11 @@ public class PythonUtil {
             e.printStackTrace();
             log.error("算法模板文件读取失败:"+BASE_PATH + TEMPLATE_FILE_PATH);
             log.error("上传生成算法文件失败:"+BASE_PATH + fileName);
-            throw new UserException(CommonErrorCode.E_9001);
+            throw new UserException(CommonErrorCode.E_10001);
         } catch (IOException e) {
             e.printStackTrace();
             log.error("文件输入输出流读写出现异常: " + BASE_PATH + TEMPLATE_FILE_PATH);
-            throw new UserException(CommonErrorCode.E_9001);
+            throw new UserException(CommonErrorCode.E_10001);
         }
 
     }
@@ -234,7 +234,7 @@ public class PythonUtil {
             process.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-            throw new UserException(CommonErrorCode.E_9002);
+            throw new UserException(CommonErrorCode.E_10002);
         }
 
         return result;
