@@ -39,7 +39,6 @@ public class MainRequestHandler implements RequestHandler {
         Data data = (Data) request.getAttribute("Data");
         String ip = IpUtil.getIpAddr(request);
         data.setIp(ip);
-        System.out.println(data);
         log.debug("开始处理请求---请求id:{}", data.getKey());
         //将Data对象放入ControllerServiceQueue中等待处理
         controllerServiceQueue.put(data);
