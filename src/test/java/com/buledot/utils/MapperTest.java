@@ -8,16 +8,126 @@ import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
+import com.bluedot.pojo.entity.Backup;
 import com.bluedot.pojo.entity.ExpData;
 import com.bluedot.pojo.entity.User;
+import com.google.protobuf.ServiceException;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class MapperTest {
+    @Test
+    public void insert() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+        User user = new User();
+        user.setUserEmail("1571764306@qq.com");
+
+        byte[] bytes = {1,26,66,22,  6,2,1,2,1,2,1,2,1,2,1,2,1,21,2,1,1,2,1,2,3};
+
+        user.setUserImg(bytes);
+        EntityInfo<User> userEntityInfo = new EntityInfo<>();
+        userEntityInfo.setOperation("update");
+        userEntityInfo.addEntity(user);
+        new BaseMapper(userEntityInfo);
+    }
+
+    @Test
+    public void   testBackup() throws ServiceException, InterruptedException, IOException {
+//        Properties props = Resources.getResourceAsProperties("jdbc.properties");
+//        String url = props.getProperty("jdbc.url");
+////		String driver = props.getProperty("jdbc.driverClassName");
+//        String username = props.getProperty("jdbc.username");
+//        String password = props.getProperty("jdbc.password");
+////      获取 地址及数据库名称
+//        String[] arr = url.split("\\/");
+//        String port = arr[2].split("\\:")[0];
+//        String database = arr[3].split("\\?")[0];
+        // mysqldump -h 地址 -u用户 -p密码 数据库 > d:/test.sql --备份D盘
+        File file = new File("D:\\test\\");
+        if ( !file.exists() ){
+            file.mkdir();
+        }
+        File datafile = new File(file+File.separator+"test3.sql");
+        if( datafile.exists() ){
+            throw new ServiceException("文件名已存在，");
+        }
+        //拼接cmd命令
+        Process exec = Runtime.getRuntime().exec("cmd /c mysqldump -h"+"3306"+" -u "+"root"+" -p"+"root"+" "+"test"+" > "+datafile);
+        if( exec.waitFor() == 0){
+            System.out.println("数据库备份成功,备份路径为："+datafile);
+        }
+
+
+    }
+    @Test
+    public void BackupDatabase() {
+
+// TODO Auto-generated method stub
+
+        java.sql.PreparedStatement ps = null;
+
+        java.sql.Connection cn = null;
+
+        ResultSet rs = null;
+
+        try {
+
+// Class.forName("com.microsoft.jdbc.sqlserver.SQLServerDriver");
+
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+
+            cn = DriverManager.getConnection(
+
+                    "jdbc:mysql://120.79.71.79:3306/electrochemical_analysis_system?user=root&password=aa520411&useUnicode=true&characterEncoding=UTF8");
+
+            ps = cn.prepareStatement("backup database learn to disk=‘d:/12345.bak‘");
+
+            int i= ps.executeUpdate();
+
+            System.out.println(i);
+
+            if(i>=1) {
+
+                System.out.println("数据库备份：成功");
+
+            }else {
+
+                System.out.println("数据库备份：失败");
+
+            }
+
+        } catch (Exception e) {
+
+// TODO Auto-generated catch block
+
+            e.printStackTrace();
+
+        } finally {
+
+            try {
+
+                ps.close();
+
+                cn.close();
+
+            } catch (SQLException e) {
+
+                e.printStackTrace();
+
+            }
+
+        }
+
+    }
+
 
     @Test
     public void test3() throws SQLException, IOException, ClassNotFoundException {
