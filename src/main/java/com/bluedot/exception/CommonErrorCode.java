@@ -64,6 +64,13 @@ public enum CommonErrorCode implements ErrorCode {
     E_8001(8001,"mapper操作类型错误"),
     E_8002(8002,"自动生成的sql语句为空"),
     E_8003(8003,"更新数据错误"),
+
+
+    /**
+     * 文件操作方面异常
+     */
+    E_9001(9001,"上传算法文件失败!"),
+    E_9002(9002,"执行算法python文件失败")
     ;
 
     private final int code;
@@ -85,7 +92,8 @@ public enum CommonErrorCode implements ErrorCode {
     }
 
     @Override
-    public void setMsg(String msg) {
+    public CommonErrorCode setMsg(String msg) {
         this.msg = msg;
+        return this;
     }
 }
