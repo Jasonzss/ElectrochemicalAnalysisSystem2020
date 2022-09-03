@@ -209,6 +209,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
         if (commonResult.getData() instanceof List) {
             algos = (List<Object>) commonResult.getData();
         }else if (commonResult.getData() instanceof PageInfo) {
+            //TODO 等PageInfo修改完后需要修改
             algos = (List<Object>) ((PageInfo) commonResult.getData()).getDataList().get(0);
         }else {
             throw new UserException(CommonErrorCode.E_6001);
