@@ -22,6 +22,7 @@ public enum CommonErrorCode implements ErrorCode {
     E_1009(1009,"查询分页不存在"),
     E_1010(1010,"图片验证码失效或不存在"),
     E_1011(1011,"用户未登录"),
+    E_1012(1012,"没有可用的邮箱验证码"),
 
     /**
      * 数据管理模块错误:E_2xxx
@@ -48,6 +49,7 @@ public enum CommonErrorCode implements ErrorCode {
      */
     E_5001(5001,"错误的请求参数"),
     E_5002(5002,"非法数据传入"),
+    E_5003(5003,"异常文件上传"),
 
     /**
      * 系统异常
@@ -62,7 +64,7 @@ public enum CommonErrorCode implements ErrorCode {
     E_7003(7003, "该算法不存在"),
     E_7004(7004, "存在不属于该用户的算法"),
     /**
-     * 算法service异常
+     * mapper异常
      */
     E_8001(8001,"mapper操作类型错误"),
     E_8002(8002,"自动生成的sql语句为空"),
