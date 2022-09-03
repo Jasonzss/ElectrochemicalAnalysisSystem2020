@@ -24,5 +24,5 @@ public interface ErrorCode {
      * 设置自定义异常信息
      * @param msg 信息
      */
-    void setMsg(String msg);
+    CommonErrorCode setMsg(String msg);
 }

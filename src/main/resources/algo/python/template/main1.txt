@@ -1,0 +1,10 @@
+# 类型1：传入double数组数据,返回double数组数据 (样例)
+def main(data):
+        from scipy import signal
+        import matplotlib.pyplot as plt
+
+        y = signal.medfilt(volume=data, kernel_size=3)
+
+        return y
+
+
