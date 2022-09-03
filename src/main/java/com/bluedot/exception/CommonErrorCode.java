@@ -69,8 +69,12 @@ public enum CommonErrorCode implements ErrorCode {
     E_8001(8001,"mapper操作类型错误"),
     E_8002(8002,"自动生成的sql语句为空"),
     E_8003(8003,"更新数据错误"),
-    ;
 
+    /**
+     * 备份service异常
+     */
+    E_9001(9001,"数据库备份文件不存在"),
+    ;
     private final int code;
     private String msg;
 
