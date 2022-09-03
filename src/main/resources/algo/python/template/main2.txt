@@ -1,19 +1,5 @@
-import io
-import json
-import sys
-
-
-# 解析获取数据
-result = dict()
-py_data = json.loads(sys.argv[1])
-
-data = py_data['data']
-
-
-
-# 算法
-'''
-    def main(data):
+# 类型2：传入double数组数据,返回内部充有图片数据的plt  (样例)
+def main(data):
         from scipy import signal
         import matplotlib.pyplot as plt
 
@@ -27,15 +13,3 @@ data = py_data['data']
         plt.legend(['original signal', 'length 3', 'length 15'])
 
         return plt
-'''
-
-plt = main(data)
-
-
-
-# 图片打印
-buffer = io.BytesIO()
-io_data = plt.figure().canvas.print_png(buffer)
-print(buffer.getvalue())
-buffer.close()
-
