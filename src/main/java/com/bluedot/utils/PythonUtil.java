@@ -1,14 +1,19 @@
 package com.bluedot.utils;
 
+import com.bluedot.exception.CommonErrorCode;
+import com.bluedot.exception.UserException;
+import com.bluedot.pojo.entity.Algorithm;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.fileupload.FileItem;
+import org.slf4j.Logger;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author FireRain
@@ -29,6 +34,44 @@ public class PythonUtil {
      */
     private static final String PYTHON_CMD = "venv/Scripts/python.exe";
 
+    /**
+     * python模板文件路径
+     */
+    private static final String  TEMPLATE_FILE_PATH= "template/example.txt";
+
+    /**
+     * 插入模板开始标志
+     */
+    private static final String START_FLAG = "# 算法内容";
+
+    /**
+     * 静态日志管理
+     */
+    private static final Logger log = LogUtil.getLogger();
+
+
+    public static byte[] createAlgorithmImage(){
+        return null;
+    }
+
+    public static Double[] dataProcess(Algorithm algorithm, Double[] data){
+        String fileName = algorithm.getAlgorithmId() + ".py";
+        return (Double[]) executePythonAlgorithFile(fileName,data,ExecuteReturnType.JSON);
+    }
+
+    public static Double[][] preprocess(Algorithm algorithm, Double[][] data){
+        String fileName = algorithm.getAlgorithmId() + ".py";
+        return (Double[][]) executePythonAlgorithFile(fileName,data,ExecuteReturnType.JSON);
+    }
+
+    public static Map<String, Double[][]> divideDataSet(Double[][] data){
+        return null;
+    }
+
+    public static Double[] modeling(Algorithm algorithm, Double[][] data){
+        String fileName = algorithm.getAlgorithmId() + ".py";
+        return (Double[]) executePythonAlgorithFile(fileName,data,ExecuteReturnType.JSON);
+    }
 
     /**
      * 执行python算法文件
@@ -38,7 +81,7 @@ public class PythonUtil {
      * @return 算法执行的结果数据
      */
     @SuppressWarnings("unchecked")
-    public static Object executePythonAlgorithFile(String fileName, Double[] data,ExecuteReturnType type){
+    public static Object executePythonAlgorithFile(String fileName, Object data,ExecuteReturnType type){
         // 自定义map，将数据信息放入map中
         HashMap<String, Object> dataMap = new HashMap<>();
         dataMap.put("data",data);
@@ -49,9 +92,9 @@ public class PythonUtil {
         try {
             jsonData = objectMapper.writeValueAsString(dataMap);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            throw new UserException(CommonErrorCode.E_9002);
         }
-
 
         // 传入json格式数据并执行python程序,获取json数据结果
         Object result = executePython(fileName, jsonData, type);
@@ -63,12 +106,71 @@ public class PythonUtil {
                 return (Map<String,Object>)objectMapper.readValue((String) result,Map.class);
             } catch (IOException e) {
                 e.printStackTrace();
-                throw new RuntimeException(e);
+                throw new UserException(CommonErrorCode.E_9002);
             }
         }else if (result instanceof byte[]){
             return result;
         }else {
             return null;
+        }
+
+    }
+
+
+    /**
+     * 上传python文件，并加入python模板文件中，生成真正的执行的python文件
+     * @param fileItem 文件表单项
+     */
+    public static void uploadPythonFile(FileItem fileItem){
+        InputStream inputStream;
+        try {
+            inputStream = fileItem.getInputStream();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String fieldName = fileItem.getFieldName();
+
+        productPythonFile(fieldName,inputStream);
+    }
+
+    /**
+     * 将输入流中的文件数据，转储到fileName中，生成python真正执行的程序文件
+     * @param fileName 上传的python文件名
+     * @param inputStream 上传的python文件输入流
+     */
+    private static void productPythonFile(String fileName, InputStream inputStream){
+        // 上传文件的字符流
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        // 模板算法算法文件的字符流
+        BufferedReader tempBr;
+        // 最后生成的算法文件流
+        BufferedOutputStream bos;
+
+        try {
+            tempBr = new BufferedReader(new InputStreamReader(new FileInputStream(BASE_PATH + TEMPLATE_FILE_PATH)));
+            bos = new BufferedOutputStream(new FileOutputStream(BASE_PATH + fileName));
+
+            String line;
+            while ( (line = tempBr.readLine()) != null){
+                if (START_FLAG.equals(line)){
+                    // 开始插入到模板中
+                    String fileLine;
+                    while ((fileLine = br.readLine())!=null){
+                        bos.write(fileLine.getBytes(StandardCharsets.UTF_8));
+                    }
+                }else {
+                    bos.write(line.getBytes(StandardCharsets.UTF_8));
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            log.error("算法模板文件读取失败:"+BASE_PATH + TEMPLATE_FILE_PATH);
+            log.error("上传生成算法文件失败:"+BASE_PATH + fileName);
+            throw new UserException(CommonErrorCode.E_9001);
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("文件输入输出流读写出现异常: " + BASE_PATH + TEMPLATE_FILE_PATH);
+            throw new UserException(CommonErrorCode.E_9001);
         }
 
     }
@@ -119,6 +221,7 @@ public class PythonUtil {
                 //将输出流中数据转为字节数组
                 byte[] byteResult = byteArrayOutputStream.toByteArray();
 
+                System.out.println("获取到python算法生成的图片二进制数据字节大小 ：" + byteResult.length);
                 System.out.println("获取到python算法生成的图片二进制数据 ：" + Arrays.toString(byteResult));
 
                 byteArrayOutputStream.close();
@@ -131,13 +234,11 @@ public class PythonUtil {
             process.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new UserException(CommonErrorCode.E_9002);
         }
 
         return result;
     }
-
-
     public enum ExecuteReturnType{
 
         /**

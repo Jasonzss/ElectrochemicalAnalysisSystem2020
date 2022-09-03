@@ -5,6 +5,10 @@ import matplotlib
 import scipy
 import matplotlib.pyplot as plt
 
+from PIL import Image
+import numpy
+
+
 # 解析获取数据
 py_data = json.loads(sys.argv[1])
 # py_data = json.loads(
@@ -21,12 +25,12 @@ def main(data):
     plt.plot(y, 'b.-')  # 在给定大小的邻域内取中值替代数据值，在邻域中没有元素的位置补0
     plt.plot(z, 'r.-')
     plt.legend(['original signal', 'length 3', 'length 15'])
-    # plt.show()
+    # plt.savefig('images/pythonImages/temp.png')
 
     return plt
 
-
 res = main(data)
+
 
 if isinstance(res, list):
     # 将算法分析后的数组数据转为规范数组返回
@@ -38,9 +42,14 @@ if isinstance(res, list):
     print(json.dumps(result))
 elif isinstance(res, matplotlib.__class__):
     # 将算法分析的图片转为图片二进制数据返回
+    canvas = res.get_current_fig_manager().canvas
+    canvas.draw()
+
     buffer = io.BytesIO()
-    io_data = res.figure().canvas.print_png(buffer)
+    canvas.print_png(buffer)
+
     print(buffer.getvalue())
+
     buffer.close()
 else:
     print()
