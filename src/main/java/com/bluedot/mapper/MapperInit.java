@@ -34,7 +34,7 @@ public class MapperInit {
     private void loadTableInfo(Connection connection) throws SQLException {
         try {
             DatabaseMetaData databaseMetaData = connection.getMetaData();
-            String database = Configuration.getProperty("database");
+            String database = Configuration.getProperty("databaseName");
             ResultSet tableResultSet = databaseMetaData.getTables(database, "%", "%", new String[]{"TABLE"});
             List<TableInfo> tableInfos = new ArrayList<>();
             Map<Class<?>, TableInfo> map = new HashMap<>();

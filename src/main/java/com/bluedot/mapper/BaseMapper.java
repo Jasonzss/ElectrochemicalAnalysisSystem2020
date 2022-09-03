@@ -9,6 +9,7 @@ import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.LogUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.StringUtil;
+import com.bluedot.utils.constants.MapperConstants;
 import com.bluedot.utils.constants.SessionConstants;
 import org.slf4j.Logger;
 
@@ -118,7 +119,7 @@ public class BaseMapper {
             public void generateSqlExecutor(Field[] fields, TableInfo tableInfo, List<ColumnInfo> primaryKeys, StringBuilder sql, MappedStatement mappedStatement, List<Object> params) {
                 Object entity = typeList.get(0);
                 sql.append("insert into ").append(tableInfo.getTableName()).append("(");
-                List<Class> classList= Arrays.asList(Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,char.class,Boolean.class,String.class, Date.class, Timestamp.class);
+                List<Class> classList= Arrays.asList(byte[].class,Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,char.class,Boolean.class,String.class, Date.class, Timestamp.class);
                 for (Field field : fields) {
                     field.setAccessible(true);
                     //是否是外键实体类
@@ -251,7 +252,7 @@ public class BaseMapper {
             @Override
             public void generateSqlExecutor(Field[] fields, TableInfo tableInfo, List<ColumnInfo> primaryKeys, StringBuilder sql, MappedStatement mappedStatement, List<Object> params) {
                 Object entity = typeList.get(0);
-                List<Class> classList=Arrays.asList(Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,char.class,Boolean.class,String.class,Date.class,Timestamp.class);
+                List<Class> classList=Arrays.asList(byte[].class,Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,char.class,Boolean.class,String.class,Date.class,Timestamp.class);
                 if (typeList.size()>1){
                     sql.append("update ").append(tableInfo.getTableName()).append(" set ");
                     for (Field field : fields) {
@@ -437,7 +438,7 @@ public class BaseMapper {
                 view=view.substring(1,view.length()-1);
             }
             view=StringUtil.tableNameToClassName(view);
-            String entity = Configuration.getProperty(SessionConstants.ENTITY_PACKAGENAME)+"."+view;
+            String entity = Configuration.getProperty(MapperConstants.ENTITY_PACKAGENAME)+"."+view;
             TableInfo tableInfo = null;
             try {
                 tableInfo = MapperInit.getConfiguration().getClassToTableInfoMap().get(Class.forName(entity));
