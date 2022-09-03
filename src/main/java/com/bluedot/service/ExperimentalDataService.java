@@ -9,10 +9,14 @@ import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.ExpData;
 import com.bluedot.pojo.vo.CommonResult;
+import com.bluedot.utils.ExcelUtil;
 import com.bluedot.utils.ReflectUtil;
+import com.bluedot.utils.constants.SessionConstants;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,14 +50,14 @@ public class ExperimentalDataService extends BaseService<ExpData>{
             expDataList = (List<Map<String, Object>>) paramList.get("expData");
             //判断每条数据是个人的还是他人的
             for (Map<String,Object> map:expDataList) {
-                if (map.get("userEmail").equals(userEmail)){
+                if (!map.containsKey("userEmail") || !map.get("userEmail").equals(userEmail)){
                     isPersonal = false;
                 }
             }
         }
 
         if (paramList.containsKey("userEmail")){
-            if (!paramList.get("userEmail").equals(userEmail)){
+            if (!paramList.containsKey("userEmail") || !paramList.get("userEmail").equals(userEmail)){
                 isPersonal = false;
             }
         }
@@ -79,7 +83,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
                 if (isPersonal){
                     methodName = "listPersonalExpData";
                 }else {
-                    methodName = "listPersonalExpData";
+                    methodName = "listExpData";
                 }
                 break;
             case "distinct":
@@ -113,29 +117,18 @@ public class ExperimentalDataService extends BaseService<ExpData>{
      */
     private void listPersonalExpData(){
         Condition condition = new Condition();
+        condition.addAndConditionWithView(new Term("exp_data","user_email",session.getAttribute(SessionConstants.USER_EMAIL),TermType.EQUAL));
 
-        if (paramList.containsKey("pageSize")){
-            condition.setSize((Integer) paramList.get("pageSize"));
-        }
-        if (paramList.containsKey("pageNo")){
-            condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
-        }
-        if (paramList.containsKey("expMaterialName")){
-            condition.addOrConditionWithView(new Term("expData","expMaterialName",paramList.get("expMaterialName"), TermType.EQUAL));
-        }
-        if (paramList.containsKey("materialTypeId")){
-            condition.addOrConditionWithView(new Term("expData","materialTypeId",paramList.get("materialType"),TermType.EQUAL));
-        }
-        if (paramList.containsKey("expDeleteStatus")){
-            condition.addAndConditionWithView(new Term("expData","expDeleteStatus",paramList.get("expDeleteStatus"),TermType.EQUAL));
-        }
-        if (paramList.containsKey("userEmail")){
-            condition.addAndConditionWithView(new Term("expData","userEmail",paramList.get("userEmail"),TermType.EQUAL));
-        }
+        //设置查询返回类型
+        condition.setReturnType("ExpData");
+        entityInfo.setCondition(setConditionParam(condition));
 
-        entityInfo.setCondition(condition);
-//        entityInfo.setEntityName("expData");
-        select();
+        //设置查询条件
+        if (paramList.containsKey("pageSize") && paramList.containsKey("pageNo")){
+            selectPage();
+        }else if(paramList.containsKey("expData")){
+            select();
+        }
     }
 
     /**
@@ -143,25 +136,67 @@ public class ExperimentalDataService extends BaseService<ExpData>{
      */
     private void listExpData(){
         Condition condition = new Condition();
-        if (paramList.containsKey("pageSize")){
+        //设置查询返回类型
+        condition.setReturnType("ExpData");
+        entityInfo.setCondition(setConditionParam(condition));
+
+        //设置查询条件
+        if (paramList.containsKey("pageSize") && paramList.containsKey("pageNo")){
+            selectPage();
+        }else if(paramList.containsKey("expData")){
+            select();
+        }
+    }
+
+    /**
+     * 对实验数据查询方法的对应属性以对应的条件放入Condition中
+     * @param condition 查询条件放入的Condition
+     * @return 完成条件注入的Condition
+     */
+    private Condition setConditionParam(Condition condition){
+        //设置查询条件
+        if (paramList.containsKey("pageSize") && paramList.containsKey("pageNo")){
+            //分页查询
             condition.setSize((Integer) paramList.get("pageSize"));
-        }
-        if (paramList.containsKey("pageNo")){
             condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
-        }
-        if (paramList.containsKey("expMaterialName")){
-            condition.addOrConditionWithView(new Term("expData","expMaterialName",paramList.get("expMaterialName"), TermType.LIKE));
-        }
-        if (paramList.containsKey("materialTypeId")){
-            condition.addOrConditionWithView(new Term("expData","materialTypeId",paramList.get("materialType"),TermType.EQUAL));
-        }
-        if (paramList.containsKey("expDeleteStatus")){
-            condition.addAndConditionWithView(new Term("expData","expDeleteStatus",paramList.get("expDeleteStatus"),TermType.EQUAL));
+
+            //设置查询条件
+            if (paramList.containsKey("expMaterialName")){
+                condition.addOrConditionWithView(new Term("exp_data","exp_material_name",paramList.get("expMaterialName"), TermType.EQUAL));
+            }
+            if (paramList.containsKey("materialTypeId")){
+                condition.addOrConditionWithView(new Term("exp_data","material_type_id",paramList.get("materialType"),TermType.EQUAL));
+            }
+            if (paramList.containsKey("expDeleteStatus")){
+                condition.addAndConditionWithView(new Term("exp_data","exp_delete_status",paramList.get("expDeleteStatus"),TermType.EQUAL));
+            }
+            if (paramList.containsKey("userEmail")){
+                condition.addAndConditionWithView(new Term("exp_data","user_email",paramList.get("userEmail"),TermType.EQUAL));
+            }
+            if (paramList.containsKey("expCreateTimeStart")){
+                condition.addAndConditionWithView(new Term("exp_data","exp_create_time",paramList.get("expCreateTimeStart"),TermType.GREATER));
+            }
+            if (paramList.containsKey("expCreateTimeEnd")){
+                condition.addAndConditionWithView(new Term("exp_data","exp_create_time",paramList.get("expCreateTimeEnd"),TermType.Less));
+            }
+            if (paramList.containsKey("expLastUpdateTimeStart")){
+                condition.addAndConditionWithView(new Term("exp_data","exp_last_update_time",paramList.get("expLastUpdateTimeStart"),TermType.GREATER));
+            }
+            if (paramList.containsKey("expLastUpdateTimeEnd")){
+                condition.addAndConditionWithView(new Term("exp_data","exp_last_update_time",paramList.get("expLastUpdateTimeEnd"),TermType.Less));
+            }
+        }else if(paramList.containsKey("expData")){
+            //指定id查询
+            List<Map<String, Object>> objectList = (List<Map<String, Object>>) paramList.get("expData");
+            //将所有需要查询的expData的id放入list中
+            List<Object> list = new ArrayList<>();
+            objectList.forEach((l) -> {
+                list.add(l.get("expDataId"));
+            });
+            condition.addAndConditionWithView(new Term("exp_data","exp_data_id",list,TermType.IN));
         }
 
-        entityInfo.setCondition(condition);
-//        entityInfo.setEntityName("expData");
-        select();
+        return condition;
     }
 
     /**
@@ -169,10 +204,11 @@ public class ExperimentalDataService extends BaseService<ExpData>{
      */
     private void listMaterialName(){
         Condition condition = new Condition();
-        condition.addFields("distinct(expMaterialName)");
+        condition.addFields("distinct(exp_material_name)");
+        condition.addView("exp_data");
 
         if (paramList.containsKey("userEmail")){
-            condition.addAndConditionWithView(new Term("expData","userEmail",paramList.get("userEmail"),TermType.EQUAL));
+            condition.addOrConditionWithView(new Term("exp_data","user_email",paramList.get("userEmail"),TermType.EQUAL));
         }
 
         entityInfo.setCondition(condition);
@@ -239,16 +275,58 @@ public class ExperimentalDataService extends BaseService<ExpData>{
     }
 
     /**
-     * 下载实验数据，下载格式为 ？
+     * 下载实验数据，下载格式为 excel
      */
     private void downloadExpData(){
+        try{
+            //查询用户所需数据
+            listExpData();
 
+        }catch (Exception e){
+            if (e instanceof UserException){
+                throw e;
+            }else {
+                throw new UserException(CommonErrorCode.E_6001);
+            }
+        }
+        List<ExpData> expDataList = (List<ExpData>) commonResult.getData();
+        Map<String,ExpData> expDataMap = new HashMap<>();
+        for (int i = 0; i < expDataList.size(); i++) {
+            expDataMap.put("sheet"+(i+1),expDataList.get(i));
+        }
+
+        //生成excel对象
+        HSSFWorkbook hssfWorkbook = ExcelUtil.productExpDataExcel(expDataMap);
+
+        commonResult.setFileData("实验数据",hssfWorkbook);
+        commonResult.setRespContentType(CommonResult.EXCEL);
     }
 
     /**
-     * 下载实验数据，下载格式为 ？
+     * 下载实验数据，下载格式为 excel
      */
     private void downloadPersonalExpData(){
+        try{
+            //查询用户所需数据
+            listPersonalExpData();
+        }catch (Exception e){
+            if (e instanceof UserException){
+                throw e;
+            }else {
+                throw new UserException(CommonErrorCode.E_6001);
+            }
+        }
 
+        List<ExpData> expDataList = (List<ExpData>) commonResult.getData();
+        Map<String,ExpData> expDataMap = new HashMap<>();
+        for (int i = 0; i < expDataList.size(); i++) {
+            expDataMap.put("sheet"+(i+1),expDataList.get(i));
+        }
+
+        //生成excel对象
+        HSSFWorkbook hssfWorkbook = ExcelUtil.productExpDataExcel(expDataMap);
+
+        commonResult.setFileData("实验数据",hssfWorkbook);
+        commonResult.setRespContentType(CommonResult.EXCEL);
     }
 }

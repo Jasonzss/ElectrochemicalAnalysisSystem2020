@@ -5,8 +5,12 @@ import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.ExpData;
+import org.apache.commons.fileupload.FileItem;
 
 import javax.servlet.http.HttpSession;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * @Author Jason
@@ -63,6 +67,20 @@ public class AnalysisService extends BaseService<ExpData> {
         //成功分析出的结果插入到数据库中
 
 
+    }
+
+    private ExpData analysisFile(FileItem fileItem){
+        try {
+            //创建字符输入流读取对象读取传入的文件
+            InputStreamReader isr = new InputStreamReader(fileItem.getInputStream(),"GBK");
+            BufferedReader br = new BufferedReader(isr);
+
+            String line = br.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new UserException(CommonErrorCode.E_5003);
+        }
+        return null;
     }
 
     /**
