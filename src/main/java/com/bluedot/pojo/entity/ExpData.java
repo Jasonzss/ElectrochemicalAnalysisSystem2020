@@ -1,7 +1,9 @@
 package com.bluedot.pojo.entity;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Author Jason
@@ -69,28 +71,46 @@ public class ExpData {
         this.expMaterialSolubility = expMaterialSolubility;
     }
 
-    public Double[] getExpVoltagePointData() {
+    public Double[] getExpVoltagePointDataAsDouble() {
         return expVoltagePointData;
+    }
+    public String getExpVoltagePointData() {
+        return Arrays.toString(expVoltagePointData);
     }
 
     public void setExpVoltagePointData(Double[] expVoltagePointData) {
         this.expVoltagePointData = expVoltagePointData;
     }
+    public void setExpVoltagePointData(String expVoltagePointData) {
+        this.expVoltagePointData = stringToDoubleArray(expVoltagePointData);
+    }
 
-    public Double[] getExpOriginalCurrentPointData() {
+    public Double[] getExpOriginalCurrentPointDataAsDouble() {
         return expOriginalCurrentPointData;
+    }
+    public String getExpOriginalCurrentPointData() {
+        return Arrays.toString(expOriginalCurrentPointData);
     }
 
     public void setExpOriginalCurrentPointData(Double[] expOriginalCurrentPointData) {
         this.expOriginalCurrentPointData = expOriginalCurrentPointData;
     }
+    public void setExpOriginalCurrentPointData(String expOriginalCurrentPointData) {
+        this.expOriginalCurrentPointData = stringToDoubleArray(expOriginalCurrentPointData);
+    }
 
-    public Double[] getExpNewestCurrentPointData() {
+    public Double[] getExpNewestCurrentPointDataAsDouble() {
         return expNewestCurrentPointData;
+    }
+    public String getExpNewestCurrentPointData() {
+        return Arrays.toString(expNewestCurrentPointData);
     }
 
     public void setExpNewestCurrentPointData(Double[] expNewestCurrentPointData) {
         this.expNewestCurrentPointData = expNewestCurrentPointData;
+    }
+    public void setExpNewestCurrentPointData(String expNewestCurrentPointData) {
+        this.expNewestCurrentPointData = stringToDoubleArray(expNewestCurrentPointData);
     }
 
     public String getOrderOfMagnitudes() {
@@ -179,6 +199,20 @@ public class ExpData {
 
     public void setExpDeleteStatus(Integer expDeleteStatus) {
         this.expDeleteStatus = expDeleteStatus;
+    }
+
+    public Double[] stringToDoubleArray(String str){
+        List<Double> list = new ArrayList<>();
+        str = str.replace("[\"","");
+        str = str.replace("\"]","");
+        String[] array = str.split("\",\"");
+        Double[] doubles = new Double[array.length];
+
+        for (int i = 0; i < array.length; i++) {
+            doubles[i] = Double.parseDouble(array[i]);
+        }
+
+        return doubles;
     }
 
     @Override
