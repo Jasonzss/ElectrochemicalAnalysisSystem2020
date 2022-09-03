@@ -121,8 +121,8 @@ public class PermissionService extends BaseService<Permission>{
         entityInfo.setCondition(condition);
         select();
         // 设置pageInfo，并将查询到的数据填入
-        PageInfo<UserRole> pageInfo = new PageInfo<UserRole>();
-        pageInfo.setDataList((List<UserRole>) commonResult.getData());
+        PageInfo pageInfo = new PageInfo();
+        pageInfo.setDataList((List<Object>) commonResult.getData());
         pageInfo.setPageSize(pageSize);
 
         pageInfo.setTotalDataSize((long) arrayList.size());

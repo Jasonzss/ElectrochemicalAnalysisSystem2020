@@ -17,10 +17,7 @@ import com.bluedot.utils.constants.OperationConstants;
 import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.LockSupport;
 
 /**
@@ -49,12 +46,17 @@ public abstract class BaseService<T> {
             userLogMap.put("session",session);
             userLogMap.put("entityInfo",entityInfo);
             userLogMap.put("userLogParameter",paramList.toString());
-            doService();
+            try{
+                //尝试抓取UserException
+                doService();
+            }catch (UserException e){
+                commonResult = CommonResult.commonErrorCode(e.getErrorCode());
+            }
         }else {
             //检查未通过
             commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_5002);
         }
-
+        //将结果返回给Controller
         ServiceControllerQueue.getInstance().put(data.getKey(), commonResult);
     }
 
@@ -71,9 +73,9 @@ public abstract class BaseService<T> {
 
     /**
      *
-     * @param map
-     * @param operation
-     * @return
+     * @param map 请求其他Service的参数
+     * @param operation 对参数进行的操作
+     * @return Mapper层操作数据的结果
      */
     public CommonResult doOtherService(Map<String, Object> map, String operation){
         this.paramList = map;
@@ -141,48 +143,74 @@ public abstract class BaseService<T> {
     protected void selectPage(){
         // 查询当前页的对应数据
         entityInfo.setOperation(OperationConstants.SELECT);
-       commonResult=doMapper();
+        commonResult = doMapper();
 
         Condition condition = entityInfo.getCondition();
         // 设置pageInfo，并将查询到的数据填入
-        PageInfo<T> pageInfo = new PageInfo<T>();
-        pageInfo.setDataList((List<T>) commonResult.getData());
-        pageInfo.setPageSize(condition.getSize());
-        // 调用getCount查询数据总数量
-        pageInfo.setTotalDataSize(getCount());
-        pageInfo.setTotalPageSize(pageInfo.getTotalDataSize() /pageInfo.getPageSize());
-        pageInfo.setCurrentPageNo(Math.toIntExact(condition.getStartIndex() / condition.getSize() + 1));
+        PageInfo pageInfo = new PageInfo();
+        System.out.println("Data:"+commonResult.getData());
+        if (((ArrayList) commonResult.getData()).size() == 0){
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
+        }else {
+            pageInfo.setDataList(Collections.singletonList(commonResult.getData()));
+            pageInfo.setPageSize(condition.getSize());
+            // 调用getCount查询数据总数量
+            pageInfo.setTotalDataSize(getCount());
+            pageInfo.setTotalPageSize((pageInfo.getTotalDataSize() + pageInfo.getPageSize() - 1) / pageInfo.getPageSize());
+            pageInfo.setCurrentPageNo(Math.toIntExact(condition.getStartIndex() / condition.getSize() + 1));
 
-        commonResult = CommonResult.successResult("分页查询",pageInfo);
+            commonResult = CommonResult.successResult("分页查询", pageInfo);
+        }
     }
 
+    /**
+     * 查询目标分页查询的总数
+     * @return 数据总数量
+     */
     private long getCount(){
         // 设置查询条件
         Condition condition = new Condition();
         condition.addFields("count(*)");
         condition.addView(entityInfo.getCondition().getViews().get(0));
         condition.setReturnType("Long");
+
+        //进行查询逻辑
         entityInfo.setCondition(condition);
         entityInfo.setOperation(OperationConstants.SELECT);
         CommonResult commonResult = doMapper();
+
+        //返回结果
         ArrayList list= (ArrayList) commonResult.getData();
         return (long)list.get(0);
     }
 
+    /**
+     * 反射调用目标Service成员方法
+     * @param methodName 方法名
+     * @param obj 目标Service
+     */
     protected void invokeMethod(String methodName,Object obj){
-        List<String> permissionList = (List<String>) session.getAttribute("permissionList");
-        if ("login".equals(operation) || permissionList.contains(methodName)){
-            //存在此权限，执行响应方法
+        //判断是否存在Session
+        if (!OperationConstants.LOGIN.equals(operation) && session.getAttribute("permissionList") == null){
+            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1011);
+            return;
+        }
 
+        //从Session中获取权限列表
+        List<String> permissionList = (List<String>) session.getAttribute("permissionList");
+
+        if (OperationConstants.LOGIN.equals(operation) || permissionList.contains(methodName)){
+            //存在此权限，执行响应方法
             Method method = null;
             try {
                 method = obj.getClass().getDeclaredMethod(methodName);
+                method.setAccessible(true);
             } catch (NoSuchMethodException e) {
                 commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
                 e.printStackTrace();
             }
-            method.setAccessible(true);
             try {
+                //反射调用目标方法
                 method.invoke(obj);
             } catch (IllegalAccessException e) {
                 commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_6001);
@@ -206,6 +234,10 @@ public abstract class BaseService<T> {
         }
     }
 
+    /**
+     * 将数据放入前往Mapper层的队列中，并等待获取返回的数据操作结果
+     * @return mapper层的数据操作结果
+     */
     private CommonResult doMapper(){
         //将待BaseMapper处理的数据加入到SMQueue中
         ServiceMapperQueue.getInstance().put(entityInfo);

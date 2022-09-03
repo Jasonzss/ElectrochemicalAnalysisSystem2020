@@ -3,6 +3,7 @@ package com.bluedot.pojo.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * @Author Jason
@@ -19,13 +20,9 @@ public class Application {
      * 还有时区默认是GMT，咱们是东八区。
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Timestamp applicationTime;
+    private Timestamp applicationTime = new Timestamp(System.currentTimeMillis());
     private Integer applicationStatus;
     private String applicationRejectReason;
-
-    public Application() {
-        user = new User();
-    }
 
     public Integer getApplicationId() {
         return applicationId;
