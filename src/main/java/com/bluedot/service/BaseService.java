@@ -58,6 +58,7 @@ public abstract class BaseService<T> {
         }
         //将结果返回给Controller
         ServiceControllerQueue.getInstance().put(data.getKey(), commonResult);
+
     }
 
     /**
