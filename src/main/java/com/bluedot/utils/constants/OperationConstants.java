@@ -12,4 +12,5 @@ public class OperationConstants {
     public static final String SELECT = "select";
     public static final String LOGIN = "login";
     public static final String DISTINCT = "distinct";
+    public static final String DOWNLOAD = "download";
 }

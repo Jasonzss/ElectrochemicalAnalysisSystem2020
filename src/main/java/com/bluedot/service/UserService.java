@@ -65,10 +65,14 @@ public class UserService extends BaseService<User> {
                 }
                 break;
             case "update":
-                if (userEmail.equals(paramList.get("userEmail"))) {
-                    methodName = "updatePersonalUser";
-                } else {
-                    methodName = "updateUser";
+                if (paramList.get("userEmail") != null){
+                    if (paramList.get("userEmail").equals(userEmail)) {
+                        methodName = "updatePersonalUser";
+                    } else {
+                        methodName = "updateUser";
+                    }
+                }else {
+                    throw new UserException(CommonErrorCode.E_5001);
                 }
                 break;
             case "select":
@@ -104,6 +108,31 @@ public class UserService extends BaseService<User> {
 
     @Override
     protected boolean check() {
+        //邮箱数据验证
+        if (paramList.containsKey("userEmail") && !EmailUtil.isLegalEmail((String) paramList.get("userEmail"))){
+            return false;
+        }
+        //用户状态修改验证
+        if (paramList.containsKey("userStatus")){
+            int userStatus = (int) paramList.get("userStatus");
+            if (userStatus < 0 || userStatus > 3){
+                return false;
+            }
+        }
+        //用户性别验证
+        if (paramList.containsKey("userSex")){
+            String userSex = (String) paramList.get("userSex");
+            if (!"男".equals(userSex) && !"女".equals(userSex)){
+                return false;
+            }
+        }
+        //用户昵称验证
+        if (paramList.containsKey("userName")){
+            String userName = (String) paramList.get("userName");
+            if (userName.length() < 2 || userName.length() > 10){
+                return false;
+            }
+        }
         return true;
     }
 
@@ -131,20 +160,22 @@ public class UserService extends BaseService<User> {
      * 个人权限修改用户信息
      */
     private void updatePersonalUser(){
-
         // 判断是否有密码
         if (paramList.containsKey("userPassword")){
             //判断是邮箱验证码修改密码还是密码验证修改
-            if (session.getAttribute(SessionConstants.AUTH_CODE) != null) {
+            if (paramList.get("authCode") != null) {
                 //邮箱验证修改密码
                 //获取验证码
                 String authCode = (String) session.getAttribute(SessionConstants.AUTH_CODE);
-                //移除验证码
-                session.removeAttribute(SessionConstants.AUTH_CODE);
+                if (authCode == null){
+                    throw new UserException(CommonErrorCode.E_1012);
+                }
                 //判断验证码是否正确
-                if (!authCode.equalsIgnoreCase((String) paramList.get("authCode"))){
+                if (!authCode.equals(paramList.get("authCode"))){
                     throw new UserException(CommonErrorCode.E_1004);
                 }
+                //移除验证码
+                session.removeAttribute(SessionConstants.AUTH_CODE);
             } else if (paramList.containsKey("oldPassword")){
                 //旧密码验证修改密码
                 //判断旧密码是否正确
@@ -165,9 +196,15 @@ public class UserService extends BaseService<User> {
         }
 
         // 判断是否有图片
-        if (paramList.containsKey("userImg")){
-            // 将图片转换为数组放入
-            paramList.put("userImg", ImageUtil.imgToByteArray((FileItem) paramList.get("userImg")));
+        if (paramList.containsKey("file")){
+            FileItem fileItem = (FileItem) paramList.get("file");
+            paramList.put("userImg", ImageUtil.imgToByteArray(fileItem));
+//            // 将图片转换为数组放入
+//            System.out.println("------------------");
+//            System.out.println(paramList.get("userImg").getClass());
+//            System.out.println(((FileItem) paramList.get("userImg")).getSize());
+//            paramList.put("userImg", ImageUtil.imgToByteArray((FileItem) paramList.get("userImg")));
+//            System.out.println(ImageUtil.imgToByteArray((FileItem) paramList.get("userImg")).length);
         }
 
         // 封装User实体
@@ -186,15 +223,34 @@ public class UserService extends BaseService<User> {
         String authCode = (String) session.getAttribute(SessionConstants.AUTH_CODE);
         //移除验证码
         session.removeAttribute(SessionConstants.AUTH_CODE);
-        //判断邮箱验证码是否正确
-        if (authCode.equalsIgnoreCase((String) paramList.get("authCode"))){
-            //验证码不正确
-            throw new UserException(CommonErrorCode.E_1004);
+        //判断邮箱验证码是否可用且正确
+        if (authCode != null){
+            if (!authCode.equals(paramList.get("authCode"))){
+                //验证码不正确
+                throw new UserException(CommonErrorCode.E_1004);
+            }
+        }else {
+            throw new UserException(CommonErrorCode.E_1012);
         }
 
+
         //判断邮箱是否可用
-        getPersonalUser();
-        User user = (User) commonResult.getData();
+        //查询用户是否存在
+        try{
+            getPersonalUser();
+        }catch (UserException e){
+            //只处理1005异常，其他异常抛出
+            if (e.getErrorCode() != CommonErrorCode.E_1005){
+                throw e;
+            }
+        }
+
+        Object data = commonResult.getData();
+        User user = null;
+        if (data instanceof User){
+            user = (User) data;
+        }
+
         if (user != null){
             //邮箱已注册，无法再注册
             throw new UserException(CommonErrorCode.E_1002);
@@ -205,6 +261,11 @@ public class UserService extends BaseService<User> {
 
         //执行插入操作
         ReflectUtil.invokeSettersIncludeEntity(paramList,user);
+        //TODO 初始化新用户的基本信息
+        //设置用户默认名称
+        if (user.getUserName() == null){
+            user.setUserName("用户_"+user.getUserEmail().substring(0,4));
+        }
         entityInfo.addEntity(user);
         insert();
     }
@@ -266,7 +327,8 @@ public class UserService extends BaseService<User> {
             //重新封装数据
             List<User> userList = (List<User>) commonResult.getData();
             if (userList.size() != 0){
-                commonResult = CommonResult.successResult("用户信息",userList.get(0));
+                User user = userList.get(0);
+                commonResult = CommonResult.successResult("用户信息",user);
             }else {
                 throw new UserException(CommonErrorCode.E_1005);
             }
@@ -430,7 +492,7 @@ public class UserService extends BaseService<User> {
         }catch (UserException e){
             if (e.getErrorCode() != CommonErrorCode.E_1005){
                 //当抛出的异常为1005以外的其他异常才解决，1005异常不做处理
-                throw new UserException(e.getErrorCode());
+                throw e;
             }
         }
 

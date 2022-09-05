@@ -124,6 +124,8 @@ public class EmailUtil extends Thread{
      * @return 邮箱格式是否正确
      */
     public static boolean isLegalEmail(String email){
-        return false;
+        //设置一个正则表达式,[\w]匹配包括下划线的任何单词字符，等价于[A-Za-z0-9_]
+        String reg = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$";
+        return email.matches(reg);
     }
 }

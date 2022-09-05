@@ -153,7 +153,7 @@ public abstract class BaseService<T> {
         if (((ArrayList) commonResult.getData()).size() == 0){
             commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
         }else {
-            pageInfo.setDataList(Collections.singletonList(commonResult.getData()));
+            pageInfo.setDataList((List<Object>)commonResult.getData());
             pageInfo.setPageSize(condition.getSize());
             // 调用getCount查询数据总数量
             pageInfo.setTotalDataSize(getCount());
