@@ -11,25 +11,28 @@ import java.util.List;
  * @Description ：
  */
 public class ExpData {
-    private Integer expDataId;
-    private User user;
-    private MaterialType materialType;
-    private String expMaterialName;
-    private Double expMaterialSolubility;
-    private Double[] expVoltagePointData;
-    private Double[] expOriginalCurrentPointData ;
-    private Double[] expNewestCurrentPointData ;
-    private String orderOfMagnitudes;
-    private Double expOriginalCurrent;
-    private Double expOriginalPotential;
-    private Double expNewestCurrent;
-    private Double expNewestPotential;
-    private BufferSolution bufferSolution;
-    private Double expPh;
-    private String expDataDesc;
-    private Timestamp expCreateTime;
-    private Timestamp expLastUpdateTime;
-    private Integer expDeleteStatus;
+    private Integer expDataId;  //系统提供
+    private User user;  //系统提供
+    private MaterialType materialType;  //用户选择
+    private String expMaterialName; //用户选择或填写
+    private Double expMaterialSolubility;   //用户填写
+    /**
+     * 新旧电流的数量级
+     */
+    private String orderOfMagnitudes;   //用户上传文件读取并分析
+    private Double[] expPotentialPointData;   //用户上传文件读取
+    private Double[] expOriginalCurrentPointData ;  //用户上传文件读取
+    private Double[] expNewestCurrentPointData ;    //系统计算
+    private Double expOriginalCurrent;  //系统计算
+    private Double expOriginalPotential;    //系统计算
+    private Double expNewestCurrent;    //系统计算
+    private Double expNewestPotential;  //系统计算
+    private BufferSolution bufferSolution;  //用户选择
+    private Double expPh;   //用户填写
+    private String expDataDesc; //用户填写
+    private Timestamp expCreateTime;    //系统提供
+    private Timestamp expLastUpdateTime;    //系统提供
+    private Integer expDeleteStatus;    //系统提供
 
     public Integer getExpDataId() {
         return expDataId;
@@ -71,18 +74,18 @@ public class ExpData {
         this.expMaterialSolubility = expMaterialSolubility;
     }
 
-    public Double[] getExpVoltagePointDataAsDouble() {
-        return expVoltagePointData;
+    public Double[] getExpPotentialPointDataAsDouble() {
+        return expPotentialPointData;
     }
-    public String getExpVoltagePointData() {
-        return Arrays.toString(expVoltagePointData);
+    public String getExpPotentialPointData() {
+        return Arrays.toString(expPotentialPointData);
     }
 
-    public void setExpVoltagePointData(Double[] expVoltagePointData) {
-        this.expVoltagePointData = expVoltagePointData;
+    public void setExpPotentialPointData(Double[] expPotentialPointData) {
+        this.expPotentialPointData = expPotentialPointData;
     }
-    public void setExpVoltagePointData(String expVoltagePointData) {
-        this.expVoltagePointData = stringToDoubleArray(expVoltagePointData);
+    public void setExpPotentialPointData(String expPotentialPointData) {
+        this.expPotentialPointData = stringToDoubleArray(expPotentialPointData);
     }
 
     public Double[] getExpOriginalCurrentPointDataAsDouble() {
@@ -203,9 +206,9 @@ public class ExpData {
 
     public Double[] stringToDoubleArray(String str){
         List<Double> list = new ArrayList<>();
-        str = str.replace("[\"","");
-        str = str.replace("\"]","");
-        String[] array = str.split("\",\"");
+        str = str.replace("[","");
+        str = str.replace("]","");
+        String[] array = str.split(",");
         Double[] doubles = new Double[array.length];
 
         for (int i = 0; i < array.length; i++) {
@@ -223,7 +226,7 @@ public class ExpData {
                 ", materialType=" + materialType +
                 ", expMaterialName='" + expMaterialName + '\'' +
                 ", expMaterialSolubility=" + expMaterialSolubility +
-                ", expVoltagePointData=" + Arrays.toString(expVoltagePointData) +
+                ", expPotentialPointData=" + Arrays.toString(expPotentialPointData) +
                 ", expOriginalCurrentPointData=" + Arrays.toString(expOriginalCurrentPointData) +
                 ", expNewestCurrentPointData=" + Arrays.toString(expNewestCurrentPointData) +
                 ", orderOfMagnitudes='" + orderOfMagnitudes + '\'' +

@@ -384,7 +384,7 @@ public class ExcelUtil {
         //double[][]点位数据分解
         Double[] originalCurrentPointData = data.getExpOriginalCurrentPointDataAsDouble();
         Double[] newestCurrentPointData = data.getExpNewestCurrentPointDataAsDouble();
-        Double[] voltagePointData = data.getExpVoltagePointDataAsDouble();
+        Double[] voltagePointData = data.getExpPotentialPointDataAsDouble();
 //        Double[][] originalPointData = data.getExpOriginalPointData();
 //        Double[][] newestPointData = data.getExpNewestPointData();
 //        Pair<Double[], Double[]> originalData = resolvePointData(originalPointData);
