@@ -23,16 +23,26 @@ public class ExcelUtil {
      * 标题信息 String(标题名) Pair(该标题名对应的子标题)
      * Pair(Integer,String) (该单元格的高度,子标题信息)
      */
-    private static final List<Pair<String,List<Object>>> title = new ArrayList<>();
+    private static final List<Pair<String,List<Object>>> TITLE = new ArrayList<>();
 
     /**
      * 数据信息
      */
-    private static final List<Pair<String,List<Object>>> valueList = new ArrayList<>();
+    private static final List<Pair<String,List<Object>>> VALUE_LIST = new ArrayList<>();
 
     private static final String BASE_INFO = "基本信息";
     private static final String ELECT_INFO = "电化学信息";
     private static final String POINT_INFO = "点位数据";
+
+    /**
+     * 将填有数据的HSSFWorkbook 写入响应中
+     * @param response 响应
+     * @param hssfWorkbook excel数据
+     */
+    public static void productExcelAndWriteToResponse(HttpServletResponse response, HSSFWorkbook hssfWorkbook){
+        setResponse(response, hssfWorkbook);
+    }
+
 
     /**
      * 将map数据生成excel并写入到响应流中
@@ -56,7 +66,6 @@ public class ExcelUtil {
         HSSFWorkbook workbook = ExcelUtil.productExpDataExcel(sheetName,expData);
         setResponse(response,workbook);
     }
-
 
     /**
      * 生成包含单个sheet的excel
@@ -145,7 +154,7 @@ public class ExcelUtil {
         // 计数:列
         int num = 0;
         // 标题生成
-        for (Pair<String, List<Object>> currentTitle : title) {
+        for (Pair<String, List<Object>> currentTitle : TITLE) {
             // 创建主标题单元格
             HSSFCell firstRowCell = firstRow.createCell(num);
             // 设置主标题内容
@@ -179,8 +188,8 @@ public class ExcelUtil {
         //计数:内容列
         int valueNum = 0;
         //遍历填充数据
-        for (int i = 0; i < valueList.size(); i++) {
-            Pair<String, List<Object>> listPair = valueList.get(i);
+        for (int i = 0; i < VALUE_LIST.size(); i++) {
+            Pair<String, List<Object>> listPair = VALUE_LIST.get(i);
             List<Object> values = listPair.getValue();
             if (i <= 1){
                 //基本信息和电化学信息
@@ -236,7 +245,7 @@ public class ExcelUtil {
             valueNum += values.size();
         }
 
-        valueList.clear();
+        VALUE_LIST.clear();
 
         return workbook;
     }
@@ -257,7 +266,7 @@ public class ExcelUtil {
         firstColTitle.add("用户邮箱");
         firstColTitle.add("实验数据说明");
 
-        title.add(new Pair<>(BASE_INFO,firstColTitle));
+        TITLE.add(new Pair<>(BASE_INFO,firstColTitle));
 
         // 电化学信息
         List<Object> secondColTitle = new ArrayList<>();
@@ -269,7 +278,7 @@ public class ExcelUtil {
         secondColTitle.add("最新电位");
         secondColTitle.add("PH");
 
-        title.add(new Pair<>(ELECT_INFO,secondColTitle));
+        TITLE.add(new Pair<>(ELECT_INFO,secondColTitle));
 
         // 点位数据
         List<Object> thirdColTitle = new ArrayList<>();
@@ -279,7 +288,7 @@ public class ExcelUtil {
 //        thirdColTitle.add("最新电位");
         thirdColTitle.add("最新电流");
 
-        title.add(new Pair<>(POINT_INFO,thirdColTitle));
+        TITLE.add(new Pair<>(POINT_INFO,thirdColTitle));
 
     }
 
@@ -369,7 +378,7 @@ public class ExcelUtil {
         baseInfoList.add(data.getExpLastUpdateTime());
         baseInfoList.add(data.getUser().getUserName());
         baseInfoList.add(data.getExpDataDesc());
-        valueList.add(0,new Pair<>(BASE_INFO,baseInfoList));
+        VALUE_LIST.add(0,new Pair<>(BASE_INFO,baseInfoList));
         //电化学信息
         List<Object> electInfo = new ArrayList<>();
         electInfo.add(data.getBufferSolution().getBufferSolutionName());
@@ -378,7 +387,7 @@ public class ExcelUtil {
         electInfo.add(data.getExpNewestCurrent());
         electInfo.add(data.getExpNewestPotential());
         electInfo.add(data.getExpPh());
-        valueList.add(1,new Pair<>(ELECT_INFO,electInfo));
+        VALUE_LIST.add(1,new Pair<>(ELECT_INFO,electInfo));
         //点位数据
         List<Object> pointInfoList = new ArrayList<>();
         //double[][]点位数据分解
@@ -396,7 +405,7 @@ public class ExcelUtil {
         pointInfoList.add(voltagePointData);
         pointInfoList.add(originalCurrentPointData);
         pointInfoList.add(newestCurrentPointData);
-        valueList.add(2,new Pair<>(POINT_INFO,pointInfoList));
+        VALUE_LIST.add(2,new Pair<>(POINT_INFO,pointInfoList));
     }
 
 //    /**
