@@ -55,7 +55,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
         super(data);
     }
 
-    public AlgorithmService(HttpSession session, EntityInfo<Application> entityInfo) {
+    public AlgorithmService(HttpSession session, EntityInfo<?> entityInfo) {
         super(session, entityInfo);
     }
 
