@@ -52,7 +52,7 @@ public class PermissionService extends BaseService<Permission>{
                 if (paramList.containsKey("roleName")&&paramList.containsKey("roleDesc")&&paramList.containsKey("permissionIds")){
                     methodName="insertRole";
                 }else {
-                    throw new UserException(CommonErrorCode.E_4001);
+                    throw new UserException(CommonErrorCode.E_5001);
                 }
                 break;
             case "update":
@@ -61,11 +61,11 @@ public class PermissionService extends BaseService<Permission>{
                 }else if(paramList.containsKey("roleId")&&paramList.containsKey("permissionIds")){
                     methodName="updateRolePermissions";
                 }else {
-                    throw new UserException(CommonErrorCode.E_4001);
+                    throw new UserException(CommonErrorCode.E_5001);
                 }
                 break;
             default:
-                throw new UserException(CommonErrorCode.E_4001);
+                throw new UserException(CommonErrorCode.E_5002);
         }
         userLogMap.put("userLogClassMethodName",userLogMap.get("userLogClassMethodName")+methodName);
         invokeMethod(methodName,this);
@@ -74,6 +74,7 @@ public class PermissionService extends BaseService<Permission>{
 
     @Override
     protected boolean check() {
+
         return true;
     }
 
@@ -130,7 +131,7 @@ public class PermissionService extends BaseService<Permission>{
         pageInfo.setCurrentPageNo(Math.toIntExact(pageNo));
 
         commonResult = CommonResult.successResult("分页查询",pageInfo);
-        LogUtil.insertUserLog("error","详情",userLogMap);
+        LogUtil.insertUserLog("info","查询所有用户的角色",userLogMap);
     }
     /**
      * 查询所有角色
@@ -149,6 +150,7 @@ public class PermissionService extends BaseService<Permission>{
         condition.setFields(fields);
         entityInfo.setCondition(condition);
         select();
+        commonResult=CommonResult.successResult("查询所有角色",commonResult.getData());
     }
     /**
      * 查询所有角色的权限
@@ -174,6 +176,7 @@ public class PermissionService extends BaseService<Permission>{
         condition.setFields(fields);
         entityInfo.setCondition(condition);
         select();
+        commonResult=CommonResult.successResult("查询所有角色的权限",commonResult.getData());
     }
     /**
      * 查询所有权限
@@ -191,6 +194,7 @@ public class PermissionService extends BaseService<Permission>{
         condition.setFields(fields);
         entityInfo.setCondition(condition);
         select();
+        commonResult=CommonResult.successResult("查询所有权限",commonResult.getData());
     }
 
     /**
@@ -233,9 +237,13 @@ public class PermissionService extends BaseService<Permission>{
         }
 
         paramList.put("rolePermissionArrayList",rolePermissionArrayList);
-
-        new RolePermissionService(session,entityInfo).doOtherService(paramList,"insert");
-        LogUtil.insertUserLog("error","详情",userLogMap);
+        try{
+            new RolePermissionService(session,entityInfo).doOtherService(paramList,"insert");
+        }catch (Exception e){
+            LogUtil.insertUserLog("error",e.getMessage(),userLogMap);
+            commonResult= CommonResult.errorResult(500,e.getMessage());
+        }
+       commonResult=CommonResult.successResult("新增角色成功",role);
     }
     /**
      * 修改角色权限
@@ -251,8 +259,13 @@ public class PermissionService extends BaseService<Permission>{
      */
     private void updateUserRoles(){
         UserRoleService userRoleService = new UserRoleService(session, entityInfo);
-        userRoleService.doOtherService(paramList,"delete");
-        commonResult=userRoleService.doOtherService(paramList,"insert");
-        commonResult= CommonResult.successResult("修改用户角色成功",commonResult.getData());
+        commonResult=userRoleService.doOtherService(paramList,"delete");
+        if((Integer)commonResult.getData()==0){
+            commonResult= CommonResult.errorResult(400,"用户邮箱号不存在");
+        }else{
+            commonResult=userRoleService.doOtherService(paramList,"insert");
+            commonResult= CommonResult.successResult("修改用户角色成功",commonResult.getData());
+        }
+
     }
 }
