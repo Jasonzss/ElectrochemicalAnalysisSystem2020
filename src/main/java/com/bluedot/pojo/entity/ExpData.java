@@ -1,5 +1,7 @@
 package com.bluedot.pojo.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +32,9 @@ public class ExpData {
     private BufferSolution bufferSolution;  //用户选择
     private Double expPh;   //用户填写
     private String expDataDesc; //用户填写
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Timestamp expCreateTime;    //系统提供
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Timestamp expLastUpdateTime;    //系统提供
     private Integer expDeleteStatus;    //系统提供
 

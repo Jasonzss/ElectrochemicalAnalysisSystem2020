@@ -23,21 +23,21 @@ public class ExcelUtilTest {
         ExpData expData = new ExpData();
         expData.setExpDataDesc("描述1");
         expData.setExpPh(2.5);
-        expData.setExpVoltagePointData(new Double[]{2.5,1.2,212.3});
+        expData.setExpPotentialPointData(new Double[]{2.5,1.2,212.3});
         expData.setExpNewestCurrentPointData(new Double[]{2.532,1.2});
         expData.setExpOriginalCurrentPointData(new Double[]{2.3,1.3});
 
         ExpData expData2 = new ExpData();
         expData2.setExpDataDesc("描述2");
         expData2.setExpPh(2.8);
-        expData.setExpVoltagePointData(new Double[]{2.5,1.2,212.3});
+        expData.setExpPotentialPointData(new Double[]{2.5,1.2,212.3});
         expData.setExpNewestCurrentPointData(new Double[]{2.532,1.2});
         expData.setExpOriginalCurrentPointData(new Double[]{2.3,1.3});
 
         ExpData expData3 = new ExpData();
         expData3.setExpDataDesc("描述3");
         expData3.setExpPh(2.6);
-        expData.setExpVoltagePointData(new Double[]{2.5,1.2,212.3});
+        expData.setExpPotentialPointData(new Double[]{2.5,1.2,212.3});
         expData.setExpNewestCurrentPointData(new Double[]{2.532,1.2});
         expData.setExpOriginalCurrentPointData(new Double[]{2.3,1.3});
 
