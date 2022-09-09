@@ -122,10 +122,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
     private Condition getSameSelectCondition() {
         // 封装Condition
-        Condition condition = new Condition();
-        condition.addView(table);
-        String returnTypeStr = "Algorithm";
-        condition.setReturnType(returnTypeStr);
+        Condition condition = getCondition();
 
         condition.setStartIndex(Long.valueOf((Integer) paramList.get("pageNo")));
         condition.setSize((Integer) paramList.get("pageSize"));
@@ -172,10 +169,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
      */
     private void selectAlgorithmById() {
         if (paramList.get(ID_FIELD_STR) instanceof Integer) {
-            Condition condition = new Condition();
-            condition.addView(table);
-            String returnTypeStr = "Algorithm";
-            condition.setReturnType(returnTypeStr);
+            Condition condition = getCondition();
             condition.addAndConditionWithView(new Term(table, ID_COL_STR, paramList.get(ID_FIELD_STR), TermType.EQUAL));
 
             entityInfo.setCondition(condition);
@@ -190,10 +184,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
             throw new UserException(CommonErrorCode.E_5001);
         }
 
-        Condition condition = new Condition();
-        condition.addView(table);
-        String returnTypeStr = "Algorithm";
-        condition.setReturnType(returnTypeStr);
+        Condition condition = getCondition();
         condition.addAndConditionWithView(new Term(table, TYPE_COL_STR, paramList.get(TYPE_FIELD_STR), TermType.EQUAL));
 
         entityInfo.setCondition(condition);
@@ -282,6 +273,13 @@ public class AlgorithmService extends BaseService<Algorithm> {
         return ret;
     }
 
+    private Condition getCondition() {
+        Condition condition = new Condition();
+        condition.addView(table);
+        String returnTypeStr = "Algorithm";
+        condition.setReturnType(returnTypeStr);
+        return condition;
+    }
     /**
      * 这个算法（算法名）是否存在
      */
