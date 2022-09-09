@@ -5,7 +5,6 @@ import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.*;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Algorithm;
-import com.bluedot.pojo.entity.Application;
 import com.bluedot.pojo.entity.User;
 import com.bluedot.utils.AlgoUtil;
 import com.bluedot.utils.LogUtil;
@@ -17,6 +16,7 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -24,6 +24,7 @@ import java.util.*;
  * @Package com.bluedot.service
  * @DateTime 2022/8/23 15:17
  * @Author FuZhichao
+ * TODO 2. 获取所有算法类型，算法语言供用户在前台选择
  **/
 public class AlgorithmService extends BaseService<Algorithm> {
     /**
@@ -209,8 +210,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
         if (commonResult.getData() instanceof List) {
             algos = (List<Object>) commonResult.getData();
         }else if (commonResult.getData() instanceof PageInfo) {
-            //TODO 等PageInfo修改完后需要修改
-            algos = (List<Object>) ((PageInfo) commonResult.getData()).getDataList().get(0);
+            algos = ((PageInfo) commonResult.getData()).getDataList();
         }else {
             throw new UserException(CommonErrorCode.E_6001);
         }
@@ -229,7 +229,16 @@ public class AlgorithmService extends BaseService<Algorithm> {
                     Object value = field.get(algo);
                     //如果有需要转换的，就转换
                     if (Arrays.asList(needTrans).contains(name) && value != null) {
-                        value = getTransformResult(name, (Integer) value);
+                        Integer v = (Integer) value;
+                        // 获取数据库存的数值对应的标签
+                        String label = getTransformResult(name, v);
+                        value = new HashMap<String, Object>(needTrans.length);
+                        ((HashMap<String, Object>) value).put("label", label);
+                        ((HashMap<String, Object>) value).put("value",  v);
+                    }else if (field.getType().equals(Timestamp.class)) {
+                        //如果属性是时间，需要手动转化下
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        value = sdf.format(value);
                     }
                     each.put(name, value);
                 } catch (IllegalAccessException e) {
