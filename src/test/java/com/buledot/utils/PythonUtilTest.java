@@ -6,6 +6,7 @@ import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -55,6 +56,38 @@ public class PythonUtilTest {
             throw new RuntimeException(e);
         }
 
+    }
+
+
+    @Test
+    public void paintReportTest(){
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("expermental",new Double[]{1.2,3.3,3.3,4.4,5.5});
+        map.put("predicted",new Double[]{1.123,2.123,3.12312,4.3123,5.1231});
+        map.put("equation","Y=3x+7");
+
+        HashMap<String, Object> param = new HashMap<>();
+        param.put("rc2",1.2);
+        param.put("rmsec",1.2);
+        param.put("maec",1.2);
+        param.put("rp2",1.2);
+        param.put("rmsep",1.2);
+        param.put("maep",1.2);
+        param.put("rpd",1.2);
+
+        map.put("param",param);
+
+        byte[] imageBytes = (byte[]) PythonUtil.executePythonAlgorithFile("paintReportGraph.py", map, PythonUtil.ExecuteReturnType.PICTURE);
+
+        try {
+            FileOutputStream fos = new FileOutputStream("images/pythonTest.png");
+            fos.write(imageBytes);
+            fos.flush();
+
+            fos.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
