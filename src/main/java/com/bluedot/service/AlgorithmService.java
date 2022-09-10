@@ -24,7 +24,6 @@ import java.util.*;
  * @Package com.bluedot.service
  * @DateTime 2022/8/23 15:17
  * @Author FuZhichao
- * TODO 2. 获取所有算法类型，算法语言供用户在前台选择
  **/
 public class AlgorithmService extends BaseService<Algorithm> {
     /**
@@ -45,8 +44,10 @@ public class AlgorithmService extends BaseService<Algorithm> {
     private final String LANGUAGE_COL_STR = "algorithm_language";
     private final String DESC_FIELD_STR = "algorithmDesc";
     private final String STATUS_FIELD_STR = "algorithmStatus";
+    private final String STATUS_COL_STR = "algorithm_status";
     private final String CREATE_TIME_FIELD_STR = "algorithmCreateTime";
     private final String UPDATE_TIME_FIELD_STR = "algorithmUpdateTime";
+    private final String USER_EMAIL_COL_STR = "user_email";
 
 
     public AlgorithmService(Data data) {
@@ -157,8 +158,8 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
     private void listPersonalAlgorithm() {
         Condition condition = getSameSelectCondition();
-        //确保删除的是自己的，所以添加一个useremail
-        condition.addAndConditionWithView(new Term(table, "user_email",
+        //这是查自己的
+        condition.addAndConditionWithView(new Term(table, USER_EMAIL_COL_STR,
                 sessionUserEmail, TermType.EQUAL));
         doSelectPage(condition);
         transformListResult();
@@ -172,8 +173,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
             Condition condition = getCondition();
             condition.addAndConditionWithView(new Term(table, ID_COL_STR, paramList.get(ID_FIELD_STR), TermType.EQUAL));
 
-            entityInfo.setCondition(condition);
-            select();
+            doSelect(condition);
             transformListResult();
         }else {
             throw new UserException(CommonErrorCode.E_5001);
@@ -183,13 +183,34 @@ public class AlgorithmService extends BaseService<Algorithm> {
         if (!(paramList.get(TYPE_FIELD_STR) instanceof Integer)) {
             throw new UserException(CommonErrorCode.E_5001);
         }
+        Condition condition1 = getCondition();
+        condition1.addAndConditionWithView(new Term(table, TYPE_COL_STR, paramList.get(TYPE_FIELD_STR), TermType.EQUAL));
+        Condition condition2 = getCondition();
+        condition2.addAndConditionWithView(new Term(table, TYPE_COL_STR, paramList.get(TYPE_FIELD_STR), TermType.EQUAL));
 
-        Condition condition = getCondition();
-        condition.addAndConditionWithView(new Term(table, TYPE_COL_STR, paramList.get(TYPE_FIELD_STR), TermType.EQUAL));
+        // 添加条件，自己的所有，别人的公开
+        // 找出自己的且非公开的，再查所有公开的，再合并
+        int publicAlg = 2;
+        condition1.addAndConditionWithView(new Term(table, USER_EMAIL_COL_STR, sessionUserEmail, TermType.EQUAL));
+        condition1.addAndConditionWithView(new Term(table, STATUS_COL_STR, publicAlg, TermType.Less));
+        doSelect(condition1);
+        List<Algorithm> list1 = (List<Algorithm>) commonResult.getData();
 
+        condition2.addAndConditionWithView(new Term(table, STATUS_COL_STR, publicAlg, TermType.EQUAL));
+        doSelect(condition2);
+        List<Algorithm> list2 = (List<Algorithm>) commonResult.getData();
+
+        list2.addAll(list1);
+        transformListResult();
+    }
+
+    private void listAllOption() {
+
+    }
+
+    private void doSelect(Condition condition) {
         entityInfo.setCondition(condition);
         select();
-        transformListResult();
     }
     /**
      * 算法查询结果的渲染，对algorithmType，algorithmStatus，algorithmLanguage的转化（数字转文字）
@@ -285,16 +306,12 @@ public class AlgorithmService extends BaseService<Algorithm> {
      */
     private Boolean isExists() {
         if (paramList.get(NAME_FIELD_STR) instanceof String) {
-            Condition condition = new Condition();
-            condition.addView(table);
-            String returnTypeStr = "Algorithm";
-            condition.setReturnType(returnTypeStr);
+            Condition condition = getCondition();
             String algorithmName = (String) paramList.get(NAME_FIELD_STR);
             //where algorithmName = xxx
             condition.addAndConditionWithView(new Term(table, NAME_COL_STR
                     , algorithmName, TermType.EQUAL));
-            entityInfo.setCondition(condition);
-            select();
+            doSelect(condition);
             Object data = commonResult.getData();
             if (data instanceof List) {
                 if (((List<Algorithm>) data).size() != 0) {
@@ -364,14 +381,10 @@ public class AlgorithmService extends BaseService<Algorithm> {
             throw new UserException(CommonErrorCode.E_5001);
         }
         //从数据库里根据id查询
-        Condition condition = new Condition();
-        condition.addView(table);
-        String returnTypeStr = "Algorithm";
-        condition.setReturnType(returnTypeStr);
+        Condition condition = getCondition();
         condition.addAndConditionWithView(new Term(table, ID_COL_STR, ids
                 , TermType.IN));
-        entityInfo.setCondition(condition);
-        select();
+        doSelect(condition);
 
         if (commonResult.getData() instanceof List) {
             List<Algorithm> algos = (List<Algorithm>) commonResult.getData();
