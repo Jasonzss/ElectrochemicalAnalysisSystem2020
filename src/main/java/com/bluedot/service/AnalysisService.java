@@ -82,9 +82,9 @@ public class AnalysisService extends BaseService<ExpData> {
         }
 
         //对expData中的原始电压电流进行波形分析
-        Map<String, Double> waveAnalysisData = waveAnalysis(expData.getExpPotentialPointDataAsDouble(), expData.getExpOriginalCurrentPointDataAsDouble());
-        expData.setExpOriginalPotential(waveAnalysisData.get("ep"));
-        expData.setExpOriginalCurrent(waveAnalysisData.get("ip"));
+        Double[] waveAnalysisData = waveFormAnalysis(expData.getExpPotentialPointDataAsDouble(), expData.getExpOriginalCurrentPointDataAsDouble());
+        expData.setExpOriginalPotential(waveAnalysisData[0]);
+        expData.setExpOriginalCurrent(waveAnalysisData[1]);
 
         //设置expData的系统数据
         paramList.put("userEmail",session.getAttribute(SessionConstants.USER_EMAIL));
@@ -125,9 +125,6 @@ public class AnalysisService extends BaseService<ExpData> {
             //第一行电流电压数据
             s = br.readLine();
 
-            //获取数量级
-            String orderOfMagnitudes = s.substring(s.indexOf("e"));
-
             //将所有的点位数据读取到ExpData中
             expData = new ExpData();
             List<Double> potentialList = new ArrayList<>();
@@ -140,14 +137,7 @@ public class AnalysisService extends BaseService<ExpData> {
                 potentialList.add(Double.valueOf(split[0]));
 
                 //设置电流的数值
-                String current = split[1];
-                String currentNum = current.substring(0,current.indexOf("e"));
-                //将当前数据的数量级和第一行的数量级进行比较
-                int curr = Integer.parseInt(current.substring(current.indexOf("e")).substring(1));
-                int first = Integer.parseInt(orderOfMagnitudes.substring(1));
-
-                //修改所有数值的数量级与第一行数据的数量级一致，达到统一数量级的目的
-                currentList.add(changeTheOrderOfMagnitude(Double.parseDouble(currentNum),curr-first));
+                currentList.add(Double.valueOf(split[1]));
 
                 //读下一行
                 s = br.readLine();
@@ -156,8 +146,8 @@ public class AnalysisService extends BaseService<ExpData> {
             //将电压电流放入ExpData中
             expData.setExpPotentialPointData(potentialList.toString());
             expData.setExpOriginalCurrentPointData(currentList.toString());
-            //将数量级放入ExpData中
-            expData.setOrderOfMagnitudes(orderOfMagnitudes);
+
+            //TODO 初始化ExpData的信息，在将expData插入的同时获取到其包括主键一起的所有信息返回给用户
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -168,37 +158,70 @@ public class AnalysisService extends BaseService<ExpData> {
     }
 
     /**
-     * 转换数字的数量级，例如
-     * 0.125e7 -> 1.25e6
-     * 12.5e-7 -> 1.25e-6
-     * -0.125e7 -> -1.25e6
-     * -12.5e-7 -> -1.25e-6
-     * @param number 被转换的数字
-     * @param order 数字当前的数量级变化阶数 = 当前阶数-目标阶数，小数点左右移动一般为order左加右减
-     * @return 转换后的数字
+     * 波形分析，根据给出的电压电流点位数据确定一条曲线，对此曲线进行波形分析
+     * @param current 电位数据
+     * @param potential 电流数据
+     * @return Double[0]为结果电位，Double[1]为结果电流
      */
-    private double changeTheOrderOfMagnitude(double number, int order){
-        if (order < 0){
-            for (int i = 0; i < -order; i++) {
-                number /= 10;
+    public static Double[] waveFormAnalysis(Double[] potential, Double[] current) {
+        if (potential.length != current.length) {
+            throw new IndexOutOfBoundsException();
+        }
+        Double[] res = new Double[2];
+        int peak = potential.length / 2;
+        int left = 0, right = potential.length - 1;
+        if (current[0] > 0) {
+            while ((peak + 1) <= potential.length - 1 && (peak - 1) >= 0 && !(current[peak] >= current[peak - 1] && current[peak] >= current[peak + 1])) {
+                if ((peak + 1) <= potential.length - 1 && (peak - 1) >= 0 && current[peak] > current[peak + 1] && current[peak] < current[peak - 1]) {
+                    peak--;
+                } else if ((peak + 1) <= potential.length - 1 && (peak - 1) >= 0 && current[peak] > current[peak - 1] && current[peak] < current[peak + 1]) {
+                    peak++;
+                }
             }
-        }else if (order > 0){
-            for (int i = 0; i < order; i++) {
-                number *= 10;
+            while (left < peak) {
+                if (current[left] > current[left + 1]) {
+                    left++;
+                } else {
+                    break;
+                }
+            }
+            while (peak < right) {
+                if (current[right] > current[right - 1]) {
+                    right--;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            while ((peak + 1) <= potential.length - 1 && (peak - 1) >= 0 && !(current[peak] <= current[peak - 1] && current[peak] <= current[peak + 1])) {
+                if ((peak + 1) <= potential.length - 1 && (peak - 1) >= 0 && current[peak] > current[peak - 1] && current[peak] < current[peak + 1]) {
+                    peak--;
+                } else if ((peak + 1) <= potential.length - 1 && (peak - 1) >= 0 && current[peak] < current[peak - 1] && current[peak] > current[peak + 1]) {
+                    peak++;
+                }
+            }
+            while (left < peak) {
+                if (current[left] < current[left + 1]) {
+                    left++;
+                } else {
+                    break;
+                }
+            }
+            while (peak < right) {
+                if (current[right] < current[right - 1]) {
+                    right--;
+                } else {
+                    break;
+                }
             }
         }
 
-        return number;
-    }
-
-    /**
-     * 波形分析，根据给出的电压电流点位数据确定一条曲线，对此曲线进行波形分析
-     * @param potentialPoint 电压点位数据
-     * @param currentPoint 电流点位数据
-     * @return 两个key，一个ep（单位为V），一个ip（单位为A）
-     */
-    private Map<String,Double> waveAnalysis(Double[] potentialPoint, Double[] currentPoint){
-        return null;
+        double k = (current[right] - current[left]) / (potential[right] - potential[left]);
+        double b = current[left] - k * potential[left];
+        double y = k * potential[peak] + b;
+        res[0] = potential[peak];
+        res[1] = current[peak] - y;
+        return res;
     }
 
     /**
@@ -229,12 +252,12 @@ public class AnalysisService extends BaseService<ExpData> {
         Double[] expNewestCurrentPointData = AlgoUtil.dataProcess(algorithm, expOriginalCurrentPointData.toArray(new Double[0]));
 
         //对处理后的点位数据进行波形分析
-        Map<String, Double> waveAnalysisData = waveAnalysis(expPotentialPointData.toArray(new Double[0]), expNewestCurrentPointData);
+        Double[] waveAnalysisData = waveFormAnalysis(expPotentialPointData.toArray(new Double[0]), expNewestCurrentPointData);
 
         //将分析后的数据返回前端，用户自行决定是否保存
         Map<String,Object> analysisData = new HashMap<>();
-        analysisData.put("expNewestPotential",waveAnalysisData.get("ep"));
-        analysisData.put("expNewestCurrent",waveAnalysisData.get("ip"));
+        analysisData.put("expNewestPotential",waveAnalysisData[0]);
+        analysisData.put("expNewestCurrent",waveAnalysisData[1]);
         analysisData.put("expNewestCurrentPointData",expNewestCurrentPointData);
 
         this.commonResult = CommonResult.successResult("处理成功",analysisData);
@@ -244,14 +267,14 @@ public class AnalysisService extends BaseService<ExpData> {
      * 用户调整前端的波形图点位数据，根据修改后的点位数据给出新的分析结果返回
      */
     private void adjust(){
-        //获取点位数据
+        //获取修改后的点位数据
         List<Double> expPotentialPointData = (List<Double>) paramList.get("expPotentialPointData");
         List<Double> expNewestCurrentPointData = (List<Double>) paramList.get("expNewestCurrentPointData");
 
-        Map<String, Double> waveAnalysisData;
+        Double[] waveAnalysisData;
         try{
             //对手动修改后的点位数据进行波形分析
-            waveAnalysisData = waveAnalysis(expPotentialPointData.toArray(new Double[0]), expNewestCurrentPointData.toArray(new Double[0]));
+            waveAnalysisData = waveFormAnalysis(expPotentialPointData.toArray(new Double[0]), expNewestCurrentPointData.toArray(new Double[0]));
         }catch (NullPointerException e){
             e.printStackTrace();
             throw new UserException(CommonErrorCode.E_1014);
@@ -259,8 +282,8 @@ public class AnalysisService extends BaseService<ExpData> {
 
         //将分析后的数据返回前端，用户自行决定是否保存
         Map<String,Object> analysisData = new HashMap<>();
-        analysisData.put("expNewestPotential",waveAnalysisData.get("ep"));
-        analysisData.put("expNewestCurrent",waveAnalysisData.get("ip"));
+        analysisData.put("expNewestPotential",waveAnalysisData[0]);
+        analysisData.put("expNewestCurrent",waveAnalysisData[1]);
         analysisData.put("expNewestCurrentPointData",expNewestCurrentPointData);
 
         this.commonResult = CommonResult.successResult("处理成功",analysisData);
