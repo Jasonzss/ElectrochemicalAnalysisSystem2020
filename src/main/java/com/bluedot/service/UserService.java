@@ -216,12 +216,6 @@ public class UserService extends BaseService<User> {
         if (paramList.containsKey("file")){
             FileItem fileItem = (FileItem) paramList.get("file");
             paramList.put("userImg", ImageUtil.imgToByteArray(fileItem));
-//            // 将图片转换为数组放入
-//            System.out.println("------------------");
-//            System.out.println(paramList.get("userImg").getClass());
-//            System.out.println(((FileItem) paramList.get("userImg")).getSize());
-//            paramList.put("userImg", ImageUtil.imgToByteArray((FileItem) paramList.get("userImg")));
-//            System.out.println(ImageUtil.imgToByteArray((FileItem) paramList.get("userImg")).length);
         }
 
         // 封装User实体
@@ -305,6 +299,11 @@ public class UserService extends BaseService<User> {
         //插入新用户
         entityInfo.addEntity(user);
         insert();
+
+        //返回注册信息
+        if(((int)commonResult.getData()) == 1){
+            commonResult = CommonResult.successResult("注册成功",true);
+        }
     }
 
     /**
@@ -331,7 +330,7 @@ public class UserService extends BaseService<User> {
     private void deletePersonalUser(){
         //包装需要删除的实体类
         User user = new User();
-        user.setUserEmail((String) paramList.get("userEmail"));
+        user.setUserEmail((String) session.getAttribute(SessionConstants.USER_EMAIL));
         entityInfo.addEntity(user);
 
         //执行删除逻辑
@@ -473,7 +472,7 @@ public class UserService extends BaseService<User> {
 
         //是否存在此用户
         User user = (User) commonResult.getData();
-        System.out.println("调用查询User方法 = " + user);
+
         if (user == null){
             //账号不存在
             throw new UserException(CommonErrorCode.E_1008);
@@ -483,6 +482,16 @@ public class UserService extends BaseService<User> {
         if (!Md5Util.verifySaltMd5((String) paramList.get("userPassword"),user.getUserSalt(),user.getUserPassword())){
             //密码错误
             throw new UserException(CommonErrorCode.E_1008);
+        }
+
+        //判断账号状态
+        switch(user.getUserStatus()){
+            case 0:break;
+            case 1:
+            case 2:throw new UserException(CommonErrorCode.E_1016);
+            case 3:throw new UserException(CommonErrorCode.E_1017);
+            default:
+                throw new UserException(CommonErrorCode.E_1018);
         }
 
         //登录通过

@@ -11,40 +11,41 @@ import java.util.Arrays;
  * @Description ：
  */
 public class Report {
-    private Integer reportId;
-    private String reportTitle;
-    private String reportMaterialName;
+    private Integer reportId;   //数据库自增
+    private String reportTitle;     //用户输入
+    private String reportMaterialName;  //用户输入
 
-    private Integer pretreatmentAlgorithmId;
+    private Integer pretreatmentAlgorithmId;    //用户选择
 
-    private Integer reportDataModelId;
+    private Integer reportDataModelId;  //用户选择
 
-    private String reportResultModel;
-    private byte[] reportTrainingSetGraph;
-    private byte[] reportTestSetGraph;
+    private String reportResultModel;   //系统计算
+    private byte[] reportTrainingSetGraph;  //系统画
+    private byte[] reportTestSetGraph;      //系统画
     /**
      * 加上注解，让对象在被转化成JSON时（为了传给前段）按规定格式转化（默认会有毫秒）
      * 还有时区默认是GMT，咱们是东八区。
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Timestamp reportCreateTime;
+    private Timestamp reportCreateTime;     //系统设置
     /**
      * 加上注解，让对象在被转化成JSON时（为了传给前段）按规定格式转化（默认会有毫秒）
      * 还有时区默认是GMT，咱们是东八区。
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Timestamp reportLastUpdateTime;
-    private User user;
-    private String trainingSetData;
-    private String testSetData;
-    private Double rc2;
-    private Double rmsec;
-    private Double maec;
-    private Double rp2;
-    private Double rmsep;
-    private Double maep;
-    private Double rpd;
-    private String reportDesc;
+    private Timestamp reportLastUpdateTime; //系统设置
+    private User user;  //当前操作用户
+    private String trainingSetData;     //系统设置
+    private String testSetData;     //系统设置
+    private Double rc2;     //系统计算
+    private Double rmsec;   //系统计算
+    private Double maec;    //系统计算
+    private Double rp2;     //系统计算
+    private Double rmsep;   //系统计算
+    private Double maep;    //系统计算
+    private Double rpd;     //系统计算
+    private String reportDesc;  //用户输入
+
 
 
     public Integer getPretreatmentAlgorithmId() {
@@ -138,17 +139,29 @@ public class Report {
     public String getTrainingSetData() {
         return trainingSetData;
     }
+    public Double[][] getTrainingSetDataAsDoubles() {
+        return stringToDoublesArray(this.trainingSetData);
+    }
 
     public void setTrainingSetData(String trainingSetData) {
         this.trainingSetData = trainingSetData;
+    }
+    public void setTrainingSetDataAsDouble(Double[][] trainingSetData) {
+        this.trainingSetData = Arrays.deepToString(trainingSetData);
     }
 
     public String getTestSetData() {
         return testSetData;
     }
+    public Double[][] getTestSetDataAsDoubles() {
+        return stringToDoublesArray(this.testSetData);
+    }
 
     public void setTestSetData(String testSetData) {
         this.testSetData = testSetData;
+    }
+    public void setTestSetDataAsDouble(Double[][] testSetData) {
+        this.testSetData = Arrays.deepToString(testSetData);
     }
 
     public Double getRc2() {
@@ -213,5 +226,45 @@ public class Report {
 
     public void setReportDesc(String reportDesc) {
         this.reportDesc = reportDesc;
+    }
+
+    public static Double[][] stringToDoublesArray(String str){
+        // str = [[25.1, 25.2], [25.3, 25.4], [25.5, 25.6]]
+        System.out.println(str);
+        str = str.replace("[[","");
+        str = str.replace("]]","");
+        String[] array = str.split("], \\[");
+        Double[][] doubles = new Double[array.length][2];
+
+        for (int i = 0; i < array.length; i++) {
+            String[] split = array[i].split(", ");
+            doubles[i][0] = Double.parseDouble(split[0]);
+            doubles[i][1] = Double.parseDouble(split[1]);
+        }
+
+        return doubles;
+    }
+
+    public static void main(String[] args) {
+        Double[][] a = new Double[3][2];
+        a[0][0] = 25.1;
+        a[0][1] = 25.2;
+        a[1][0] = 25.3;
+        a[1][1] = 25.4;
+        a[2][0] = 25.5;
+        a[2][1] = 25.6;
+
+
+        Double[][] doubles = stringToDoublesArray(Arrays.deepToString(a));
+
+        System.out.println(doubles.length);
+        System.out.println(doubles[0].length);
+
+        System.out.println(doubles[0][0]);
+        System.out.println(doubles[0][1]);
+        System.out.println(doubles[1][0]);
+        System.out.println(doubles[1][1]);
+        System.out.println(doubles[2][0]);
+        System.out.println(doubles[2][1]);
     }
 }
