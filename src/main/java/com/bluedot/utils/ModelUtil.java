@@ -1,6 +1,8 @@
 package com.bluedot.utils;
 
 
+import org.apache.commons.math3.stat.regression.SimpleRegression;
+
 /**
  * @Author SDJin
  * @CreationDate 2022/9/3 15:53
@@ -99,5 +101,23 @@ public class ModelUtil {
             mean += data[i];
         }
         return mean / data.length;
+    }
+
+    /**
+     * 根据真实数据和预测数据求拟合方程
+     *
+     * @param reality    真实值
+     * @param prediction 预测值
+     * @return Double[0] 拟合方程斜率k，Double[1] 拟合方程截距b
+     */
+    public static Double[] getFiParameters(Double[] reality, Double[] prediction) {
+        if (reality.length != prediction.length) {
+            throw new IndexOutOfBoundsException();
+        }
+        SimpleRegression simpleRegression = new SimpleRegression();
+        for (int i = 0; i < reality.length; i++) {
+            simpleRegression.addData(reality[i], prediction[i]);
+        }
+        return new Double[]{simpleRegression.getSlope(), simpleRegression.getIntercept()};
     }
 }
