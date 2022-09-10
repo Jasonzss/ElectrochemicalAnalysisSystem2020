@@ -66,8 +66,8 @@ def print_img(x: list, y: list, equation: str, para: dict):
 
 
 if __name__ == "__main__":
-    # data = json.loads(sys.argv[1])
-    data = eval('{"expermental":[1, 2, 3, 4, 5], "predicted":[90, 120, 170, 210, 260], "equation": "y=43x+41", "param": {"rc2":0.1111, "maec":0.2222}}')
+    data = json.loads(sys.argv[1])
+#     data = eval('{"expermental":[1, 2, 3, 4, 5], "predicted":[90, 120, 170, 210, 260], "equation": "y=43x+41", "param": {"rc2":0.1111, "maec":0.2222}}')
 
     x = data.get("expermental")
     y = data.get("predicted")
