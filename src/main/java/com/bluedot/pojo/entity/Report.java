@@ -244,27 +244,4 @@ public class Report {
 
         return doubles;
     }
-
-    public static void main(String[] args) {
-        Double[][] a = new Double[3][2];
-        a[0][0] = 25.1;
-        a[0][1] = 25.2;
-        a[1][0] = 25.3;
-        a[1][1] = 25.4;
-        a[2][0] = 25.5;
-        a[2][1] = 25.6;
-
-
-        Double[][] doubles = stringToDoublesArray(Arrays.deepToString(a));
-
-        System.out.println(doubles.length);
-        System.out.println(doubles[0].length);
-
-        System.out.println(doubles[0][0]);
-        System.out.println(doubles[0][1]);
-        System.out.println(doubles[1][0]);
-        System.out.println(doubles[1][1]);
-        System.out.println(doubles[2][0]);
-        System.out.println(doubles[2][1]);
-    }
 }
