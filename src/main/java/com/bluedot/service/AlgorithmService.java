@@ -5,7 +5,6 @@ import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.*;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Algorithm;
-import com.bluedot.pojo.entity.Application;
 import com.bluedot.pojo.entity.User;
 import com.bluedot.utils.AlgoUtil;
 import com.bluedot.utils.LogUtil;
@@ -17,6 +16,7 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -44,8 +44,10 @@ public class AlgorithmService extends BaseService<Algorithm> {
     private final String LANGUAGE_COL_STR = "algorithm_language";
     private final String DESC_FIELD_STR = "algorithmDesc";
     private final String STATUS_FIELD_STR = "algorithmStatus";
+    private final String STATUS_COL_STR = "algorithm_status";
     private final String CREATE_TIME_FIELD_STR = "algorithmCreateTime";
     private final String UPDATE_TIME_FIELD_STR = "algorithmUpdateTime";
+    private final String USER_EMAIL_COL_STR = "user_email";
 
 
     public AlgorithmService(Data data) {
@@ -89,6 +91,8 @@ public class AlgorithmService extends BaseService<Algorithm> {
                         method = "listAllAlgorithmByType";
                     }else if (paramList.get(ID_FIELD_STR) instanceof Integer) {
                         method = "selectAlgorithmById";
+                    }else if (paramList.get("option") instanceof String) {
+                        method = "listAllOption";
                     }
                 }else {
                     method = isAdmin ? "listAlgorithm" : "listPersonalAlgorithm";
@@ -121,10 +125,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
     private Condition getSameSelectCondition() {
         // 封装Condition
-        Condition condition = new Condition();
-        condition.addView(table);
-        String returnTypeStr = "Algorithm";
-        condition.setReturnType(returnTypeStr);
+        Condition condition = getCondition();
 
         condition.setStartIndex(Long.valueOf((Integer) paramList.get("pageNo")));
         condition.setSize((Integer) paramList.get("pageSize"));
@@ -159,8 +160,8 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
     private void listPersonalAlgorithm() {
         Condition condition = getSameSelectCondition();
-        //确保删除的是自己的，所以添加一个useremail
-        condition.addAndConditionWithView(new Term(table, "user_email",
+        //这是查自己的
+        condition.addAndConditionWithView(new Term(table, USER_EMAIL_COL_STR,
                 sessionUserEmail, TermType.EQUAL));
         doSelectPage(condition);
         transformListResult();
@@ -171,14 +172,10 @@ public class AlgorithmService extends BaseService<Algorithm> {
      */
     private void selectAlgorithmById() {
         if (paramList.get(ID_FIELD_STR) instanceof Integer) {
-            Condition condition = new Condition();
-            condition.addView(table);
-            String returnTypeStr = "Algorithm";
-            condition.setReturnType(returnTypeStr);
+            Condition condition = getCondition();
             condition.addAndConditionWithView(new Term(table, ID_COL_STR, paramList.get(ID_FIELD_STR), TermType.EQUAL));
 
-            entityInfo.setCondition(condition);
-            select();
+            doSelect(condition);
             transformListResult();
         }else {
             throw new UserException(CommonErrorCode.E_5001);
@@ -188,16 +185,57 @@ public class AlgorithmService extends BaseService<Algorithm> {
         if (!(paramList.get(TYPE_FIELD_STR) instanceof Integer)) {
             throw new UserException(CommonErrorCode.E_5001);
         }
+        Condition condition1 = getCondition();
+        condition1.addAndConditionWithView(new Term(table, TYPE_COL_STR, paramList.get(TYPE_FIELD_STR), TermType.EQUAL));
+        Condition condition2 = getCondition();
+        condition2.addAndConditionWithView(new Term(table, TYPE_COL_STR, paramList.get(TYPE_FIELD_STR), TermType.EQUAL));
 
-        Condition condition = new Condition();
-        condition.addView(table);
-        String returnTypeStr = "Algorithm";
-        condition.setReturnType(returnTypeStr);
-        condition.addAndConditionWithView(new Term(table, TYPE_COL_STR, paramList.get(TYPE_FIELD_STR), TermType.EQUAL));
+        // 添加条件，自己的所有，别人的公开
+        // 找出自己的且非公开的，再查所有公开的，再合并
+        int publicAlg = 2;
+        condition1.addAndConditionWithView(new Term(table, USER_EMAIL_COL_STR, sessionUserEmail, TermType.EQUAL));
+        condition1.addAndConditionWithView(new Term(table, STATUS_COL_STR, publicAlg, TermType.Less));
+        doSelect(condition1);
+        List<Algorithm> list1 = (List<Algorithm>) commonResult.getData();
 
+        condition2.addAndConditionWithView(new Term(table, STATUS_COL_STR, publicAlg, TermType.EQUAL));
+        doSelect(condition2);
+        List<Algorithm> list2 = (List<Algorithm>) commonResult.getData();
+
+        list2.addAll(list1);
+        transformListResult();
+    }
+
+    private void listAllOption() {
+        String option = (String) paramList.get("option");
+
+        // 允许的参数值
+        String[] allowOption = {
+                LANGUAGE_FIELD_STR, TYPE_FIELD_STR
+        };
+        // 判断是否存在，不存在抛出异常
+        if (!Arrays.asList(allowOption).contains(option)) {
+            throw new UserException(CommonErrorCode.E_5001);
+        }
+
+        // 因为不支持distinct，所以代码里写死吧，反正也就规定了那些
+        Map<String, Map<Integer, String>> transformRule = getTransformRule();
+        Map<Integer, String> labelValueMapper = transformRule.get(option);
+        List<Map<String, Object>> data = new ArrayList<>(labelValueMapper.size());
+
+        for (Map.Entry<Integer, String> entry : labelValueMapper.entrySet()) {
+            Map<String, Object> opt = new HashMap<>(2);
+            opt.put("label", entry.getValue());
+            opt.put("value", entry.getKey());
+            data.add(opt);
+        }
+
+        commonResult.setData(data);
+    }
+
+    private void doSelect(Condition condition) {
         entityInfo.setCondition(condition);
         select();
-        transformListResult();
     }
     /**
      * 算法查询结果的渲染，对algorithmType，algorithmStatus，algorithmLanguage的转化（数字转文字）
@@ -209,8 +247,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
         if (commonResult.getData() instanceof List) {
             algos = (List<Object>) commonResult.getData();
         }else if (commonResult.getData() instanceof PageInfo) {
-            //TODO 等PageInfo修改完后需要修改
-            algos = (List<Object>) ((PageInfo) commonResult.getData()).getDataList().get(0);
+            algos = ((PageInfo) commonResult.getData()).getDataList();
         }else {
             throw new UserException(CommonErrorCode.E_6001);
         }
@@ -229,7 +266,16 @@ public class AlgorithmService extends BaseService<Algorithm> {
                     Object value = field.get(algo);
                     //如果有需要转换的，就转换
                     if (Arrays.asList(needTrans).contains(name) && value != null) {
-                        value = getTransformResult(name, (Integer) value);
+                        Integer v = (Integer) value;
+                        // 获取数据库存的数值对应的标签
+                        String label = getTransformResult(name, v);
+                        value = new HashMap<String, Object>(needTrans.length);
+                        ((HashMap<String, Object>) value).put("label", label);
+                        ((HashMap<String, Object>) value).put("value",  v);
+                    }else if (field.getType().equals(Timestamp.class)) {
+                        //如果属性是时间，需要手动转化下
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        value = sdf.format(value);
                     }
                     each.put(name, value);
                 } catch (IllegalAccessException e) {
@@ -273,21 +319,24 @@ public class AlgorithmService extends BaseService<Algorithm> {
         return ret;
     }
 
+    private Condition getCondition() {
+        Condition condition = new Condition();
+        condition.addView(table);
+        String returnTypeStr = "Algorithm";
+        condition.setReturnType(returnTypeStr);
+        return condition;
+    }
     /**
      * 这个算法（算法名）是否存在
      */
     private Boolean isExists() {
         if (paramList.get(NAME_FIELD_STR) instanceof String) {
-            Condition condition = new Condition();
-            condition.addView(table);
-            String returnTypeStr = "Algorithm";
-            condition.setReturnType(returnTypeStr);
+            Condition condition = getCondition();
             String algorithmName = (String) paramList.get(NAME_FIELD_STR);
             //where algorithmName = xxx
             condition.addAndConditionWithView(new Term(table, NAME_COL_STR
                     , algorithmName, TermType.EQUAL));
-            entityInfo.setCondition(condition);
-            select();
+            doSelect(condition);
             Object data = commonResult.getData();
             if (data instanceof List) {
                 if (((List<Algorithm>) data).size() != 0) {
@@ -357,14 +406,10 @@ public class AlgorithmService extends BaseService<Algorithm> {
             throw new UserException(CommonErrorCode.E_5001);
         }
         //从数据库里根据id查询
-        Condition condition = new Condition();
-        condition.addView(table);
-        String returnTypeStr = "Algorithm";
-        condition.setReturnType(returnTypeStr);
+        Condition condition = getCondition();
         condition.addAndConditionWithView(new Term(table, ID_COL_STR, ids
                 , TermType.IN));
-        entityInfo.setCondition(condition);
-        select();
+        doSelect(condition);
 
         if (commonResult.getData() instanceof List) {
             List<Algorithm> algos = (List<Algorithm>) commonResult.getData();
