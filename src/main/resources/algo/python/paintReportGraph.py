@@ -60,18 +60,15 @@ def print_img(x: list, y: list, equation: str, para: dict):
     canvas.print_png(buffer)
     print(buffer.getvalue())
     
-
-    file = open("a.png", "wb")
-    file.write(buffer.getvalue())
-    file.flush()
-    
     buffer.close()
-    file.close()
+    # plt.show()
 
 
 
 if __name__ == "__main__":
     data = json.loads(sys.argv[1])
+#     data = eval('{"expermental":[1, 2, 3, 4, 5], "predicted":[90, 120, 170, 210, 260], "equation": "y=43x+41", "param": {"rc2":0.1111, "maec":0.2222}}')
+
     x = data.get("expermental")
     y = data.get("predicted")
     equation = data.get("equation")
