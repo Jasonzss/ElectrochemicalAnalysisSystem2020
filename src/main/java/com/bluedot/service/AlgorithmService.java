@@ -91,6 +91,8 @@ public class AlgorithmService extends BaseService<Algorithm> {
                         method = "listAllAlgorithmByType";
                     }else if (paramList.get(ID_FIELD_STR) instanceof Integer) {
                         method = "selectAlgorithmById";
+                    }else if (paramList.get("option") instanceof String) {
+                        method = "listAllOption";
                     }
                 }else {
                     method = isAdmin ? "listAlgorithm" : "listPersonalAlgorithm";
@@ -205,7 +207,30 @@ public class AlgorithmService extends BaseService<Algorithm> {
     }
 
     private void listAllOption() {
+        String option = (String) paramList.get("option");
 
+        // 允许的参数值
+        String[] allowOption = {
+                LANGUAGE_FIELD_STR, TYPE_FIELD_STR
+        };
+        // 判断是否存在，不存在抛出异常
+        if (!Arrays.asList(allowOption).contains(option)) {
+            throw new UserException(CommonErrorCode.E_5001);
+        }
+
+        // 因为不支持distinct，所以代码里写死吧，反正也就规定了那些
+        Map<String, Map<Integer, String>> transformRule = getTransformRule();
+        Map<Integer, String> labelValueMapper = transformRule.get(option);
+        List<Map<String, Object>> data = new ArrayList<>(labelValueMapper.size());
+
+        for (Map.Entry<Integer, String> entry : labelValueMapper.entrySet()) {
+            Map<String, Object> opt = new HashMap<>(2);
+            opt.put("label", entry.getValue());
+            opt.put("value", entry.getKey());
+            data.add(opt);
+        }
+
+        commonResult.setData(data);
     }
 
     private void doSelect(Condition condition) {
