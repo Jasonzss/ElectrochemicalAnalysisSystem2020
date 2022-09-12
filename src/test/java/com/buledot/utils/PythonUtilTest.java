@@ -143,10 +143,6 @@ public class PythonUtilTest {
     @Test
     public void uploadPythonFileTest() throws FileNotFoundException {
         FileInputStream fileInputStream = new FileInputStream("src/main/resources/algo/python/template/main1.txt");
-        try {
-            PythonUtil.uploadPythonFile("line.py",fileInputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        PythonUtil.uploadPythonFile("line.py",fileInputStream);
     }
 }
