@@ -1,33 +1,27 @@
-import io
 import json
 import sys
 import matplotlib
 import scipy
+import numpy
 import matplotlib.pyplot as plt
-
-# 解析获取数据
-py_data = json.loads(sys.argv[1])
-data = py_data['data']
-
 
 # 算法内容
 
 
-res = main(data)
-
-if isinstance(res, list):
-    # 将算法分析后的数组数据转为规范数组返回
+if __name__ == "__main__":
+    py_data = json.loads(sys.argv[1])
+    data = py_data.get('data')
+    path = py_data.get('path')
+    res = main(data)
     result = dict()
-    tmp = []
-    for i in range(len(res)):
-        tmp.append(res[i])
-    result.__setitem__("data", tmp)
+    if isinstance(res, numpy.ndarray):
+        tmp = []
+        for i in range(len(res)):
+            tmp.append(res[i])
+        result.__setitem__("result", tmp)
+    elif isinstance(res, matplotlib.__class__):
+        plt.savefig(path)
+        result.__setitem__("result", "the product image file path is : " + path)
+    else:
+        result.__setitem__("result", "error")
     print(json.dumps(result))
-elif isinstance(res, matplotlib.__class__):
-    # 将算法分析的图片转为图片二进制数据返回
-    buffer = io.BytesIO()
-    io_data = res.figure().canvas.print_png(buffer)
-    print(buffer.getvalue())
-    buffer.close()
-else:
-    print()
