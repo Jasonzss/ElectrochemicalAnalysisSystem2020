@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @Author Jason
@@ -228,6 +230,34 @@ public class Report {
         this.reportDesc = reportDesc;
     }
 
+    /**
+     *  以map形式返回测试集的指标
+     */
+    public Map<String,String> getTestSetIndicator(){
+        Map<String,String> map = new HashMap<>();
+        map.put("rp2",this.rp2.toString());
+        map.put("rmsep",this.rmsep.toString());
+        map.put("maep",this.maep.toString());
+        map.put("rpd",this.rpd.toString());
+        return map;
+    }
+
+    /**
+     * 以map形式返回测试集的指标
+     */
+    public Map<String,String> getTrainSetIndicator(){
+        Map<String,String> map = new HashMap<>();
+        map.put("rc2",this.rc2.toString());
+        map.put("rmsec",this.rmsec.toString());
+        map.put("maec",this.maec.toString());
+        return map;
+    }
+
+    /**
+     * 将字符串转换成二维Double数组
+     * @param str 被转换的字符串
+     * @return 转换后的Double二维数组
+     */
     public static Double[][] stringToDoublesArray(String str){
         // str = [[25.1, 25.2], [25.3, 25.4], [25.5, 25.6]]
         System.out.println(str);
