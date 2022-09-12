@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +45,11 @@ public class PythonUtil {
     private static final String  TEMPLATE_FILE_PATH= "template/example.txt";
 
     /**
+     * 图片的默认生成路径
+     */
+    private static final String IMAGE_PATH = "src/main/resources/image/";
+
+    /**
      * 插入模板开始标志
      */
     private static final String START_FLAG = "# 算法内容";
@@ -66,16 +73,16 @@ public class PythonUtil {
      * 执行python算法文件
      * @param fileName 算法文件名
      * @param data 参数数据
-     * @param path 产生文件路径
+     * @param imageName 产生文件路径
      * @return 算法执行的结果数据
      */
-    public static Map<String,Object> executePythonAlgorithFile(String fileName, Object data, String path){
+    public static Map<String,Object> executePythonAlgorithFile(String fileName, Object data, String imageName){
         // 自定义map，将数据信息放入map中
         HashMap<String, Object> param = new HashMap<>();
         param.put("data",data);
 
-        if (!"".equals(path)) {
-            param.put("path",path);
+        if (!"".equals(imageName)) {
+            param.put("path",IMAGE_PATH + imageName);
         }
         return executePython(fileName, param);
     }
@@ -106,13 +113,12 @@ public class PythonUtil {
             System.out.println("传入的python程序的参数:" + encoderJsonData);
 
             // 执行程序,从流中获取返回数据
-            String jsonResult;
             // 获取当前jvm的运行时环境,执行python程序
             Process process = Runtime.getRuntime().exec(arg);
 
             // 返回的json结果
             BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            jsonResult = br.readLine();
+            String jsonResult = br.readLine();
             // 关闭流
             br.close();
             System.out.println("获取到python算法处理后的Json格式数据 : " + jsonResult);
@@ -133,7 +139,7 @@ public class PythonUtil {
      * @param fileName 上传的python文件名
      * @param inputStream 上传的python文件输入流
      */
-    public static void uploadPythonFile(String fileName, InputStream inputStream) throws IOException {
+    public static void uploadPythonFile(String fileName, InputStream inputStream){
         // 上传文件的字符流
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         // 模板算法算法文件的字符流
@@ -142,8 +148,8 @@ public class PythonUtil {
         BufferedWriter bos;
 
         try {
-            tempBr = new BufferedReader(new InputStreamReader(new FileInputStream(BASE_PATH + TEMPLATE_FILE_PATH)));
-            bos = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(BASE_PATH + fileName)));
+            tempBr = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(BASE_PATH + TEMPLATE_FILE_PATH))));
+            bos = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(Paths.get(BASE_PATH + fileName))));
 
             String line;
             while ( (line = tempBr.readLine()) != null){
@@ -163,10 +169,10 @@ public class PythonUtil {
             bos.close();
             tempBr.close();
             br.close();
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-            log.error("算法模板文件读取失败:"+BASE_PATH + TEMPLATE_FILE_PATH);
-            log.error("上传生成算法文件失败:"+BASE_PATH + fileName);
+            log.error("算法模板文件读取失败: "+BASE_PATH + TEMPLATE_FILE_PATH);
+            log.error("上传生成算法文件失败: "+BASE_PATH + fileName);
             throw new UserException(CommonErrorCode.E_10001);
         }
     }
