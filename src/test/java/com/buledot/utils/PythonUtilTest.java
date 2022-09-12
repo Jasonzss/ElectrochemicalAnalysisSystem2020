@@ -27,7 +27,7 @@ public class PythonUtilTest {
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
-        Map<String, Object> map = (Map<String, Object>) PythonUtil.executePythonAlgorithFile("2.py", data, PythonUtil.ExecuteReturnType.JSON);
+        Map<String, Object> map = PythonUtil.executePythonAlgorithFile("3.py", data);
         map.forEach((k,v)->{
             System.out.println("key::"+k);
             System.out.println("value::"+v);
@@ -43,18 +43,10 @@ public class PythonUtilTest {
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
+        String path = "images/imageResultTest";
 
-        byte[] imageBytes = (byte[]) PythonUtil.executePythonAlgorithFile("2.py", data, PythonUtil.ExecuteReturnType.PICTURE);
-
-        try {
-            FileOutputStream fos = new FileOutputStream("images/pythonImages/pythonTest.png");
-            fos.write(imageBytes);
-            fos.flush();
-
-            fos.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        Map<String,Object> result = PythonUtil.executePythonAlgorithFile("2.py", data, path);
+        System.out.println(result.get("result"));
 
     }
 
@@ -77,17 +69,11 @@ public class PythonUtilTest {
 
         map.put("param",param);
 
-        byte[] imageBytes = (byte[]) PythonUtil.executePythonAlgorithFile("paintReportGraph.py", map, PythonUtil.ExecuteReturnType.PICTURE);
+        String path = "images/line.png";
 
-        try {
-            FileOutputStream fos = new FileOutputStream("images/pythonTest.png");
-            fos.write(imageBytes);
-            fos.flush();
+        Map<String,Object> result = PythonUtil.executePythonAlgorithFile("paintReportGraph.py", map, path);
+        System.out.println(result.get("result"));
 
-            fos.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Test
@@ -146,6 +132,19 @@ public class PythonUtilTest {
             fos.flush();
 
             fos.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 上传文件测试
+     */
+    @Test
+    public void uploadPythonFileTest() throws FileNotFoundException {
+        FileInputStream fileInputStream = new FileInputStream("src/main/resources/algo/python/template/main1.txt");
+        try {
+            PythonUtil.uploadPythonFile("line.py",fileInputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
