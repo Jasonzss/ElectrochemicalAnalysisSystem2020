@@ -4,7 +4,9 @@ import sys
 import numpy as np
 
 
-def linear_regression(x: np.matrix, y: np.matrix) -> np.matrix: 
+def main(data) -> list:
+    data = np.matrix(data) # type: np.matrix
+    x, y = np.hsplit(data, [data.shape[1] - 1])
     a = np.linspace(1, 1, y.size)
     a.resize(y.shape[0], y.shape[1])
     ans = []
@@ -14,7 +16,13 @@ def linear_regression(x: np.matrix, y: np.matrix) -> np.matrix:
     else:
         x = np.vstack([a, x])
         ans = (x * x.T).I * x * y.T
-    return ans
+
+    # a0 = round(ans[0, 0], 4)
+    # a1 = round(ans[1, 0], 4)
+    a0 = ans[0, 0]
+    a1 = ans[1, 0]
+
+    return [a0, a1]
 
 
 if __name__ == "__main__":
@@ -26,15 +34,11 @@ if __name__ == "__main__":
     # 那个1， 2， 3， 4就是电流，90，120……就是溶度
     data = sys.argv[1]
     data = json.loads(data)
-    data = np.matrix(data) # type: np.matrix
+
     # 分割数组，默认最后一列是预测集
-    x, y = np.hsplit(data, [data.shape[1] - 1])
-    ans = linear_regression(x, y)
-    
-    # a0 = round(ans[0, 0], 4)
-    # a1 = round(ans[1, 0], 4)
-    a0 = ans[0, 0]
-    a1 = ans[1, 0]
-    print([a0, a1])
+
+    ans = main(data)
+    print(ans)
+
 
 
