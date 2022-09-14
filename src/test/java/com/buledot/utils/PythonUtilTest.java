@@ -6,6 +6,7 @@ import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,7 +27,7 @@ public class PythonUtilTest {
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
-        Map<String, Object> map = (Map<String, Object>) PythonUtil.executePythonAlgorithFile("2.py", data, PythonUtil.ExecuteReturnType.JSON);
+        Map<String, Object> map = PythonUtil.executePythonAlgorithFile("3.py", data);
         map.forEach((k,v)->{
             System.out.println("key::"+k);
             System.out.println("value::"+v);
@@ -42,18 +43,36 @@ public class PythonUtilTest {
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
+        String path = "images/imageResultTest";
 
-        byte[] imageBytes = (byte[]) PythonUtil.executePythonAlgorithFile("2.py", data, PythonUtil.ExecuteReturnType.PICTURE);
+        Map<String,Object> result = PythonUtil.executePythonAlgorithFile("2.py", data, path);
+        System.out.println(result.get("result"));
 
-        try {
-            FileOutputStream fos = new FileOutputStream("images/pythonImages/pythonTest.png");
-            fos.write(imageBytes);
-            fos.flush();
+    }
 
-            fos.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
+    @Test
+    public void paintReportTest(){
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("expermental",new Double[]{1.2,3.3,3.3,4.4,5.5});
+        map.put("predicted",new Double[]{1.123,2.123,3.12312,4.3123,5.1231});
+        map.put("equation","Y=3x+7");
+
+        HashMap<String, Object> param = new HashMap<>();
+        param.put("rc2",1.2);
+        param.put("rmsec",1.2);
+        param.put("maec",1.2);
+        param.put("rp2",1.2);
+        param.put("rmsep",1.2);
+        param.put("maep",1.2);
+        param.put("rpd",1.2);
+
+        map.put("param",param);
+
+        String path = "images/line.png";
+
+        Map<String,Object> result = PythonUtil.executePythonAlgorithFile("paintReportGraph.py", map, path);
+        System.out.println(result.get("result"));
 
     }
 
@@ -116,5 +135,14 @@ public class PythonUtilTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 上传文件测试
+     */
+    @Test
+    public void uploadPythonFileTest() throws FileNotFoundException {
+        FileInputStream fileInputStream = new FileInputStream("src/main/resources/algo/python/template/main1.txt");
+        PythonUtil.uploadPythonFile("line.py",fileInputStream);
     }
 }

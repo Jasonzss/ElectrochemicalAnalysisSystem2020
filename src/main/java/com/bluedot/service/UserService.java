@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
  * @Description ：
  */
 public class UserService extends BaseService<User> {
+    private static final int USER_SALT_LENGTH = 6;
 
     public UserService(Data data) {
         super(data);
@@ -140,6 +141,9 @@ public class UserService extends BaseService<User> {
      * 管理员权限的修改用户信息
      */
     private void updateUser(){
+        getPersonalUser();
+        User user = (User) commonResult.getData();
+
         //判断是否修改了图片
         if (paramList.containsKey("userImg")){
             FileItem userImg = (FileItem) paramList.get("userImg");
@@ -148,7 +152,12 @@ public class UserService extends BaseService<User> {
             paramList.put("userImg",bytes);
         }
 
-        User user = new User();
+        //判断是否修改密码
+        if (paramList.containsKey("userPassword") && paramList.containsKey("oldPassword")){
+            //对新密码加密
+            paramList.put("userPassword", Md5Util.transformToSaltMd5((String) paramList.get("userPassword"), user.getUserSalt()));
+        }
+
         ReflectUtil.invokeSettersIncludeEntity(paramList,user);
 
         //执行更新逻辑
@@ -176,15 +185,23 @@ public class UserService extends BaseService<User> {
                 }
                 //移除验证码
                 session.removeAttribute(SessionConstants.AUTH_CODE);
-            } else if (paramList.containsKey("oldPassword")){
+            } else if (paramList.containsKey("oldPassword") && paramList.containsKey("userPassword")){
                 //旧密码验证修改密码
-                //判断旧密码是否正确
+                //查询用户
                 getPersonalUser();
                 User user = (User) commonResult.getData();
+
+                //判断旧密码是否正确
                 String userPassword = user.getUserPassword();
-                if (!userPassword.equals(paramList.get("oldPassword"))){
-                    throw new UserException(CommonErrorCode.E_1004);
+                //解密用户密码，并判断旧密码验证是否正确
+                if (!Md5Util.verifySaltMd5((String) paramList.get("oldPassword"), user.getUserSalt(), userPassword)){
+                    //密码错误
+                    throw new UserException(CommonErrorCode.E_1015);
                 }
+
+                //旧密码验证正确
+                //加密新密码放入
+                paramList.put("userPassword", Md5Util.transformToSaltMd5((String) paramList.get("userPassword"), user.getUserSalt()));
             } else {
                 throw new UserException(CommonErrorCode.E_1007);
             }
@@ -199,12 +216,6 @@ public class UserService extends BaseService<User> {
         if (paramList.containsKey("file")){
             FileItem fileItem = (FileItem) paramList.get("file");
             paramList.put("userImg", ImageUtil.imgToByteArray(fileItem));
-//            // 将图片转换为数组放入
-//            System.out.println("------------------");
-//            System.out.println(paramList.get("userImg").getClass());
-//            System.out.println(((FileItem) paramList.get("userImg")).getSize());
-//            paramList.put("userImg", ImageUtil.imgToByteArray((FileItem) paramList.get("userImg")));
-//            System.out.println(ImageUtil.imgToByteArray((FileItem) paramList.get("userImg")).length);
         }
 
         // 封装User实体
@@ -233,7 +244,6 @@ public class UserService extends BaseService<User> {
             throw new UserException(CommonErrorCode.E_1012);
         }
 
-
         //判断邮箱是否可用
         //查询用户是否存在
         try{
@@ -259,15 +269,41 @@ public class UserService extends BaseService<User> {
             user = new User();
         }
 
+        //加密注册密码
+        String randomSalt = Md5Util.getRandomSalt(USER_SALT_LENGTH);
+        paramList.put("userPassword",Md5Util.transformToSaltMd5((String) paramList.get("userPassword"),randomSalt));
         //执行插入操作
         ReflectUtil.invokeSettersIncludeEntity(paramList,user);
-        //TODO 初始化新用户的基本信息
+        //初始化新用户的基本信息
         //设置用户默认名称
         if (user.getUserName() == null){
             user.setUserName("用户_"+user.getUserEmail().substring(0,4));
         }
+        //设置用户加密随机盐
+        user.setUserSalt(randomSalt);
+        //设置用户状态
+        user.setUserStatus(0);
+
+        //向用户角色中间表插入新数据
+        Map<String,Object> map = new HashMap<>();
+        ArrayList<Integer> list = new ArrayList<>();
+        list.add(0);
+        map.put("roleIds",list);
+        map.put("userEmail",user.getUserEmail());
+        //TODO insert为null
+        CommonResult insert = new UserRoleService(session, entityInfo).doOtherService(map, "login");
+        if ((int)insert.getData() <= 0){
+            throw new UserException(CommonErrorCode.E_6001);
+        }
+
+        //插入新用户
         entityInfo.addEntity(user);
         insert();
+
+        //返回注册信息
+        if(((int)commonResult.getData()) == 1){
+            commonResult = CommonResult.successResult("注册成功",true);
+        }
     }
 
     /**
@@ -294,7 +330,7 @@ public class UserService extends BaseService<User> {
     private void deletePersonalUser(){
         //包装需要删除的实体类
         User user = new User();
-        user.setUserEmail((String) paramList.get("userEmail"));
+        user.setUserEmail((String) session.getAttribute(SessionConstants.USER_EMAIL));
         entityInfo.addEntity(user);
 
         //执行删除逻辑
@@ -415,7 +451,6 @@ public class UserService extends BaseService<User> {
         if (authCode == null){
             throw new UserException(CommonErrorCode.E_1010);
         }
-        System.out.println(authCode);
 
         //判断图片验证码是否正确
         if (!authCode.equalsIgnoreCase((String) paramList.get("imgAuthCode"))){
@@ -426,17 +461,37 @@ public class UserService extends BaseService<User> {
         session.removeAttribute(SessionConstants.IMG_AUTH_CODE);
 
         //根据邮箱查询用户
-        getPersonalUser();
+        try{
+            getPersonalUser();
+        }catch (UserException e){
+            //只处理1005异常，其他异常抛出
+            if (e.getErrorCode() != CommonErrorCode.E_1005){
+                throw e;
+            }
+        }
 
         //是否存在此用户
         User user = (User) commonResult.getData();
+
         if (user == null){
+            //账号不存在
             throw new UserException(CommonErrorCode.E_1008);
         }
 
-        //判断密码是否正确
-        if (!user.getUserPassword().equals(paramList.get("userPassword"))){
+        //解密用户密码，并判断密码是否正确
+        if (!Md5Util.verifySaltMd5((String) paramList.get("userPassword"),user.getUserSalt(),user.getUserPassword())){
+            //密码错误
             throw new UserException(CommonErrorCode.E_1008);
+        }
+
+        //判断账号状态
+        switch(user.getUserStatus()){
+            case 0:break;
+            case 1:
+            case 2:throw new UserException(CommonErrorCode.E_1016);
+            case 3:throw new UserException(CommonErrorCode.E_1017);
+            default:
+                throw new UserException(CommonErrorCode.E_1018);
         }
 
         //登录通过

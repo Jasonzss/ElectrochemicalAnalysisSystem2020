@@ -1,5 +1,8 @@
 package com.bluedot.pojo.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.junit.Test;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,10 +19,6 @@ public class ExpData {
     private MaterialType materialType;  //用户选择
     private String expMaterialName; //用户选择或填写
     private Double expMaterialSolubility;   //用户填写
-    /**
-     * 新旧电流的数量级
-     */
-    private String orderOfMagnitudes;   //用户上传文件读取并分析
     private Double[] expPotentialPointData;   //用户上传文件读取
     private Double[] expOriginalCurrentPointData ;  //用户上传文件读取
     private Double[] expNewestCurrentPointData ;    //系统计算
@@ -30,7 +29,9 @@ public class ExpData {
     private BufferSolution bufferSolution;  //用户选择
     private Double expPh;   //用户填写
     private String expDataDesc; //用户填写
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Timestamp expCreateTime;    //系统提供
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Timestamp expLastUpdateTime;    //系统提供
     private Integer expDeleteStatus;    //系统提供
 
@@ -114,14 +115,6 @@ public class ExpData {
     }
     public void setExpNewestCurrentPointData(String expNewestCurrentPointData) {
         this.expNewestCurrentPointData = stringToDoubleArray(expNewestCurrentPointData);
-    }
-
-    public String getOrderOfMagnitudes() {
-        return orderOfMagnitudes;
-    }
-
-    public void setOrderOfMagnitudes(String orderOfMagnitudes) {
-        this.orderOfMagnitudes = orderOfMagnitudes;
     }
 
     public Double getExpOriginalCurrent() {
@@ -229,7 +222,6 @@ public class ExpData {
                 ", expPotentialPointData=" + Arrays.toString(expPotentialPointData) +
                 ", expOriginalCurrentPointData=" + Arrays.toString(expOriginalCurrentPointData) +
                 ", expNewestCurrentPointData=" + Arrays.toString(expNewestCurrentPointData) +
-                ", orderOfMagnitudes='" + orderOfMagnitudes + '\'' +
                 ", expOriginalCurrent=" + expOriginalCurrent +
                 ", expOriginalPotential=" + expOriginalPotential +
                 ", expNewestCurrent=" + expNewestCurrent +

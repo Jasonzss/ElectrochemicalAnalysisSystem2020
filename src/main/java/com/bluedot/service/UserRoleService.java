@@ -30,6 +30,9 @@ public class UserRoleService extends BaseService<UserRole>{
             case "insert":
                 methodName="insertUserRole";
                 break;
+            case "login":
+                methodName="insertExperimenter";
+                break;
             default:
                 throw new UserException(CommonErrorCode.E_4001);
         }
@@ -49,8 +52,21 @@ public class UserRoleService extends BaseService<UserRole>{
             userRoleArrayList1.add(userRole1);
         }
         entityInfo.setEntity(userRoleArrayList1);
+        System.out.println(userRoleArrayList1.toString());
         insert();
     }
+
+    /**
+     * 给用户增加实验员角色
+     */
+    private void insertExperimenter(){
+        UserRole userRole = new UserRole();
+        userRole.setRoleId(0);
+        userRole.setUserEmail((String) paramList.get("userEmail"));
+        entityInfo.addEntity(userRole);
+        insert();
+    }
+
     /**
      * 删除用户角色
      */
