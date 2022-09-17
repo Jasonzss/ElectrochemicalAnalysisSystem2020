@@ -323,7 +323,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         //生成excel对象
         HSSFWorkbook hssfWorkbook = ExcelUtil.productExpDataExcel(expDataMap);
 
-        commonResult.setFileData("实验数据",hssfWorkbook);
+        commonResult.setFileData("实验数据.xls",hssfWorkbook);
         commonResult.setRespContentType(CommonResult.EXCEL);
     }
 
@@ -351,7 +351,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         //生成excel对象
         HSSFWorkbook hssfWorkbook = ExcelUtil.productExpDataExcel(expDataMap);
 
-        commonResult.setFileData("实验数据",hssfWorkbook);
+        commonResult.setFileData("实验数据.xls",hssfWorkbook);
         commonResult.setRespContentType(CommonResult.EXCEL);
     }
 }
