@@ -69,7 +69,7 @@ public class PythonUtilTest {
 
         map.put("param",param);
 
-        String path = "images/line.png";
+        String path = "line.png";
 
         Map<String,Object> result = PythonUtil.executePythonAlgorithFile("paintReportGraph.py", map, path);
         System.out.println(result.get("result"));
