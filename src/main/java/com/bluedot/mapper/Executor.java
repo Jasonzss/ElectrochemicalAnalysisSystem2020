@@ -6,6 +6,7 @@ import com.bluedot.mapper.bean.Configuration;
 import com.bluedot.mapper.bean.MappedStatement;
 import com.bluedot.mapper.bean.TableInfo;
 import com.bluedot.mapper.dataSource.MyDataSource;
+import com.bluedot.pojo.entity.ExpData;
 import com.bluedot.utils.LogUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.StringUtil;
@@ -105,18 +106,22 @@ public class Executor {
                 while (resultSet.next()) {
                     //行数据主键值
                     Object primaryValue =null;
-                    if (sql.indexOf("count(*)") ==-1 && sql.indexOf("GROUP")==-1){
+                    if (sql.indexOf("count(*)") ==-1 && sql.indexOf("GROUP")==-1 && sql.indexOf("MAX")==-1 && sql.indexOf("DISTINCT")==-1){
                         primaryValue = resultSet.getObject(primaryName);
                     }
                     //每一行结果
                     E rowObject = null;
                     //返回值类型vo
                     String rowObjectType = mappedStatement.getReturnType();
-                    if (rowObjectType.endsWith("Long")) {
+                    if (rowObjectType.endsWith("Long") || rowObjectType.endsWith("Integer")) {
                         rowObject = (E) resultSet.getObject(1);
                         logger.debug("每一行查询结果："+rowObject);
                         result.add(rowObject);
                         return result;
+                    } else if (sql.indexOf("DISTINCT")!=-1){
+                        //当查询select distinct语句
+                        result.add((E) resultSet.getObject(1));
+                        continue;
                     }
                     if (mappedStatement.getView().equals(mappedStatement.getReturnType()) && sql.indexOf("count(*)") ==-1&& map.containsKey(primaryValue)) {
                         rowObject = (E) map.get(primaryValue);
@@ -154,6 +159,24 @@ public class Executor {
                                     byte[] bytes = resultSet.getBytes(fieldName);
                                     field.setAccessible(true);
                                     field.set(rowObject,bytes);
+                                }
+                            }catch (SQLException ignored){
+                                //无事发生，忽略对实体类中的此属性赋值
+                            }
+                            continue;
+                        }
+                        if(field.getType()==Double[].class){
+                            String fieldName = StringUtil.humpToLine(field.getName());
+                            //判断查询结果集中是否存在此列
+                            try{
+                                if (resultSet.findColumn(fieldName) > 0){
+                                    //存在此列
+                                    String doublesString = resultSet.getString(fieldName);
+                                    field.setAccessible(true);
+                                    if (doublesString == null || "null".equals(doublesString)){
+                                        continue;
+                                    }
+                                    field.set(rowObject, ExpData.stringToDoubleArray(doublesString));
                                 }
                             }catch (SQLException ignored){
                                 //无事发生，忽略对实体类中的此属性赋值

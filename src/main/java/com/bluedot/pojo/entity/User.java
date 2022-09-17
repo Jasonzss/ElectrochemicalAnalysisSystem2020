@@ -103,10 +103,6 @@ public class User {
         this.userTel = userTel;
     }
 
-    public void setUserTel(String userTel){
-        this.userTel = Long.valueOf(userTel);
-    }
-
     public byte[] getUserImg() {
         return userImg;
     }
