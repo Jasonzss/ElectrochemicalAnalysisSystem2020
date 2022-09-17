@@ -225,4 +225,20 @@ public class ImageUtil {
         }
         return null;
     }
+
+    public static byte[] inputStreamToBytes(InputStream is){
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            //读写缓冲区
+            byte[] bytes = new byte[1024];
+            while (is.read(bytes) != -1){
+                bos.write(bytes);
+            }
+
+            return bos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

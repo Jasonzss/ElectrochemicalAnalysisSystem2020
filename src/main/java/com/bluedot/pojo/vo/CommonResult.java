@@ -15,7 +15,7 @@ public class CommonResult {
     public static final String JSON = "application/json";
     public static final String BUFFERED_IMAGE = "image/png";
     public static final String INPUT_STREAM_IMAGE = "image/jpeg";
-    public static final String EXCEL = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    public static final String EXCEL = "application/msexcel";
     public static final String FILE = "text/plain";
 
     //响应码

@@ -11,6 +11,7 @@ import com.bluedot.pojo.entity.ExpData;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.ExcelUtil;
 import com.bluedot.utils.ReflectUtil;
+import com.bluedot.utils.constants.OperationConstants;
 import com.bluedot.utils.constants.SessionConstants;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
@@ -61,13 +62,16 @@ public class ExperimentalDataService extends BaseService<ExpData>{
                 isPersonal = false;
             }
         }
+        if(operation.equals(OperationConstants.SELECT)){
+            isPersonal = !paramList.containsKey("userEmail");
+        }
 
 
         String methodName;
         switch (operation) {
             case "delete":
                 if (isPersonal){
-                    methodName = "deletePersonaExpData";
+                    methodName = "deletePersonalExpData";
                 }else {
                     methodName = "deleteExpData";
                 }
@@ -117,7 +121,6 @@ public class ExperimentalDataService extends BaseService<ExpData>{
      */
     private void listPersonalExpData(){
         Condition condition = new Condition();
-        condition.addAndConditionWithView(new Term("exp_data","user_email",session.getAttribute(SessionConstants.USER_EMAIL),TermType.EQUAL));
 
         //设置查询返回类型
         condition.setReturnType("ExpData");
@@ -158,20 +161,20 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         if (paramList.containsKey("pageSize") && paramList.containsKey("pageNo")){
             //分页查询
             condition.setSize((Integer) paramList.get("pageSize"));
-            condition.setStartIndex(((long)paramList.get("pageNo")-1)*(int)paramList.get("pageSize"));
+            condition.setStartIndex((Long.valueOf(((Integer)paramList.get("pageNo")).longValue())-1)*(int)paramList.get("pageSize"));
 
             //设置查询条件
+            if (paramList.containsKey("userEmail")){
+                condition.addAndConditionWithView(new Term("exp_data","user_email",paramList.get("userEmail"),TermType.EQUAL));
+            }
             if (paramList.containsKey("expMaterialName")){
-                condition.addOrConditionWithView(new Term("exp_data","exp_material_name",paramList.get("expMaterialName"), TermType.EQUAL));
+                condition.addAndConditionWithView(new Term("exp_data","exp_material_name",paramList.get("expMaterialName"), TermType.LIKE));
             }
             if (paramList.containsKey("materialTypeId")){
-                condition.addOrConditionWithView(new Term("exp_data","material_type_id",paramList.get("materialType"),TermType.EQUAL));
+                condition.addAndConditionWithView(new Term("exp_data","material_type_id",paramList.get("materialTypeId"),TermType.EQUAL));
             }
             if (paramList.containsKey("expDeleteStatus")){
                 condition.addAndConditionWithView(new Term("exp_data","exp_delete_status",paramList.get("expDeleteStatus"),TermType.EQUAL));
-            }
-            if (paramList.containsKey("userEmail")){
-                condition.addAndConditionWithView(new Term("exp_data","user_email",paramList.get("userEmail"),TermType.EQUAL));
             }
             if (paramList.containsKey("expCreateTimeStart")){
                 condition.addAndConditionWithView(new Term("exp_data","exp_create_time",paramList.get("expCreateTimeStart"),TermType.GREATER));
@@ -204,7 +207,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
      */
     private void listMaterialName(){
         Condition condition = new Condition();
-        condition.addFields("distinct(exp_material_name)");
+        condition.addFields("DISTINCT(exp_material_name)");
         condition.addView("exp_data");
 
         if (paramList.containsKey("userEmail")){
@@ -219,9 +222,20 @@ public class ExperimentalDataService extends BaseService<ExpData>{
      * 管理员权限的修改实验数据
      */
     private void updateExpData(){
-        ExpData expData = new ExpData();
-        ReflectUtil.invokeSettersIncludeEntity(paramList,expData);
-        entityInfo.addEntity(expData);
+        if(paramList.containsKey("expData")){
+            //批量操作数据
+            List<Map<String,Object>> expDataMapList = (List<Map<String, Object>>) paramList.get("expData");
+            expDataMapList.forEach((map) -> {
+                ExpData expData = new ExpData();
+                ReflectUtil.invokeSettersIncludeEntity(map,expData);
+                entityInfo.addEntity(expData);
+            });
+        }else {
+            //操作单个数据
+            ExpData expData = new ExpData();
+            ReflectUtil.invokeSettersIncludeEntity(paramList,expData);
+            entityInfo.addEntity(expData);
+        }
         update();
     }
 
@@ -229,16 +243,27 @@ public class ExperimentalDataService extends BaseService<ExpData>{
      * 修改个人的实验数据
      */
     private void updatePersonalExpData(){
-        ExpData expData = new ExpData();
-        ReflectUtil.invokeSettersIncludeEntity(paramList,expData);
-        entityInfo.addEntity(expData);
+        if(paramList.containsKey("expData")){
+            //批量操作数据
+            List<Map<String,Object>> expDataMapList = (List<Map<String, Object>>) paramList.get("expData");
+            expDataMapList.forEach((map) -> {
+                ExpData expData = new ExpData();
+                ReflectUtil.invokeSettersIncludeEntity(map,expData);
+                entityInfo.addEntity(expData);
+            });
+        }else {
+            //操作单个数据
+            ExpData expData = new ExpData();
+            ReflectUtil.invokeSettersIncludeEntity(paramList,expData);
+            entityInfo.addEntity(expData);
+        }
         update();
     }
 
     /**
      * 删除个人的实验数据
      */
-    private void deletePersonaExpData(){
+    private void deletePersonalExpData(){
         //获取删除的实验数据
         List<Map<String,Object>> data = new ArrayList<>();
         if (paramList.get("expData") instanceof List){
@@ -298,7 +323,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         //生成excel对象
         HSSFWorkbook hssfWorkbook = ExcelUtil.productExpDataExcel(expDataMap);
 
-        commonResult.setFileData("实验数据",hssfWorkbook);
+        commonResult.setFileData("实验数据.xls",hssfWorkbook);
         commonResult.setRespContentType(CommonResult.EXCEL);
     }
 
@@ -326,7 +351,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         //生成excel对象
         HSSFWorkbook hssfWorkbook = ExcelUtil.productExpDataExcel(expDataMap);
 
-        commonResult.setFileData("实验数据",hssfWorkbook);
+        commonResult.setFileData("实验数据.xls",hssfWorkbook);
         commonResult.setRespContentType(CommonResult.EXCEL);
     }
 }
