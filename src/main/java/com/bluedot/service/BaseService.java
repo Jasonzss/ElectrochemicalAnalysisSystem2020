@@ -149,14 +149,13 @@ public abstract class BaseService<T> {
         Condition condition = entityInfo.getCondition();
         // 设置pageInfo，并将查询到的数据填入
         PageInfo pageInfo = new PageInfo();
-        System.out.println("Data:"+commonResult.getData());
         if (((ArrayList) commonResult.getData()).size() == 0){
             commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
         }else {
             pageInfo.setDataList((List<Object>)commonResult.getData());
             pageInfo.setPageSize(condition.getSize());
             // 调用getCount查询数据总数量
-            pageInfo.setTotalDataSize(getCount());
+            pageInfo.setTotalDataSize(getCount(condition));
             pageInfo.setTotalPageSize((pageInfo.getTotalDataSize() + pageInfo.getPageSize() - 1) / pageInfo.getPageSize());
             pageInfo.setCurrentPageNo(Math.toIntExact(condition.getStartIndex() / condition.getSize() + 1));
 
@@ -168,10 +167,11 @@ public abstract class BaseService<T> {
      * 查询目标分页查询的总数
      * @return 数据总数量
      */
-    private long getCount(){
+    private long getCount(Condition condition){
         // 设置查询条件
-        Condition condition = new Condition();
-        condition.addFields("count(*)");
+        List<String> fieldList = new ArrayList<>();
+        fieldList.add("count(*)");
+        condition.setFields(fieldList);
         condition.addView(entityInfo.getCondition().getViews().get(0));
         condition.setReturnType("Long");
 
