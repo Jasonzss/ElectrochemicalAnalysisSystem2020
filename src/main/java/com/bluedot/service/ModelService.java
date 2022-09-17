@@ -13,12 +13,15 @@ import com.bluedot.pojo.entity.Report;
 import com.bluedot.pojo.entity.User;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.AlgoUtil;
+import com.bluedot.utils.ImageUtil;
 import com.bluedot.utils.ModelUtil;
 import com.bluedot.utils.PythonUtil;
 import com.bluedot.utils.constants.OperationConstants;
 import com.bluedot.utils.constants.SessionConstants;
+import org.junit.Test;
 
 import javax.servlet.http.HttpSession;
+import java.io.*;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -28,8 +31,6 @@ import java.util.*;
  * @Description ：
  */
 public class ModelService extends BaseService<Report> {
-    private static final String REPORT_GRAPH_PATH = "";
-
     public ModelService(Data data) {
         super(data);
     }
@@ -85,8 +86,9 @@ public class ModelService extends BaseService<Report> {
         condition.addAndConditionWithView(new Term("exp_data","exp_data_id",expDataIdList, TermType.IN));
         entityInfo.setCondition(condition);
         select();
-        //得到查询到的expDataList
+        //得到查询到实验数据的expDataList
         List<ExpData> expDataList = (List<ExpData>) commonResult.getData();
+
 
         //2. 查询预处理算法
         condition = new Condition();
@@ -95,6 +97,7 @@ public class ModelService extends BaseService<Report> {
         //得到查询到的预处理算法
         List<Algorithm> list = (List<Algorithm>) commonResult.getData();
         Algorithm pretreatmentAlgorithm = list.get(0);
+
 
         //3. 查询数据建模算法
         condition = new Condition();
@@ -106,6 +109,7 @@ public class ModelService extends BaseService<Report> {
         //将算法id放入report
         report.setPretreatmentAlgorithmId(reportDataModelId);
         report.setReportDataModelId(reportDataModelId);
+
 
         //4. 查询当前用户
         User user = new User();
@@ -133,11 +137,12 @@ public class ModelService extends BaseService<Report> {
             }
         }
 
+
         //数据预处理
         Double[][] preprocessData = AlgoUtil.preprocess(pretreatmentAlgorithm, data);
 
-        //划分数据集，得到测试集和训练集，并分类放到report
 
+        //划分数据集，得到测试集和训练集，并分类放到report
         Map<String, Double[][]> stringMap = AlgoUtil.divideDataSet(preprocessData);
         Double[][] testSet = stringMap.get("test");
         Double[][] trainSet = stringMap.get("train");
@@ -176,16 +181,13 @@ public class ModelService extends BaseService<Report> {
         //分析模型，并将分析的七个数据放入report
         analysisReport(report,trainPrediction,testPrediction);
 
+        //****************************************************************************************
         //TODO 根据测试集和训练集的点位画图，并把图放入report中
-        Map<String,Object> trainPaintParam = new HashMap<>();
-        trainPaintParam.put("x",trainExperimentalPotential);
-        trainPaintParam.put("y",trainPrediction);
-        trainPaintParam.put("equation",generateEquationWithKAndB(ModelUtil.getFiParameters(trainExperimentalPotential,trainPrediction)));
-        trainPaintParam.put("para",report.getTrainSetIndicator());
-        PythonUtil.executePythonAlgorithFile("paintReportGraph.py",trainPaintParam,REPORT_GRAPH_PATH);
-        //获取生成的图片的流，并把文件删除
+        setReportGraph(report, trainExperimentalPotential, trainPrediction, report.getTrainSetIndicator());
+        setReportGraph(report, testExperimentalPotential, testPrediction, report.getTestSetIndicator());
 
 
+        //******************************************************************
         //向report放入系统数据
         //设置用户输入的物质名称
         report.setReportMaterialName(expMaterialName);
@@ -196,8 +198,21 @@ public class ModelService extends BaseService<Report> {
         report.setReportCreateTime(timestamp);
         report.setReportLastUpdateTime(timestamp);
 
-        //TODO 如何将report插入数据库后连带着reportId一起返回给前端
+        //先这么办吧，指定会存在并发问题：先插入，再查出来
+        //将此report插入
+        entityInfo.addEntity(report);
+        insert();
 
+        //返回reportId给前端
+        //暂时使用这会有并发问题的写法吧
+        condition = new Condition();
+        condition.setReturnType("Integer");
+        condition.addFields("MAX(report_id)");
+        condition.addView("report");
+
+        //执行查询逻辑，返回reportId
+        entityInfo.setCondition(condition);
+        select();
     }
 
     /**
@@ -345,5 +360,33 @@ public class ModelService extends BaseService<Report> {
         }
 
         return result;
+    }
+
+    /**
+     * 根据测试集和训练集的点位画图，并把图放入report中
+     * @param report 被操作实验报告
+     * @param experimental 实验数据原本的实验（真实）电压
+     * @param prediction 实验数据经过建模方程得到的预测电压
+     * @param param 判断模型的指标
+     */
+    private void setReportGraph(Report report, Double[] experimental, Double[] prediction, Map<String,String> param){
+        Map<String,Object> trainPaintParam = new HashMap<>();
+        trainPaintParam.put("x",experimental);
+        trainPaintParam.put("y",prediction);
+        trainPaintParam.put("equation",generateEquationWithKAndB(ModelUtil.getFiParameters(experimental,prediction)));
+        trainPaintParam.put("para",param);
+        PythonUtil.executePythonAlgorithFile("paintReportGraph.py",trainPaintParam,"fig_"+report.getReportId()+".jpg");
+        //获取生成的图片的流，并把文件删除
+
+        File file = new File("src/main/resources/image/fig_"+report.getReportId()+".jpg");
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            byte[] bytes = ImageUtil.inputStreamToBytes(fis);
+            report.setReportTrainingSetGraph(bytes);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            file.delete();
+        }
     }
 }
