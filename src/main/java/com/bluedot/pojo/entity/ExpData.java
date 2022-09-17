@@ -197,7 +197,7 @@ public class ExpData {
         this.expDeleteStatus = expDeleteStatus;
     }
 
-    public Double[] stringToDoubleArray(String str){
+    public static Double[] stringToDoubleArray(String str){
         List<Double> list = new ArrayList<>();
         str = str.replace("[","");
         str = str.replace("]","");
