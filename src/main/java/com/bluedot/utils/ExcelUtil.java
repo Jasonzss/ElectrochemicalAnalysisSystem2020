@@ -9,7 +9,10 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.SimpleFormatter;
 
 /**
  * @author FireRain
@@ -198,8 +201,13 @@ public class ExcelUtil {
                     HSSFCell thirdRowCell = thirdRow.createCell(valueNum+j);
                     //根据值的类型，强转放入数据
                     Object value = values.get(j);
-                    if (value instanceof Date) {
-                        thirdRowCell.setCellValue((Date) value);
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    if (value instanceof Timestamp){
+                        String format = formatter.format(new Date(((Timestamp) value).getTime()));
+                        thirdRowCell.setCellValue(format);
+                    } else if (value instanceof Date) {
+                        String format = formatter.format((Date) value);
+                        thirdRowCell.setCellValue(format);
                     }else if (value instanceof String){
                         thirdRowCell.setCellValue((String) value);
                     }else if (value instanceof Boolean){
@@ -383,7 +391,7 @@ public class ExcelUtil {
         baseInfoList.add(data.getExpMaterialName());
         baseInfoList.add(data.getExpCreateTime());
         baseInfoList.add(data.getExpLastUpdateTime());
-        baseInfoList.add(data.getUser().getUserName());
+        baseInfoList.add(data.getUser().getUserEmail());
         baseInfoList.add(data.getExpDataDesc());
         VALUE_LIST.add(0,new Pair<>(BASE_INFO,baseInfoList));
         //电化学信息
