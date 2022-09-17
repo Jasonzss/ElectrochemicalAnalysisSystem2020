@@ -212,34 +212,41 @@ public class ExcelUtil {
                     thirdRowCell.setCellStyle(contentStyle);
                 }
             }else {
-                //填充点位数据
-                HSSFRow contentRow;
+                //电位数据信息
                 //临时存储行
                 List<HSSFRow> contentRows = new ArrayList<>();
                 for (int j = 0; j < values.size(); j++) {
                     //单点位值数组
                     Double[] value = (Double[]) values.get(j);
-                    //遍历创建列单元格
-                    for (int m = 0; m < value.length; m++) {
-                        if (m == 0) {
-                            //只有一行，默认第三行
-                            contentRow = thirdRow;
-                        } else if(j == 0){
-                            //只在第一次使用时创建一次行，后面沿用该行，避免覆盖当前行
-                            //如果不止一行数据，创建新的行
-                            contentRow = sheet.createRow(2 + m);
-                            contentRows.add(contentRow);
-                        } else {
-                            //获取行
-                            contentRow = contentRows.get(m-1);
+                    int finalValueNum = valueNum;
+                    int finalJ = j;
+                    // 若点位数据值不为空，生成对应的单元格
+                    Optional.ofNullable(value).ifPresent(tag -> {
+                        //填充点位数据
+                        HSSFRow contentRow;
+                        //遍历创建列单元格
+                        for (int m = 0; m < value.length; m++) {
+                            if (m == 0) {
+                                //只有一行，默认第三行
+                                contentRow = thirdRow;
+                            } else if(finalJ == 0){
+                                //只在第一次使用时创建一次行，后面沿用该行，避免覆盖当前行
+                                //如果不止一行数据，创建新的行
+                                contentRow = sheet.createRow(2 + m);
+                                contentRows.add(contentRow);
+                            } else {
+                                //获取行
+                                contentRow = contentRows.get(m-1);
+                            }
+                            //创建列单元格
+                            HSSFCell contentRowCell = contentRow.createCell(finalValueNum + finalJ);
+                            //填充值
+                            contentRowCell.setCellValue(value[m]);
+                            //设置单元格样式
+                            contentRowCell.setCellStyle(contentStyle);
                         }
-                        //创建列单元格
-                        HSSFCell contentRowCell = contentRow.createCell(valueNum + j);
-                        //填充值
-                        contentRowCell.setCellValue(value[m]);
-                        //设置单元格样式
-                        contentRowCell.setCellStyle(contentStyle);
-                    }
+                    });
+
                 }
             }
             valueNum += values.size();
