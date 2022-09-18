@@ -252,7 +252,7 @@ public class AlgoUtil {
 
             fos.flush();
             //运行编译程序，以utf-8编译
-            runProcess("javac -encoding utf-8 -cp " + RESPATH + " " + temp.getAbsolutePath());
+            runProcess("javac -encoding utf-8 -cp \"" + RESPATH + "\" \"" + temp.getAbsolutePath() + "\"");
 
 
         } catch (FileNotFoundException e) {
