@@ -1,11 +1,9 @@
-package algo.java;
-
 /**
  * @Author SDJin
  * @CreationDate 2022/8/31 21:22
  * @Description ：标准化
  */
-public class Standardization {
+public class Main {
     
     public Double[] run(Double[] data) {
         //求均值
