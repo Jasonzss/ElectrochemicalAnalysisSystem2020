@@ -1,5 +1,3 @@
-package com.bluedot.queue;
-
 /**
  * <p>
  * Title: smooth
@@ -12,8 +10,8 @@ package com.bluedot.queue;
  * @return
  */
 
-public class Smooth {
-    public static double[] smooth(double[] d) {
+public class Main {
+    public static double[] run(double[] d) {
 
         int length = d.length;
         double[] dbRt = new double[length];
@@ -64,12 +62,12 @@ public class Smooth {
 
     }
 
-    public static void main(String[] args) {
-        double[] dbPara = {1, 2, 100, 10, 50, 20};
-        double[] dbRt = smooth(dbPara);
-        for (double dbIndex : dbRt) {
-            System.out.println(dbIndex);
-        }
-
-    }
+//    public static void main(String[] args) {
+//        double[] dbPara = {1, 2, 100, 10, 50, 20};
+//        double[] dbRt = smooth(dbPara);
+//        for (double dbIndex : dbRt) {
+//            System.out.println(dbIndex);
+//        }
+//
+//    }
 }

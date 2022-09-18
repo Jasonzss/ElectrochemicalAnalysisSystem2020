@@ -1,11 +1,9 @@
-package algo.java;
-
 /**
  * @Author SDJin
  * @CreationDate 2022/9/3 15:24
  * @Description ：去均值
  */
-public class DeMean {
+public class Main {
 
     public Double[] run(Double[] data) {
         Double sum = Double.valueOf(0);

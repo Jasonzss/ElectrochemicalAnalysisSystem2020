@@ -1,5 +1,3 @@
-package algo.java;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
@@ -9,7 +7,7 @@ import java.util.Optional;
  * @CreationDate 2022/8/31 17:06
  * @Description ：归一化算法
  */
-public class Normalization {
+public class Main {
 
     public Double[] run(Double[] data) {
         Optional<Double> minOptional = Arrays.stream(data).min(new Comparator<Double>() {
