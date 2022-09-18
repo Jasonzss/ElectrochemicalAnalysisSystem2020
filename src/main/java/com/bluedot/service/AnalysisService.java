@@ -255,10 +255,10 @@ public class AnalysisService extends BaseService<ExpData> {
         //根据algorithmId查询对应算法
         map.put("algorithmId",paramList.get("algorithmId"));
         CommonResult commonResult = new AlgorithmService(session, entityInfo).doOtherService(map, "select");
-        Map<String, Object> data = (Map<String, Object>) commonResult.getData();
+        List<Map<String, Object>> data = (List<Map<String, Object>>) commonResult.getData();
 
         //将查询到的数据放入算法实体类中
-        ReflectUtil.invokeSettersIncludeEntity(data,algorithm);
+        ReflectUtil.invokeSettersIncludeEntity(data.get(0) ,algorithm);
 
         //对数据进行分析，得到新的电流点位数据
         Double[] expNewestCurrentPointData = AlgoUtil.dataProcess(algorithm, expOriginalCurrentPointData.toArray(new Double[0]));
