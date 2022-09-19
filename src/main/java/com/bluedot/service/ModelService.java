@@ -84,6 +84,7 @@ public class ModelService extends BaseService<Report> {
         });
         //编写condition
         condition.addAndConditionWithView(new Term("exp_data","exp_data_id",expDataIdList, TermType.IN));
+        condition.setReturnType("ExpData");
         entityInfo.setCondition(condition);
         select();
         //得到查询到实验数据的expDataList
@@ -92,19 +93,32 @@ public class ModelService extends BaseService<Report> {
 
         //2. 查询预处理算法
         condition = new Condition();
+        condition.setReturnType("Algorithm");
+        condition.addAndConditionWithView(new Term("algorithm","algorithm_type",0,TermType.EQUAL));
         condition.addAndConditionWithView(new Term("algorithm","algorithm_id",pretreatmentAlgorithmId,TermType.EQUAL));
         entityInfo.setCondition(condition);
+        select();
         //得到查询到的预处理算法
         List<Algorithm> list = (List<Algorithm>) commonResult.getData();
+        if (list == null || list.size() == 0){
+            throw new UserException(CommonErrorCode.E_1019);
+        }
         Algorithm pretreatmentAlgorithm = list.get(0);
+
 
 
         //3. 查询数据建模算法
         condition = new Condition();
+        condition.setReturnType("Algorithm");
+        condition.addAndConditionWithView(new Term("algorithm","algorithm_type",2,TermType.EQUAL));
         condition.addAndConditionWithView(new Term("algorithm","algorithm_id",reportDataModelId,TermType.EQUAL));
         entityInfo.setCondition(condition);
+        select();
         //得到查询到的预处理算法
         list = (List<Algorithm>) commonResult.getData();
+        if (list == null || list.size() == 0){
+            throw new UserException(CommonErrorCode.E_1019);
+        }
         Algorithm reportDataModel = list.get(0);
         //将算法id放入report
         report.setPretreatmentAlgorithmId(reportDataModelId);
