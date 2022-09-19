@@ -11,10 +11,10 @@
  */
 
 public class Main {
-    public static double[] run(double[] d) {
+    public  Double[] run(Double[] data) {
 
         int length = d.length;
-        double[] dbRt = new double[length];
+        Double[] dbRt = new Double[length];
 
         if (length == 1) {
 /** 前置与后置无元素 index=0与index=length-1 */
@@ -62,12 +62,5 @@ public class Main {
 
     }
 
-//    public static void main(String[] args) {
-//        double[] dbPara = {1, 2, 100, 10, 50, 20};
-//        double[] dbRt = smooth(dbPara);
-//        for (double dbIndex : dbRt) {
-//            System.out.println(dbIndex);
-//        }
-//
-//    }
+
 }
