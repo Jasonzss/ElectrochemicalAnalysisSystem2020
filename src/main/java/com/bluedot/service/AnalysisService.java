@@ -155,11 +155,6 @@ public class AnalysisService extends BaseService<ExpData> {
                 s = br.readLine();
             }
 
-            System.out.println("----------------------------------------");
-            System.out.println(potentialList.toString());
-            System.out.println(currentList.toString());
-            System.out.println("----------------------------------------");
-
             //将电压电流放入ExpData中
             expData.setExpPotentialPointData(potentialList.toString());
             expData.setExpOriginalCurrentPointData(currentList.toString());
