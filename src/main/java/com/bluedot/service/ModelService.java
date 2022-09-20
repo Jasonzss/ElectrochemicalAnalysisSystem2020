@@ -174,7 +174,15 @@ public class ModelService extends BaseService<Report> {
 
 
         //进行数据建模
-        Double[] modelData = AlgoUtil.modeling(reportDataModel, stringMap.get("train"));
+        Double[] modelData;
+        if (reportDataModel.getAlgorithmLanguage() == 0){
+            modelData = AlgoUtil.modeling(reportDataModel, stringMap.get("train"));
+        }else if (reportDataModel.getAlgorithmLanguage() == 2){
+            modelData = (Double[]) PythonUtil.executePythonAlgorithFile("4.py",stringMap.get("train")).get("result");
+        }else {
+            throw new UserException(CommonErrorCode.E_7005);
+        }
+
 
         //分析得到结果建模，并将其放入report中
         String equation = generateEquation(modelData);
@@ -196,7 +204,6 @@ public class ModelService extends BaseService<Report> {
         analysisReport(report,trainPrediction,testPrediction);
 
         //****************************************************************************************
-        //TODO 根据测试集和训练集的点位画图，并把图放入report中
         setReportGraph(report, trainExperimentalPotential, trainPrediction, report.getTrainSetIndicator());
         setReportGraph(report, testExperimentalPotential, testPrediction, report.getTestSetIndicator());
 
