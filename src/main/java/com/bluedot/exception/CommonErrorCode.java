@@ -71,6 +71,7 @@ public enum CommonErrorCode implements ErrorCode {
     E_7002(7002, "该算法测试不通过"),
     E_7003(7003, "该算法不存在"),
     E_7004(7004, "存在不属于该用户的算法"),
+    E_7005(7005,"算法执行错误"),
     /**
      * mapper异常
      */
