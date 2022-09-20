@@ -249,7 +249,7 @@ public class AlgorithmService extends BaseService<Algorithm> {
         }else if (commonResult.getData() instanceof PageInfo) {
             algos = ((PageInfo) commonResult.getData()).getDataList();
         }else {
-            throw new UserException(CommonErrorCode.E_6001);
+            return;
         }
 
         Field[] fields = Algorithm.class.getDeclaredFields();
@@ -413,6 +413,9 @@ public class AlgorithmService extends BaseService<Algorithm> {
 
         if (commonResult.getData() instanceof List) {
             List<Algorithm> algos = (List<Algorithm>) commonResult.getData();
+            if (algos.isEmpty()) {
+                throw new UserException(CommonErrorCode.E_7003);
+            }
             for (Algorithm algo : algos) {
                 if (!sessionUserEmail.equals(algo.getUser().getUserEmail())) {
                     return false;
