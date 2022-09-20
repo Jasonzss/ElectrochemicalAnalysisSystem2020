@@ -88,7 +88,8 @@ public enum CommonErrorCode implements ErrorCode {
      * 文件操作方面异常
      */
     E_10001(10001,"上传算法文件失败!"),
-    E_10002(10002,"执行算法python文件失败")
+    E_10002(10002,"执行算法python文件失败"),
+    E_10003(10003, "Python程序出现异常")
     ;
     private final int code;
     private String msg;
