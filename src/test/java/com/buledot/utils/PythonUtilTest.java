@@ -1,12 +1,24 @@
 package com.buledot.utils;
 
+import com.bluedot.mapper.BaseMapper;
+import com.bluedot.mapper.MapperInit;
+import com.bluedot.mapper.bean.Condition;
+import com.bluedot.mapper.bean.EntityInfo;
+import com.bluedot.mapper.bean.Term;
+import com.bluedot.mapper.bean.TermType;
+import com.bluedot.pojo.entity.ExpData;
+import com.bluedot.pojo.entity.RolePermission;
 import com.bluedot.utils.PythonUtil;
+import org.apache.commons.math3.analysis.function.Exp;
 import org.junit.Test;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -144,5 +156,17 @@ public class PythonUtilTest {
     public void uploadPythonFileTest() throws FileNotFoundException {
         FileInputStream fileInputStream = new FileInputStream("src/main/resources/algo/python/template/main1.txt");
         PythonUtil.uploadPythonFile("line.py",fileInputStream);
+    }
+
+    @Test
+    public void modelTest() throws SQLException, IOException, ClassNotFoundException {
+        Double[][] d = new Double[10][2];
+        for (int i = 0; i < d.length; i++) {
+            d[i][1] = 1.0;
+            d[i][0] = 1.9;
+        }
+
+        Map<String, Object> map = PythonUtil.executePythonAlgorithFile("4.py", d);
+        System.out.println(map);
     }
 }
