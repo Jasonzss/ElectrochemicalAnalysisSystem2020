@@ -163,6 +163,8 @@ public class UserService extends BaseService<User> {
         //执行更新逻辑
         entityInfo.addEntity(user);
         update();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("成功修改"+data+"行数据",true);
     }
 
     /**
@@ -225,6 +227,8 @@ public class UserService extends BaseService<User> {
         // 执行修改逻辑
         entityInfo.addEntity(user);
         update();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("修改"+data+"行数据",true);
     }
 
     /**
@@ -303,6 +307,8 @@ public class UserService extends BaseService<User> {
         //返回注册信息
         if(((int)commonResult.getData()) == 1){
             commonResult = CommonResult.successResult("注册成功",true);
+        }else {
+            commonResult = CommonResult.errorResult(200,"注册失败");
         }
     }
 
@@ -322,6 +328,8 @@ public class UserService extends BaseService<User> {
 
         //执行删除逻辑
         delete();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("成功删除"+data+"行数据",true);
     }
 
     /**
@@ -335,6 +343,8 @@ public class UserService extends BaseService<User> {
 
         //执行删除逻辑
         delete();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("成功删除"+data+"行数据",true);
     }
 
     /**
