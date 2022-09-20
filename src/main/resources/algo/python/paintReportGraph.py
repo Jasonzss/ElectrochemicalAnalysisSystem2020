@@ -6,7 +6,11 @@ import numpy
 import matplotlib.pyplot as plt
 
 # 算法内容
-def main(x: list, y: list, equation: str, para: dict):
+def main(data):
+    x = data.get("expermental")
+    y = data.get("predicted")
+    equation = data.get("equation")
+    para = data.get("param")
     # 获得方程的参数
     fx = ''
     for item in equation.split("="):
@@ -64,13 +68,8 @@ if __name__ == "__main__":
     data = py_data.get('data')
     path = py_data.get('path')
 
-    x = data.get("expermental")
-    y = data.get("predicted")
-    equation = data.get("equation")
-    para = data.get("param")
-
     # 算法执行 并 处理返回结果
-    res = main(x, y, equation, para)
+    res = main(data)
 
     result = dict()
 
@@ -84,6 +83,6 @@ if __name__ == "__main__":
         plt.savefig(path)
         result.__setitem__("result", "the product image file path is : " + path)
     else:
-        result.__setitem__("result", "error")
+        result.__setitem__("result", res)
 
     print(json.dumps(result))

@@ -1,9 +1,6 @@
-package com.buledot.utils;
-
 import biz.source_code.dsp.filter.FilterPassType;
 import biz.source_code.dsp.filter.IirFilterCoefficients;
 import biz.source_code.dsp.filter.IirFilterDesignExstrom;
-import org.junit.Test;
 
 import java.util.Arrays;
 
@@ -14,7 +11,7 @@ import java.util.Arrays;
  */
 public class Main {
 
-    public static synchronized Double[] IIRFilter(Double[] signal) {
+    public  Double[] run(Double[] signal) {
         IirFilterCoefficients iirFilterCoefficients;
         iirFilterCoefficients = IirFilterDesignExstrom.design(FilterPassType.lowpass, 10,
                 10.0 / 50, 10.0 / 50);

@@ -34,6 +34,6 @@ if __name__ == "__main__":
         plt.savefig(path)
         result.__setitem__("result", "the product image file path is : " + path)
     else:
-        result.__setitem__("result", "error")
+        result.__setitem__("result", res)
 
     print(json.dumps(result))

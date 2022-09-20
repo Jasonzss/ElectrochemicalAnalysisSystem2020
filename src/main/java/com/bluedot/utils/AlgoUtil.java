@@ -26,7 +26,7 @@ public class AlgoUtil {
 
     //获取资源文件目录的绝对路径
     public static final String RESPATH =
-            Thread.currentThread().getContextClassLoader().getResource("").getPath();
+            Thread.currentThread().getContextClassLoader().getResource("").getPath().replaceAll( "%20"," ");
 
     //算法的类名
     public static final String ALGOCLASSNAME = "Main";
@@ -236,7 +236,6 @@ public class AlgoUtil {
             }else if (!temp.exists()) {
                 temp.createNewFile();
             }
-            System.out.println(temp.exists());
 
             fis = new FileInputStream(src);
             fos = new FileOutputStream(temp);
@@ -253,7 +252,7 @@ public class AlgoUtil {
 
             fos.flush();
             //运行编译程序，以utf-8编译
-            runProcess("javac -encoding utf-8 -cp " + RESPATH + " " + temp.getAbsolutePath());
+            runProcess("javac -encoding utf-8 -cp \"" + RESPATH + "\" \"" + temp.getAbsolutePath() + "\"");
 
 
         } catch (FileNotFoundException e) {

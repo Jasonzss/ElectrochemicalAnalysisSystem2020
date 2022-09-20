@@ -5,6 +5,7 @@ import com.bluedot.exception.UserException;
 import com.bluedot.pojo.entity.Algorithm;
 import com.bluedot.pojo.entity.ExpData;
 import com.bluedot.pojo.entity.Report;
+import com.bluedot.pojo.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,10 +15,12 @@ import org.slf4j.Logger;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author FireRain
@@ -65,7 +68,7 @@ public class PythonUtil {
      * @param data 参数数据
      * @return 算法执行的结果数据
      */
-    public static Map<String,Object> executePythonAlgorithFile(String fileName,Object data){
+    public static Object executePythonAlgorithFile(String fileName,Object data){
         return executePythonAlgorithFile(fileName,data,"");
     }
 
@@ -76,7 +79,7 @@ public class PythonUtil {
      * @param imageName 产生文件路径
      * @return 算法执行的结果数据
      */
-    public static Map<String,Object> executePythonAlgorithFile(String fileName, Object data, String imageName){
+    public static Object executePythonAlgorithFile(String fileName, Object data, String imageName){
         // 自定义map，将数据信息放入map中
         HashMap<String, Object> param = new HashMap<>();
         param.put("data",data);
@@ -84,7 +87,8 @@ public class PythonUtil {
         if (!"".equals(imageName)) {
             param.put("path",IMAGE_PATH + imageName);
         }
-        return executePython(fileName, param);
+
+        return executePython(fileName, param).get("result");
     }
 
     /**
@@ -119,14 +123,38 @@ public class PythonUtil {
             // 返回的json结果
             BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String jsonResult = br.readLine();
-            // 关闭流
-            br.close();
-            System.out.println("获取到python算法处理后的Json格式数据 : " + jsonResult);
+
+            // 错误处理
+            String result = Optional.ofNullable(jsonResult).orElseGet(() -> {
+                BufferedReader errorBr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                try {
+                    while ((line = errorBr.readLine()) != null) {
+                        sb.append(line);
+                        sb.append("\n");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new UserException(CommonErrorCode.E_10003);
+                }
+                return sb.toString();
+            });
 
             //使当前线程等待，直到该程序的进程结束，才返回调用
             process.waitFor();
 
-            return objectMapper.readValue(jsonResult, Map.class);
+            // 关闭流
+            br.close();
+
+            System.out.println("获取到python程序返回的数据 : " + result);
+
+            return objectMapper.readValue(Optional.ofNullable(jsonResult).orElseThrow(
+                    () -> {
+                        System.out.println("python程序出现异常!");
+                        return new UserException(CommonErrorCode.E_10003);
+                    }
+            ), Map.class);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             throw new UserException(CommonErrorCode.E_10002);

@@ -2,6 +2,7 @@ package com.bluedot.service;
 
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
+import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Algorithm;
@@ -70,13 +71,20 @@ public class AnalysisService extends BaseService<ExpData> {
      * 分析用户输入的数据，并将其和输入的数据保存到ExpData表与返回给前端
      */
     private void analysis(){
+        ExpData expData = new ExpData();
+        paramList.put("userEmail",session.getAttribute(SessionConstants.USER_EMAIL));
+        //TODO expCreateTime时间该怎么搞
+        paramList.put("expDeleteStatus",0);
+
+        //将其他实验数据信息填充进expData
+        ReflectUtil.invokeSettersIncludeEntityByTypeAndName(paramList,expData);
+
         //获取用户上传的文件
         FileItem fileItem = (FileItem) paramList.get("file");
-        ExpData expData;
 
         try{
             // 读取用户上传的文件，获得相关分析数据
-             expData = analysisFile(fileItem);
+            analysisFile(expData, fileItem);
         }catch (NullPointerException e){
             throw new UserException(CommonErrorCode.E_1013);
         }
@@ -87,28 +95,33 @@ public class AnalysisService extends BaseService<ExpData> {
         expData.setExpOriginalCurrent(waveAnalysisData[1]);
 
         //设置expData的系统数据
-        paramList.put("userEmail",session.getAttribute(SessionConstants.USER_EMAIL));
-        //TODO expCreateTime时间该怎么搞
-        paramList.put("expDeleteStatus",0);
-
-        //将其他实验数据信息填充进expData
-        ReflectUtil.invokeSettersIncludeEntity(paramList,expData);
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        expData.setExpCreateTime(timestamp);
+        expData.setExpLastUpdateTime(timestamp);
 
         //将生成的expData储存到数据库
         entityInfo.addEntity(expData);
         insert();
 
-        //TODO 如何将expData插入数据库后连带着expDataId一起返回给前端
+        //返回expDataId给前端
+        //暂时使用这会有并发问题的写法吧
+        Condition condition = new Condition();
+        List<String> list = new ArrayList<>();
+        condition.setReturnType("Integer");
+        condition.addFields("MAX(exp_data_id)");
+        condition.addView("exp_data");
+
+        //执行查询逻辑
+        entityInfo.setCondition(condition);
+        select();
     }
 
     /**
      * 读取用户上传的txt文件，将其中的电压电流文件读出，并设置默认的电流数量级
+     * @param expData 分析出来的数据放入此expData中
      * @param fileItem txt文件
-     * @return 带有电压电流数量级数据的ExpData对象
      */
-    private ExpData analysisFile(FileItem fileItem){
-        ExpData expData = null;
-
+    private void analysisFile(ExpData expData, FileItem fileItem){
         try {
             //创建字符输入流读取对象读取传入的文件
             InputStreamReader isr = new InputStreamReader(fileItem.getInputStream(),"GBK");
@@ -126,7 +139,6 @@ public class AnalysisService extends BaseService<ExpData> {
             s = br.readLine();
 
             //将所有的点位数据读取到ExpData中
-            expData = new ExpData();
             List<Double> potentialList = new ArrayList<>();
             List<Double> currentList = new ArrayList<>();
 
@@ -143,18 +155,18 @@ public class AnalysisService extends BaseService<ExpData> {
                 s = br.readLine();
             }
 
+            System.out.println("----------------------------------------");
+            System.out.println(potentialList.toString());
+            System.out.println(currentList.toString());
+            System.out.println("----------------------------------------");
+
             //将电压电流放入ExpData中
             expData.setExpPotentialPointData(potentialList.toString());
             expData.setExpOriginalCurrentPointData(currentList.toString());
-
-            //TODO 初始化ExpData的信息，在将expData插入的同时获取到其包括主键一起的所有信息返回给用户
-
         } catch (IOException e) {
             e.printStackTrace();
             throw new UserException(CommonErrorCode.E_5003);
         }
-
-        return expData;
     }
 
     /**
@@ -243,10 +255,14 @@ public class AnalysisService extends BaseService<ExpData> {
         //根据algorithmId查询对应算法
         map.put("algorithmId",paramList.get("algorithmId"));
         CommonResult commonResult = new AlgorithmService(session, entityInfo).doOtherService(map, "select");
-        Map<String, Object> data = (Map<String, Object>) commonResult.getData();
+        List<Map<String, Object>> data = (List<Map<String, Object>>) commonResult.getData();
+        Map<String, Object> algoMap = data.get(0);
+        if (algoMap.size() <= 0){
+            throw new UserException(CommonErrorCode.E_1019);
+        }
 
         //将查询到的数据放入算法实体类中
-        ReflectUtil.invokeSettersIncludeEntity(data,algorithm);
+        ReflectUtil.invokeSettersIncludeEntity(algoMap ,algorithm);
 
         //对数据进行分析，得到新的电流点位数据
         Double[] expNewestCurrentPointData = AlgoUtil.dataProcess(algorithm, expOriginalCurrentPointData.toArray(new Double[0]));

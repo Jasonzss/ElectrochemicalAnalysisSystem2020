@@ -119,7 +119,7 @@ public class BaseMapper {
             public void generateSqlExecutor(Field[] fields, TableInfo tableInfo, List<ColumnInfo> primaryKeys, StringBuilder sql, MappedStatement mappedStatement, List<Object> params) {
                 Object entity = typeList.get(0);
                 sql.append("insert into ").append(tableInfo.getTableName()).append("(");
-                List<Class> classList= Arrays.asList(byte[].class,Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,char.class,Boolean.class,String.class, Date.class, Timestamp.class);
+                List<Class> classList= Arrays.asList(byte[].class,Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,char.class,Boolean.class,String.class, Date.class, Timestamp.class, Double[].class);
                 for (Field field : fields) {
                     field.setAccessible(true);
                     //是否是外键实体类
@@ -252,7 +252,7 @@ public class BaseMapper {
             @Override
             public void generateSqlExecutor(Field[] fields, TableInfo tableInfo, List<ColumnInfo> primaryKeys, StringBuilder sql, MappedStatement mappedStatement, List<Object> params) {
                 Object entity = typeList.get(0);
-                List<Class> classList=Arrays.asList(byte[].class,Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,char.class,Boolean.class,String.class,Date.class,Timestamp.class);
+                List<Class> classList=Arrays.asList(byte[].class,Byte.class,Short.class,Integer.class,Long.class,Float.class,Double.class,char.class,Boolean.class,String.class,Date.class,Timestamp.class,Double[].class);
                 if (typeList.size()>1){
                     sql.append("update ").append(tableInfo.getTableName()).append(" set ");
                     for (Field field : fields) {
@@ -450,7 +450,7 @@ public class BaseMapper {
                 List<String> fields = condition.getFields();
                 boolean flag=true;
                 for (String field : fields) {
-                    if (field.indexOf("GROUP")!=-1||field.indexOf(primaryName)!=-1|| field.indexOf("*")!=-1) {
+                    if (field.indexOf("GROUP")!=-1||field.indexOf(primaryName)!=-1 || field.indexOf("*")!=-1 || field.indexOf("DISTINCT") != -1) {
                         flag=false;
                     }
                 }
@@ -611,7 +611,6 @@ public class BaseMapper {
                             select.append("< ? ");
                             break;
                     }
-
                 }
             }
         }

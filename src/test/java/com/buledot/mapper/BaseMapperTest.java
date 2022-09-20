@@ -146,4 +146,21 @@ public class BaseMapperTest {
         entityInfo.setOperation("select");
         new BaseMapper(entityInfo);
     }
+
+    @Test
+    public void testSelectId() throws SQLException, IOException, ClassNotFoundException {
+        new MapperInit("database.properties");
+        Condition condition = new Condition();
+
+        List<String> list = new ArrayList<>();
+        condition.setReturnType("Integer");
+        condition.addFields("MAX(exp_data_id)");
+        condition.addView("exp_data");
+
+        //执行查询逻辑
+        EntityInfo<RolePermission> entityInfo = new EntityInfo<>();
+        entityInfo.setCondition(condition);
+        entityInfo.setOperation("select");
+        new BaseMapper(entityInfo);
+    }
 }

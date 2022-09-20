@@ -29,7 +29,7 @@ public enum CommonErrorCode implements ErrorCode {
     E_1016(1016,"用户冻结中，请申请解冻"),
     E_1017(1017,"解冻申请审核中，请耐心等待审核通过"),
     E_1018(1018,"异常用户状态"),
-
+    E_1019(1019,"不存在此算法"),
 
     /**
      * 数据管理模块错误:E_2xxx
@@ -88,7 +88,8 @@ public enum CommonErrorCode implements ErrorCode {
      * 文件操作方面异常
      */
     E_10001(10001,"上传算法文件失败!"),
-    E_10002(10002,"执行算法python文件失败")
+    E_10002(10002,"执行算法python文件失败"),
+    E_10003(10003, "Python程序出现异常")
     ;
     private final int code;
     private String msg;
