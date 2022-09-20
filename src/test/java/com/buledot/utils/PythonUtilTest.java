@@ -39,11 +39,8 @@ public class PythonUtilTest {
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
-        Map<String, Object> map = PythonUtil.executePythonAlgorithFile("3.py", data);
-        map.forEach((k,v)->{
-            System.out.println("key::"+k);
-            System.out.println("value::"+v);
-        });
+        Object value = PythonUtil.executePythonAlgorithFile("3.py", data);
+        System.out.println(value);
     }
 
     /**
@@ -57,8 +54,8 @@ public class PythonUtilTest {
                 0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
         String path = "images/imageResultTest";
 
-        Map<String,Object> result = PythonUtil.executePythonAlgorithFile("2.py", data, path);
-        System.out.println(result.get("result"));
+        Object result = PythonUtil.executePythonAlgorithFile("2.py", data, path);
+        System.out.println(result);
 
     }
 
@@ -83,8 +80,8 @@ public class PythonUtilTest {
 
         String path = "line.png";
 
-        Map<String,Object> result = PythonUtil.executePythonAlgorithFile("paintReportGraph.py", map, path);
-        System.out.println(result.get("result"));
+        Object result = PythonUtil.executePythonAlgorithFile("paintReportGraph.py", map, path);
+        System.out.println(result);
 
     }
 
@@ -168,5 +165,19 @@ public class PythonUtilTest {
 
         Map<String, Object> map = PythonUtil.executePythonAlgorithFile("4.py", d);
         System.out.println(map);
+    }
+
+    /**
+     * python程序异常处理
+     */
+    @Test
+    public void pythonProcessExceptionTest(){
+        Double[][] data = new Double[10][2];
+        for (int i = 0; i < data.length; i++) {
+            data[i][0] = 1.9;
+            data[i][1] = 1.0;
+        }
+        Object result = PythonUtil.executePythonAlgorithFile("4.py",data);
+        System.out.println(result);
     }
 }
