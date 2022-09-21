@@ -36,6 +36,10 @@ public class PythonUtil {
      */
     private static final String BASE_PATH = "src/main/resources/algo/python/";
 
+    /**
+     * 图片的默认生成路径
+     */
+    private static final String IMAGE_PATH = "src/main/resources/image/";
 
     /**
      * py执行命令
@@ -47,10 +51,6 @@ public class PythonUtil {
      */
     private static final String  TEMPLATE_FILE_PATH= "template/example.txt";
 
-    /**
-     * 图片的默认生成路径
-     */
-    private static final String IMAGE_PATH = "src/main/resources/image/";
 
     /**
      * 插入模板开始标志
