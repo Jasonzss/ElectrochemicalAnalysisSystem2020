@@ -80,7 +80,7 @@ if __name__ == "__main__":
             tmp.append(res[i])
         result.__setitem__("result", tmp)
     elif isinstance(res, matplotlib.__class__):
-        plt.savefig(path)
+        res.savefig(path)
         result.__setitem__("result", "the product image file path is : " + path)
     else:
         result.__setitem__("result", res)
