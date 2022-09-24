@@ -137,7 +137,7 @@ public class ModelService extends BaseService<Report> {
 
 
         //将查询的数据放入report中
-        //将expDataList中的所有电压电流取出来
+        //将expDataList中的所有电压电流取出来,data[i][0]放实浓度，data[i][1]放电流
         Double[][] data = new Double[expDataList.size()][2];
         for (int i = 0; i < expDataList.size(); i++) {
             ExpData expData = expDataList.get(i);
@@ -178,7 +178,7 @@ public class ModelService extends BaseService<Report> {
         if (reportDataModel.getAlgorithmLanguage() == 0){
             modelData = AlgoUtil.modeling(reportDataModel, stringMap.get("train"));
         }else if (reportDataModel.getAlgorithmLanguage() == 2){
-            modelData = (Double[]) PythonUtil.executePythonAlgorithFile("4.py",stringMap.get("train")).get("result");
+            modelData = (Double[]) PythonUtil.executePythonAlgorithFile("4.py",stringMap.get("train"));
         }else {
             throw new UserException(CommonErrorCode.E_7005);
         }
