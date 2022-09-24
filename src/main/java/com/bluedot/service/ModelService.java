@@ -18,7 +18,6 @@ import com.bluedot.utils.ModelUtil;
 import com.bluedot.utils.PythonUtil;
 import com.bluedot.utils.constants.OperationConstants;
 import com.bluedot.utils.constants.SessionConstants;
-import org.junit.Test;
 
 import javax.servlet.http.HttpSession;
 import java.io.*;
@@ -48,6 +47,8 @@ public class ModelService extends BaseService<Report> {
 
         if ("insert".equals(operation)) {
             methodName = "modeling";
+        } else if ("login".equals(operation)) {
+            methodName = "pythonTest";
         } else {
             throw new UserException(CommonErrorCode.E_5001);
         }
@@ -58,6 +59,20 @@ public class ModelService extends BaseService<Report> {
     @Override
     protected boolean check() {
         return true;
+    }
+
+    /**
+     * 测试运行python文件
+     */
+    private void pythonTest(){
+        String pythonFileName = (String) paramList.get("pythonFileName");
+        Double[][] d = new Double[10][2];
+        for (int i = 0; i < d.length; i++) {
+            d[i][1] = 1.0;
+            d[i][0] = 0.9;
+        }
+        Object o = PythonUtil.executePythonAlgorithmFile(pythonFileName, d);
+        System.out.println(o);
     }
 
     /**
@@ -137,16 +152,15 @@ public class ModelService extends BaseService<Report> {
 
 
         //将查询的数据放入report中
-        //将expDataList中的所有电压电流取出来,data[i][0]放实浓度，data[i][1]放电流
-        Double[][] data = new Double[expDataList.size()][2];
+        //将expDataList中的所有电压电流取出来,data[i][0]放实浓度，data[i][1]放电流，data[i][2]留着后面放预测值
+        Double[][] data = new Double[expDataList.size()][3];
         for (int i = 0; i < expDataList.size(); i++) {
             ExpData expData = expDataList.get(i);
-            if (expData.getExpNewestPotential() == null || expData.getExpNewestCurrent() == null){
-                data[i][0] = expDataList.get(i).getExpOriginalPotential();
+            data[i][0] = expDataList.get(i).getExpMaterialSolubility();
+            if (expData.getExpNewestCurrent() == null){
                 data[i][1] = expDataList.get(i).getExpOriginalCurrent();
             }else {
                 //如果存在最新数据则使用最新数据
-                data[i][0] = expDataList.get(i).getExpNewestPotential();
                 data[i][1] = expDataList.get(i).getExpNewestCurrent();
             }
         }
@@ -160,16 +174,14 @@ public class ModelService extends BaseService<Report> {
         Map<String, Double[][]> stringMap = AlgoUtil.divideDataSet(preprocessData);
         Double[][] testSet = stringMap.get("test");
         Double[][] trainSet = stringMap.get("train");
-        report.setTestSetData(Arrays.deepToString(testSet));
-        report.setTrainingSetData(Arrays.deepToString(trainSet));
-        //获取测试集和训练集的真实电压数据
-        Double[] trainExperimentalPotential = new Double[trainSet.length];
-        Double[] testExperimentalPotential = new Double[testSet.length];
+        //获取测试集和训练集的真实溶度数据
+        Double[] trainSolubilitySet = new Double[trainSet.length];
+        Double[] testSolubilitySet = new Double[testSet.length];
         for (int i = 0; i < testSet.length; i++) {
-            testExperimentalPotential[i] = testSet[i][0];
+            testSolubilitySet[i] = testSet[i][0];
         }
         for (int i = 0; i < trainSet.length; i++) {
-            trainExperimentalPotential[i] = trainSet[i][0];
+            trainSolubilitySet[i] = trainSet[i][0];
         }
 
 
@@ -178,7 +190,7 @@ public class ModelService extends BaseService<Report> {
         if (reportDataModel.getAlgorithmLanguage() == 0){
             modelData = AlgoUtil.modeling(reportDataModel, stringMap.get("train"));
         }else if (reportDataModel.getAlgorithmLanguage() == 2){
-            modelData = (Double[]) PythonUtil.executePythonAlgorithFile("4.py",stringMap.get("train"));
+            modelData = (Double[]) PythonUtil.executePythonAlgorithmFile("4.py",stringMap.get("train"));
         }else {
             throw new UserException(CommonErrorCode.E_7005);
         }
@@ -188,25 +200,30 @@ public class ModelService extends BaseService<Report> {
         String equation = generateEquation(modelData);
         report.setReportResultModel(equation);
 
+        //获取训练集和测试集的预测溶度数据
+        Double[] trainingPredictedSolubilitySet = new Double[trainSolubilitySet.length];
+        Double[] testPredictedSolubilitySet = new Double[testSolubilitySet.length];
+
         //将训练集和测试集的实际值带入方程算出训练集预测值和测试集预测值
-        Double[][] trainingSetDataAsDoubles = report.getTrainingSetDataAsDoubles();
-        Double[][] testSetDataAsDoubles = report.getTestSetDataAsDoubles();
-        Double[] trainPrediction = new Double[trainingSetDataAsDoubles.length];
-        Double[] testPrediction = new Double[testSetDataAsDoubles.length];
-        for (int i = 0; i < trainPrediction.length; i++) {
-            trainPrediction[i] = executeEquation(equation, trainingSetDataAsDoubles[i][1]);
+        for (int i = 0; i < trainSet.length; i++) {
+            trainingPredictedSolubilitySet[i] = executeEquation(equation, trainSet[i][1]);
+            trainSet[i][2] = trainingPredictedSolubilitySet[i];
         }
-        for (int i = 0; i < trainPrediction.length; i++) {
-            testPrediction[i] = executeEquation(equation, testSetDataAsDoubles[i][1]);
+        for (int i = 0; i < testSet.length; i++) {
+            testPredictedSolubilitySet[i] = executeEquation(equation, testSet[i][1]);
+            testSet[i][2] = testPredictedSolubilitySet[i];
         }
+        //将 【测试集的电流、预测溶度、真实溶度】 和 【训练集的电流、预测溶度、真实溶度】 放入report
+        report.setTrainingSetData(Arrays.deepToString(trainSet));
+        report.setTestSetData(Arrays.deepToString(testSet));
 
         //分析模型，并将分析的七个数据放入report
-        analysisReport(report,trainPrediction,testPrediction);
+        analysisReport(report,trainingPredictedSolubilitySet,testPredictedSolubilitySet);
 
         //****************************************************************************************
-        setReportGraph(report, trainExperimentalPotential, trainPrediction, report.getTrainSetIndicator());
-        setReportGraph(report, testExperimentalPotential, testPrediction, report.getTestSetIndicator());
 
+        setReportGraph(report, trainSolubilitySet, trainingPredictedSolubilitySet, report.getTrainSetIndicator());
+        setReportGraph(report, testSolubilitySet, testPredictedSolubilitySet, report.getTestSetIndicator());
 
         //******************************************************************
         //向report放入系统数据
@@ -239,8 +256,8 @@ public class ModelService extends BaseService<Report> {
     /**
      * 对实验报告中的模型进行评价，得到七个参数放入该Report中
      * @param report 待分析的实验报告
-     * @param trainPrediction 训练集的预测电压
-     * @param testPrediction 测试集的预测电压
+     * @param trainPrediction 训练集的预测溶度
+     * @param testPrediction 测试集的预测溶度
      */
     private void analysisReport(Report report, Double[] trainPrediction, Double[] testPrediction){
         Double[][] trainingSetDataAsDoubles = report.getTrainingSetDataAsDoubles();
@@ -386,8 +403,8 @@ public class ModelService extends BaseService<Report> {
     /**
      * 根据测试集和训练集的点位画图，并把图放入report中
      * @param report 被操作实验报告
-     * @param experimental 实验数据原本的实验（真实）电压
-     * @param prediction 实验数据经过建模方程得到的预测电压
+     * @param experimental 实验数据原本的实验（真实）溶度
+     * @param prediction 实验数据经过建模方程得到的预测溶度
      * @param param 判断模型的指标
      */
     private void setReportGraph(Report report, Double[] experimental, Double[] prediction, Map<String,String> param){
@@ -396,7 +413,7 @@ public class ModelService extends BaseService<Report> {
         trainPaintParam.put("y",prediction);
         trainPaintParam.put("equation",generateEquationWithKAndB(ModelUtil.getFiParameters(experimental,prediction)));
         trainPaintParam.put("para",param);
-        PythonUtil.executePythonAlgorithFile("paintReportGraph.py",trainPaintParam,"fig_"+report.getReportId()+".jpg");
+        PythonUtil.executePythonAlgorithmFile("paintReportGraph.py",trainPaintParam,"fig_"+report.getReportId()+".jpg");
         //获取生成的图片的流，并把文件删除
 
         File file = new File("src/main/resources/image/fig_"+report.getReportId()+".jpg");
