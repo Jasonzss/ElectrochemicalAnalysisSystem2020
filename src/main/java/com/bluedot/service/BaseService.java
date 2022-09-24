@@ -3,18 +3,19 @@ package com.bluedot.service;
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.ErrorCode;
 import com.bluedot.exception.UserException;
-import com.bluedot.mapper.bean.Condition;
-import com.bluedot.mapper.bean.EntityInfo;
-import com.bluedot.mapper.bean.PageInfo;
+import com.bluedot.mapper.bean.*;
 import com.bluedot.monitor.impl.ServiceMapperMonitor;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
 import com.bluedot.queue.outQueue.impl.ServiceControllerQueue;
+import com.bluedot.utils.ReflectUtil;
+import com.bluedot.utils.StringUtil;
 import com.bluedot.utils.constants.OperationConstants;
 
 import javax.servlet.http.HttpSession;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -135,7 +136,14 @@ public abstract class BaseService<T> {
 
     protected void select(){
         entityInfo.setOperation(OperationConstants.SELECT);
-        commonResult = doMapper();
+        CommonResult commonResult = doMapper();
+        List<?> data = (List<?>) commonResult.getData();
+        //对每个数据进行实体属性的填充
+        for (Object obj:data) {
+            queryEntityField(obj);
+        }
+        //封装结果
+        this.commonResult = CommonResult.successResult("",data);
     }
 
     /**
@@ -144,13 +152,18 @@ public abstract class BaseService<T> {
     protected void selectPage(){
         // 查询当前页的对应数据
         entityInfo.setOperation(OperationConstants.SELECT);
-        commonResult = doMapper();
+        CommonResult commonResult = doMapper();
+        List<?> data = (List<?>) commonResult.getData();
+        //对每个数据进行实体属性的填充
+        data.forEach(this::queryEntityField);
+        //封装结果
+        commonResult = CommonResult.successResult("",data);
 
         Condition condition = entityInfo.getCondition();
         // 设置pageInfo，并将查询到的数据填入
         PageInfo pageInfo = new PageInfo();
         if (((ArrayList) commonResult.getData()).size() == 0){
-            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
+            this.commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
         }else {
             pageInfo.setDataList((List<Object>)commonResult.getData());
             pageInfo.setPageSize(condition.getSize());
@@ -159,7 +172,7 @@ public abstract class BaseService<T> {
             pageInfo.setTotalPageSize((pageInfo.getTotalDataSize() + pageInfo.getPageSize() - 1) / pageInfo.getPageSize());
             pageInfo.setCurrentPageNo(Math.toIntExact(condition.getStartIndex() / condition.getSize() + 1));
 
-            commonResult = CommonResult.successResult("分页查询", pageInfo);
+            this.commonResult = CommonResult.successResult("分页查询", pageInfo);
         }
     }
 
@@ -183,6 +196,62 @@ public abstract class BaseService<T> {
         //返回结果
         ArrayList list= (ArrayList) commonResult.getData();
         return (long)list.get(0);
+    }
+
+    /**
+     * 查询实体类的实体属性
+     * @param obj 实体类
+     */
+    private void queryEntityField(Object obj){
+        if (!obj.getClass().getTypeName().contains("pojo.entity")){
+            //如果不是实体类直接返回
+            return;
+        }
+
+        Field[] declaredFields = obj.getClass().getDeclaredFields();
+        for (Field field : declaredFields) {
+            //判断外键实体的主键
+            String fullClassName = field.getType().getName();
+            String simpleName = field.getType().getSimpleName();
+            if (fullClassName.contains("pojo.entity")){
+                //对此实体进行查询
+                Field[] foreignKeyEntityFields = field.getType().getDeclaredFields();
+                Field key = null;
+                int i = 0;
+                while (i < foreignKeyEntityFields.length){
+                    if (foreignKeyEntityFields[i] != null){
+                        key = foreignKeyEntityFields[i];
+                        break;
+                    }
+                    i++;
+                }
+                //外键实体没有任何属性，不用查了
+                if (key == null){
+                    return;
+                }
+
+                //生成查询condition
+                Condition condition = new Condition();
+                condition.setReturnType(simpleName);
+                Object fieldAttribute = ReflectUtil.invokeGet(obj, field.getName());
+                condition.setFieldsWithoutClasses(field.getType(), byte[].class);
+                condition.addAndConditionWithView(new Term(StringUtil.humpToLine(simpleName), StringUtil.humpToLine(key.getName()), ReflectUtil.invokeGet(fieldAttribute, key.getName()), TermType.EQUAL));
+
+                //执行查询
+                entityInfo.setOperation(OperationConstants.SELECT);
+                entityInfo.setCondition(condition);
+                CommonResult commonResult = doMapper();
+                List<?> data = (List<?>) commonResult.getData();
+                if (data.size() == 0){
+                    //数据库没有此数据时不包装
+                    return;
+                }
+                Object o = data.get(0);
+
+                //将查询到的封装到obj中
+                ReflectUtil.invokeSetByTypeAndName(obj,simpleName,o);
+            }
+        }
     }
 
     /**
