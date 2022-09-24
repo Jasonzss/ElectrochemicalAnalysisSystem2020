@@ -264,7 +264,7 @@ public class Report {
         str = str.replace("[[","");
         str = str.replace("]]","");
         String[] array = str.split("], \\[");
-        Double[][] doubles = new Double[array.length][2];
+        Double[][] doubles = new Double[array.length][3];
 
         for (int i = 0; i < array.length; i++) {
             String[] split = array[i].split(", ");
