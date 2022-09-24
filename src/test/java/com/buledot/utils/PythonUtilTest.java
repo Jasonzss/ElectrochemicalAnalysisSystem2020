@@ -160,11 +160,11 @@ public class PythonUtilTest {
         Double[][] d = new Double[10][2];
         for (int i = 0; i < d.length; i++) {
             d[i][1] = 1.0;
-            d[i][0] = 1.9;
+            d[i][0] = 0.9;
         }
 
-        Map<String, Object> map = PythonUtil.executePythonAlgorithFile("4.py", d);
-        System.out.println(map);
+        Object o = PythonUtil.executePythonAlgorithFile("4.py", d);
+        System.out.println(o);
     }
 
     /**
