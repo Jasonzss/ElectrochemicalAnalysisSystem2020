@@ -1,25 +1,13 @@
 package com.buledot.utils;
 
-import com.bluedot.mapper.BaseMapper;
-import com.bluedot.mapper.MapperInit;
-import com.bluedot.mapper.bean.Condition;
-import com.bluedot.mapper.bean.EntityInfo;
-import com.bluedot.mapper.bean.Term;
-import com.bluedot.mapper.bean.TermType;
-import com.bluedot.pojo.entity.ExpData;
-import com.bluedot.pojo.entity.RolePermission;
 import com.bluedot.utils.PythonUtil;
-import org.apache.commons.math3.analysis.function.Exp;
 import org.junit.Test;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author FireRain
@@ -39,7 +27,7 @@ public class PythonUtilTest {
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
-        Object value = PythonUtil.executePythonAlgorithFile("3.py", data);
+        Object value = PythonUtil.executePythonAlgorithmFile("3.py", data);
         System.out.println(value);
     }
 
@@ -54,7 +42,7 @@ public class PythonUtilTest {
                 0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
         String path = "images/imageResultTest";
 
-        Object result = PythonUtil.executePythonAlgorithFile("2.py", data, path);
+        Object result = PythonUtil.executePythonAlgorithmFile("2.py", data, path);
         System.out.println(result);
 
     }
@@ -80,7 +68,7 @@ public class PythonUtilTest {
 
         String path = "line.png";
 
-        Object result = PythonUtil.executePythonAlgorithFile("paintReportGraph.py", map, path);
+        Object result = PythonUtil.executePythonAlgorithmFile("paintReportGraph.py", map, path);
         System.out.println(result);
 
     }
@@ -163,7 +151,7 @@ public class PythonUtilTest {
             d[i][0] = 0.9;
         }
 
-        Object o = PythonUtil.executePythonAlgorithFile("4.py", d);
+        Object o = PythonUtil.executePythonAlgorithmFile("4.py", d);
         System.out.println(o);
     }
 
@@ -177,7 +165,7 @@ public class PythonUtilTest {
             data[i][0] = 1.9;
             data[i][1] = 1.0;
         }
-        Object result = PythonUtil.executePythonAlgorithFile("4.py",data);
+        Object result = PythonUtil.executePythonAlgorithmFile("4.py",data);
         System.out.println(result);
     }
 }
