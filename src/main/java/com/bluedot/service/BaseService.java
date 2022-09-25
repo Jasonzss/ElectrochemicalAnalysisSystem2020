@@ -152,6 +152,8 @@ public abstract class BaseService<T> {
     protected void selectPage(){
         // 查询当前页的对应数据
         entityInfo.setOperation(OperationConstants.SELECT);
+        Integer size = entityInfo.getCondition().getSize();
+        Long startIndex = entityInfo.getCondition().getStartIndex();
         CommonResult commonResult = doMapper();
         List<?> data = (List<?>) commonResult.getData();
         //对每个数据进行实体属性的填充
@@ -166,11 +168,11 @@ public abstract class BaseService<T> {
             this.commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
         }else {
             pageInfo.setDataList((List<Object>)commonResult.getData());
-            pageInfo.setPageSize(condition.getSize());
+            pageInfo.setPageSize(size);
             // 调用getCount查询数据总数量
             pageInfo.setTotalDataSize(getCount(condition));
             pageInfo.setTotalPageSize((pageInfo.getTotalDataSize() + pageInfo.getPageSize() - 1) / pageInfo.getPageSize());
-            pageInfo.setCurrentPageNo(Math.toIntExact(condition.getStartIndex() / condition.getSize() + 1));
+            pageInfo.setCurrentPageNo(Math.toIntExact(startIndex / size) + 1);
 
             this.commonResult = CommonResult.successResult("分页查询", pageInfo);
         }
