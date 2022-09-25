@@ -13,6 +13,7 @@ import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.*;
 import com.bluedot.utils.constants.SessionConstants;
 import org.apache.commons.fileupload.FileItem;
+import org.junit.Test;
 
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
@@ -66,7 +67,7 @@ public class UserService extends BaseService<User> {
                 }
                 break;
             case "update":
-                if (paramList.get("userEmail") != null){
+                if (paramList.containsKey("userEmail")){
                     if (paramList.get("userEmail").equals(userEmail)) {
                         methodName = "updatePersonalUser";
                     } else {
@@ -77,8 +78,10 @@ public class UserService extends BaseService<User> {
                 }
                 break;
             case "select":
-                if (paramList.get("pageNo") == null && paramList.get("pageSize") == null) {
-                    if (paramList.get("userPassword") != null) {
+                if (!paramList.containsKey("pageNo") && !paramList.containsKey("pageSize")) {
+                    if (paramList.containsKey("oldPassword")){
+                        methodName = "oldPasswordAuth";
+                    }else if (paramList.containsKey("userPassword")) {
                         methodName = "login";
                     } else {
                         methodName = "getPersonalUser";
@@ -90,14 +93,18 @@ public class UserService extends BaseService<User> {
             case "login":
                 if (paramList.size() == 0){
                     methodName = "getLoginImg";
-                }else if (paramList.get("authCode") != null){
-                    methodName = "insertUser";
-                }else if (paramList.get("imgAuthCode") != null){
+                }else if (paramList.containsKey("authCode")){
+                    methodName = "authEmailCode";
+                }else if (paramList.containsKey("imgAuthCode")){
                     methodName = "login";
-                }else if (paramList.get("userEmail") != null){
+                }else if (paramList.containsKey("userEmail") && paramList.containsKey("userPassword")){
+                    methodName = "insertUser";
+                }else if (paramList.containsKey("userEmail") && !paramList.containsKey("userPassword")){
                     methodName = "sendAuthEmail";
+                }else if (paramList.containsKey("userPassword")) {
+                    methodName = "forgetPassword";
                 }else {
-                    throw new UserException(CommonErrorCode.E_5001);
+                        throw new UserException(CommonErrorCode.E_5001);
                 }
                 break;
             default:
@@ -153,7 +160,7 @@ public class UserService extends BaseService<User> {
         }
 
         //判断是否修改密码
-        if (paramList.containsKey("userPassword") && paramList.containsKey("oldPassword")){
+        if (paramList.containsKey("userPassword")){
             //对新密码加密
             paramList.put("userPassword", Md5Util.transformToSaltMd5((String) paramList.get("userPassword"), user.getUserSalt()));
         }
@@ -163,6 +170,8 @@ public class UserService extends BaseService<User> {
         //执行更新逻辑
         entityInfo.addEntity(user);
         update();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("成功修改"+data+"行数据",true);
     }
 
     /**
@@ -171,38 +180,20 @@ public class UserService extends BaseService<User> {
     private void updatePersonalUser(){
         // 判断是否有密码
         if (paramList.containsKey("userPassword")){
-            //判断是邮箱验证码修改密码还是密码验证修改
-            if (paramList.get("authCode") != null) {
-                //邮箱验证修改密码
-                //获取验证码
-                String authCode = (String) session.getAttribute(SessionConstants.AUTH_CODE);
-                if (authCode == null){
-                    throw new UserException(CommonErrorCode.E_1012);
-                }
-                //判断验证码是否正确
-                if (!authCode.equals(paramList.get("authCode"))){
+            Object oldPasswordAuth = session.getAttribute(SessionConstants.OLD_PASSWORD_AUTH);
+            String userPassword = (String) paramList.get("userPassword");
+            //旧密码验证修改密码
+            if (oldPasswordAuth != null) {
+                //旧密码验证修改密码
+                if ((boolean) oldPasswordAuth) {
+                    //旧密码验证成功
+                    paramList.put("userPassword", Md5Util.transformToSaltMd5(userPassword, (String) session.getAttribute(SessionConstants.USER_SALT)));
+                    session.removeAttribute(SessionConstants.OLD_PASSWORD_AUTH);
+                } else {
+                    //验证失败
                     throw new UserException(CommonErrorCode.E_1004);
                 }
-                //移除验证码
-                session.removeAttribute(SessionConstants.AUTH_CODE);
-            } else if (paramList.containsKey("oldPassword") && paramList.containsKey("userPassword")){
-                //旧密码验证修改密码
-                //查询用户
-                getPersonalUser();
-                User user = (User) commonResult.getData();
-
-                //判断旧密码是否正确
-                String userPassword = user.getUserPassword();
-                //解密用户密码，并判断旧密码验证是否正确
-                if (!Md5Util.verifySaltMd5((String) paramList.get("oldPassword"), user.getUserSalt(), userPassword)){
-                    //密码错误
-                    throw new UserException(CommonErrorCode.E_1015);
-                }
-
-                //旧密码验证正确
-                //加密新密码放入
-                paramList.put("userPassword", Md5Util.transformToSaltMd5((String) paramList.get("userPassword"), user.getUserSalt()));
-            } else {
+            }else {
                 throw new UserException(CommonErrorCode.E_1007);
             }
         }
@@ -225,23 +216,23 @@ public class UserService extends BaseService<User> {
         // 执行修改逻辑
         entityInfo.addEntity(user);
         update();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("修改"+data+"行数据",true);
     }
 
     /**
      * 注册新用户
      */
     private void insertUser(){
-        String authCode = (String) session.getAttribute(SessionConstants.AUTH_CODE);
-        //移除验证码
-        session.removeAttribute(SessionConstants.AUTH_CODE);
-        //判断邮箱验证码是否可用且正确
-        if (authCode != null){
-            if (!authCode.equals(paramList.get("authCode"))){
-                //验证码不正确
-                throw new UserException(CommonErrorCode.E_1004);
-            }
-        }else {
-            throw new UserException(CommonErrorCode.E_1012);
+        boolean emailAuth = (boolean) session.getAttribute(SessionConstants.EMAIL_AUTH);
+        String email = (String) session.getAttribute(SessionConstants.USER_EMAIL);
+        String userEmail = (String) paramList.get("userEmail");
+
+        //判断验证邮箱和注册邮箱是否同一个
+        //是否通过邮箱验证
+        if (!userEmail.equals(email) || !emailAuth){
+            //未通过验证
+            throw new UserException(CommonErrorCode.E_1020);
         }
 
         //判断邮箱是否可用
@@ -300,9 +291,14 @@ public class UserService extends BaseService<User> {
         entityInfo.addEntity(user);
         insert();
 
+        //移除注册验证信息
+        session.removeAttribute(SessionConstants.EMAIL_AUTH);
+
         //返回注册信息
         if(((int)commonResult.getData()) == 1){
             commonResult = CommonResult.successResult("注册成功",true);
+        }else {
+            commonResult = CommonResult.errorResult(200,"注册失败");
         }
     }
 
@@ -322,6 +318,8 @@ public class UserService extends BaseService<User> {
 
         //执行删除逻辑
         delete();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("成功删除"+data+"行数据",true);
     }
 
     /**
@@ -335,6 +333,8 @@ public class UserService extends BaseService<User> {
 
         //执行删除逻辑
         delete();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("成功删除"+data+"行数据",true);
     }
 
     /**
@@ -520,8 +520,9 @@ public class UserService extends BaseService<User> {
         //将权限名集合放入session中
         session.setAttribute(SessionConstants.PERMISSION_LIST,permissionList);
 
-        //将userEmail放入session
+        //将user信息放入session
         session.setAttribute(SessionConstants.USER_EMAIL,paramList.get("userEmail"));
+        session.setAttribute(SessionConstants.USER_SALT,user.getUserSalt());
 
         //返回token回前端
         Map<String,String> map = new HashMap<>();
@@ -560,6 +561,7 @@ public class UserService extends BaseService<User> {
             //邮箱已注册，发送找回密码验证码
             title = user.getUserName()+" 的找回密码邮件";
             content = "【蓝点电化学分析系统】 您正在找回邮箱用户【"+userEmail+"】的密码。<br><h2 style='color:green'>"+authCode+"</h2>是你的验证码，请勿告诉他人，验证码仅在60秒内生效。<br>如非本人操作申请请忽略。";
+            session.setAttribute(SessionConstants.USER_SALT,user.getUserSalt());
         }
 
         //发送邮件
@@ -567,6 +569,8 @@ public class UserService extends BaseService<User> {
         emailUtil.start();
         //将验证码放入session中
         session.setAttribute(SessionConstants.AUTH_CODE,authCode);
+        session.setAttribute(SessionConstants.USER_EMAIL,userEmail);
+        session.setAttribute(SessionConstants.EMAIL_AUTH,false);
 
         //设置定时任务60s后删除验证码
         TimerTask task = new TimerTask() {
@@ -577,7 +581,7 @@ public class UserService extends BaseService<User> {
         };
         ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(5,new ThreadPoolExecutor.CallerRunsPolicy());
         //定时一分钟
-        long delay  = 60 * 1000L;
+        long delay  = 2 * 60 * 1000L;
         executor.schedule(task, delay, TimeUnit.MILLISECONDS);
         executor.shutdown();
 
@@ -617,9 +621,95 @@ public class UserService extends BaseService<User> {
             }
         };
         ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(5,new ThreadPoolExecutor.CallerRunsPolicy());
-        //定时一分钟
-        long delay  = 60 * 1000L;
+        //定时五分钟
+        long delay  = 5 * 60 * 1000L;
         executor.schedule(task, delay, TimeUnit.MILLISECONDS);
         executor.shutdown();
+    }
+
+    /**
+     * 邮箱验证码验证
+     */
+    private void authEmailCode(){
+        String authCode = (String) session.getAttribute(SessionConstants.AUTH_CODE);
+        String code = (String) paramList.get("authCode");
+
+        if (code != null && authCode != null){
+            if (code.equals(authCode)){
+                //验证成功
+                session.setAttribute(SessionConstants.EMAIL_AUTH,true);
+                commonResult = CommonResult.successResult("验证成功！",true);
+                session.removeAttribute(SessionConstants.AUTH_CODE);
+            }else {
+                commonResult = CommonResult.successResult("验证码错误！",false);
+            }
+        }else {
+            //没有申请邮箱验证码或者验证码已过期
+            throw new UserException(CommonErrorCode.E_1010);
+        }
+    }
+
+    /**
+     * 旧密码验证修改密码所需的旧密码验证
+     */
+    private void oldPasswordAuth(){
+        String oldPassword = (String) paramList.get("oldPassword");
+        String userEmail = (String) session.getAttribute(SessionConstants.USER_EMAIL);
+        paramList.put("userEmail",userEmail);
+
+        User user = null;
+        //根据邮箱查询用户
+        try{
+            getPersonalUser();
+            user = (User) commonResult.getData();
+        }catch (UserException e){
+            //只处理1005异常，其他异常抛出
+            if (e.getErrorCode() != CommonErrorCode.E_1005){
+                throw e;
+            }
+        }
+
+        if (user != null && Md5Util.verifySaltMd5(oldPassword,user.getUserSalt(),user.getUserPassword())){
+            //验证成功
+            commonResult = CommonResult.successResult("验证成功！",true);
+            session.setAttribute(SessionConstants.OLD_PASSWORD_AUTH,true);
+            session.setAttribute(SessionConstants.USER_SALT,user.getUserSalt());
+        }else {
+            //验证失败
+            commonResult = CommonResult.successResult("密码错误，验证失败",false);
+            session.setAttribute(SessionConstants.OLD_PASSWORD_AUTH,false);
+        }
+    }
+
+    /**
+     * 忘记密码，在邮箱验证后进行密码修改
+     */
+    private void forgetPassword(){
+        Object emailAuth = session.getAttribute(SessionConstants.EMAIL_AUTH);
+        String userPassword = (String) paramList.get("userPassword");
+        String userEmail = (String) session.getAttribute(SessionConstants.USER_EMAIL);
+        String userSalt = (String) session.getAttribute(SessionConstants.USER_SALT);
+
+        //验证是否通过邮箱验证
+        if (emailAuth == null){
+            throw new UserException(CommonErrorCode.E_1010);
+        }
+        if (!(boolean) emailAuth){
+            throw new UserException(CommonErrorCode.E_1020);
+        }
+
+        User user = new User();
+        user.setUserPassword(Md5Util.transformToSaltMd5(userPassword,userSalt));
+        user.setUserEmail(userEmail);
+
+        //执行修改逻辑
+        entityInfo.addEntity(user);
+        update();
+        int data = (int) commonResult.getData();
+        if (data > 0){
+            commonResult = CommonResult.successResult("密码修改成功！",true);
+        }else {
+            throw new UserException(CommonErrorCode.E_1021);
+        }
     }
 }

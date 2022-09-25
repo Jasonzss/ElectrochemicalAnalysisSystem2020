@@ -109,6 +109,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         }
 
         invokeMethod(methodName,this);
+
+
     }
 
     @Override
@@ -209,6 +211,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         Condition condition = new Condition();
         condition.addFields("DISTINCT(exp_material_name)");
         condition.addView("exp_data");
+        condition.setReturnType("ExpData");
 
         if (paramList.containsKey("userEmail")){
             condition.addOrConditionWithView(new Term("exp_data","user_email",paramList.get("userEmail"),TermType.EQUAL));
@@ -237,6 +240,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
             entityInfo.addEntity(expData);
         }
         update();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("修改实验数据"+data+"条",true);
     }
 
     /**
@@ -258,6 +263,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
             entityInfo.addEntity(expData);
         }
         update();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("修改实验数据"+data+"条",true);
     }
 
     /**
@@ -278,6 +285,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         }
 
         delete();
+        int deleteNum = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("修改实验数据"+deleteNum+"条",true);
     }
 
     /**
@@ -297,6 +306,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         }
 
         delete();
+        int deleteNum = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("修改实验数据"+deleteNum+"条",true);
     }
 
     /**

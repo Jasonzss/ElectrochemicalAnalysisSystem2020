@@ -2,8 +2,10 @@ package com.bluedot.mapper.bean;
 
 import com.bluedot.utils.StringUtil;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Condition {
@@ -114,6 +116,16 @@ public class Condition {
             if (!exceptFields.contains(fieldName)){
                 //此属性不为排除属性,加入查找
                 addFields(StringUtil.humpToLine(fieldName));
+            }
+        }
+    }
+
+    public void setFieldsWithoutClasses(Class<?> clazz, Class<?> ...arg){
+        List<Class<?>> classes = Arrays.asList(arg);
+        Field[] declaredFields = clazz.getDeclaredFields();
+        for (Field field:declaredFields){
+            if (!classes.contains(field.getType())) {
+                addFields(StringUtil.humpToLine(field.getName()));
             }
         }
     }

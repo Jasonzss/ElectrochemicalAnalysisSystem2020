@@ -76,8 +76,7 @@ public class BaseMapper {
                 throw new UserException(CommonErrorCode.E_8001);
         }
         //结果封装
-        commonResult = new CommonResult();
-        commonResult.setData(object);
+        commonResult = CommonResult.successResult("",object);
         logger.debug("mapper层操作结果："+commonResult+",并将结果通过队列  返回给service层");
         //将结果通过队列  返回给service
         com.bluedot.queue.outQueue.impl.MapperServiceQueue.getInstance().put(entityInfo.getKey(), this.commonResult);
