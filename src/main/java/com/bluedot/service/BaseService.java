@@ -156,8 +156,7 @@ public abstract class BaseService<T> {
         Long startIndex = entityInfo.getCondition().getStartIndex();
         CommonResult commonResult = doMapper();
         List<?> data = (List<?>) commonResult.getData();
-        //对每个数据进行实体属性的填充
-        data.forEach(this::queryEntityField);
+
         //封装结果
         commonResult = CommonResult.successResult("",data);
 
@@ -167,7 +166,10 @@ public abstract class BaseService<T> {
         if (((ArrayList) commonResult.getData()).size() == 0){
             this.commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
         }else {
-            pageInfo.setDataList((List<Object>)commonResult.getData());
+            //对每个数据进行实体属性的填充
+            data.forEach(this::queryEntityField);
+
+            pageInfo.setDataList((List<Object>) data);
             pageInfo.setPageSize(size);
             // 调用getCount查询数据总数量
             pageInfo.setTotalDataSize(getCount(condition));
@@ -186,8 +188,8 @@ public abstract class BaseService<T> {
         // 设置查询条件
         List<String> fieldList = new ArrayList<>();
         fieldList.add("count(*)");
+        condition.removeLimit();
         condition.setFields(fieldList);
-        condition.addView(entityInfo.getCondition().getViews().get(0));
         condition.setReturnType("Long");
 
         //进行查询逻辑
