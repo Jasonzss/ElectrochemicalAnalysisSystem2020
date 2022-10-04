@@ -51,6 +51,7 @@ public abstract class BaseService<T> {
                 //尝试抓取UserException
                 doService();
             }catch (UserException e){
+                e.printStackTrace();
                 commonResult = CommonResult.commonErrorCode(e.getErrorCode());
             }
         }else {
