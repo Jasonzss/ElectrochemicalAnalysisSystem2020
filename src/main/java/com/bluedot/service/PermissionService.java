@@ -9,6 +9,7 @@ import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.*;
 import com.bluedot.pojo.vo.CommonResult;
+import com.bluedot.pojo.vo.RoleWithCountNum;
 import com.bluedot.utils.LogUtil;
 
 
@@ -149,6 +150,29 @@ public class PermissionService extends BaseService<Permission>{
         condition.setFields(fields);
         entityInfo.setCondition(condition);
         select();
+
+        List<Role> roles = (List<Role>) commonResult.getData();
+        List<RoleWithCountNum> roleWithCountNumList = new ArrayList<>();
+
+        for (int i = 0; i < roles.size(); i++) {
+            condition = new Condition();
+            condition.setReturnType("Long");
+            condition.addFields("count(*)");
+            condition.addView("user_role");
+            condition.addAndConditionWithView(new Term("user_role","role_id",roles.get(i).getRoleId(),TermType.EQUAL));
+            entityInfo.setCondition(condition);
+            select();
+
+            RoleWithCountNum roleWithCountNum = new RoleWithCountNum();
+
+            ArrayList list= (ArrayList) commonResult.getData();
+            roleWithCountNum.setCount((Long)list.get(0));
+            roleWithCountNum.setRole(roles.get(i));
+
+            roleWithCountNumList.add(roleWithCountNum);
+        }
+
+        commonResult = CommonResult.successResult("",roleWithCountNumList);
     }
     /**
      * 查询所有角色的权限

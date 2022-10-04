@@ -197,6 +197,11 @@ public class Condition {
         this.orCondition = orCondition;
     }
 
+    public void removeLimit(){
+        this.size = null;
+        this.startIndex = null;
+    }
+
     @Override
     public String toString() {
         return "Condition{" +

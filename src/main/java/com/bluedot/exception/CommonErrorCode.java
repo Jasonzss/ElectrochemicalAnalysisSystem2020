@@ -32,6 +32,7 @@ public enum CommonErrorCode implements ErrorCode {
     E_1019(1019,"不存在此算法"),
     E_1020(1020,"邮箱验证未通过"),
     E_1021(1021,"修改失败"),
+    E_1022(1022,"用户无任何角色权限"),
 
     /**
      * 数据管理模块错误:E_2xxx

@@ -8,8 +8,11 @@ import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Permission;
+import com.bluedot.pojo.entity.Role;
 import com.bluedot.pojo.entity.User;
+import com.bluedot.pojo.entity.UserRole;
 import com.bluedot.pojo.vo.CommonResult;
+import com.bluedot.pojo.vo.LoginInfo;
 import com.bluedot.utils.*;
 import com.bluedot.utils.constants.SessionConstants;
 import org.apache.commons.fileupload.FileItem;
@@ -524,11 +527,38 @@ public class UserService extends BaseService<User> {
         session.setAttribute(SessionConstants.USER_EMAIL,paramList.get("userEmail"));
         session.setAttribute(SessionConstants.USER_SALT,user.getUserSalt());
 
+        LoginInfo loginInfo = new LoginInfo();
+
         //返回token回前端
         Map<String,String> map = new HashMap<>();
         map.put("userEmail",user.getUserEmail());
         String tokenStr = JwtUtil.generateToken(map);
-        commonResult = CommonResult.successResult("登录成功",tokenStr);
+        loginInfo.setToken(tokenStr);
+
+
+        //查询用户角色
+        condition = new Condition();
+        condition.setReturnType("UserRole");
+        condition.addAndConditionWithView(new Term("user_role","user_email",paramList.get("userEmail"),TermType.EQUAL));
+
+        entityInfo.setCondition(condition);
+        select();
+
+        List<UserRole> userRoles = (List<UserRole>) commonResult.getData();
+        if (userRoles.size() <= 0){
+            throw new UserException(CommonErrorCode.E_1022);
+        } else {
+            ArrayList<Role> roleArrayList = userRoles.get(0).getRoleArrayList();
+            List<Integer> roleIds = new ArrayList<>();
+            roleArrayList.forEach((l) -> {
+                roleIds.add(l.getRoleId());
+            });
+            loginInfo.setRoleIdList(roleIds);
+        }
+
+        loginInfo.setUserEmail((String) paramList.get("userEmail"));
+        //返回登录信息
+        commonResult = CommonResult.successResult("登陆成功",loginInfo);
     }
 
     /**
