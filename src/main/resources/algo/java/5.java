@@ -6,14 +6,14 @@
 public class Main {
 
     public Double[][] run(Double[][] data) {
-        for(int i=0;i<data.length;i++){
+        for(int i=0;i<data[0].length;i++){
             Double sum = Double.valueOf(0);
-            for (int j = 0; j < data[i].length; j++) {
-                sum += data[i][j];
+            for (int j = 0; j < data.length; j++) {
+                sum += data[j][i];
             }
-            sum /= data[i].length;
-            for (int j = 0; j < data[i].length; j++) {
-                data[i][j] -= sum;
+            sum /= data.length;
+            for (int j = 0; j < data.length; j++) {
+                data[j][i] -= sum;
             }
         }
         return data;
