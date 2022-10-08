@@ -7,17 +7,21 @@
 public class Main {
     
     public Double[][] run(Double[][] data) {
-        for(int i=0;i<data.length;i++){
-            //求均值
+        int dimension = data[0].length;
+        int length = data.length;
+        for(int i=0;i<dimension;i++){
+            Double[] d=  new Double[length];
             Double mean = 0.0;
-            for (Double datum : data[i]) {
-                mean = mean + datum;
+            //求均值
+            for(int j=0;j<length;j++){
+                d[j]=data[j][i];
+                mean = mean + data[j][i];
             }
-            mean /= data[i].length;
+            mean /= length;
             //求标准差
-            Double dev = getStandardDeviation(data[i], mean);
-            for (int j = 0; j < data[i].length; j++) {
-                data[i][j]=(data[i][j]-mean)/dev;
+            Double dev = getStandardDeviation(d, mean);
+            for (int j = 0; j < length; j++) {
+                data[j][i]=(data[j][i]-mean)/dev;
             }
         }
         return data;
