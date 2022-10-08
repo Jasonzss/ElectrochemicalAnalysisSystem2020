@@ -10,8 +10,14 @@ import java.util.Optional;
 public class Main {
 
     public Double[][] run(Double[][] data) {
-        for (int i = 0; i < data.length; i++) {
-            Optional<Double> minOptional = Arrays.stream(data[i]).min(new Comparator<Double>() {
+        int dimension = data[0].length;
+        int length = data.length;
+        for (int i = 0; i < dimension; i++) {
+           Double[] d=  new Double[length];
+           for(int j=0;j<length;j++){
+               d[j]=data[j][i];
+           }
+            Optional<Double> minOptional = Arrays.stream(d).min(new Comparator<Double>() {
                 @Override
                 public int compare(Double o1, Double o2) {
                     if (o1 > o2) {
@@ -24,7 +30,7 @@ public class Main {
 
                 }
             });
-            Optional<Double> maxOptional = Arrays.stream(data[i]).max(new Comparator<Double>() {
+            Optional<Double> maxOptional = Arrays.stream(d).max(new Comparator<Double>() {
                 @Override
                 public int compare(Double o1, Double o2) {
                     if (o1 > o2) {
@@ -38,9 +44,9 @@ public class Main {
             });
             Double min = minOptional.get();
             Double max = maxOptional.get();
-            Double d = max - min;
-            for (int j = 0; j < data[i].length; j++) {
-                data[i][j] = (data[i][j] - min) / d;
+            Double drc = max - min;
+            for (int j = 0; j < length; j++) {
+                data[j][i] = (data[j][i] - min) / drc;
             }
         }
         return data;

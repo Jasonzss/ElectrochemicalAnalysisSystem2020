@@ -367,7 +367,7 @@ public class UserService extends BaseService<User> {
             List<User> userList = (List<User>) commonResult.getData();
             if (userList.size() != 0){
                 User user = userList.get(0);
-                commonResult = CommonResult.successResult("用户信息",user);
+                commonResult = CommonResult.successResult("",user);
             }else {
                 throw new UserException(CommonErrorCode.E_1005);
             }
