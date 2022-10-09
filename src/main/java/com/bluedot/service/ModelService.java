@@ -230,8 +230,8 @@ public class ModelService extends BaseService<Report> {
 
         //****************************************************************************************
 
-        setReportGraph(report, trainSolubilitySet, trainingPredictedSolubilitySet, report.getTrainSetIndicator());
-        setReportGraph(report, testSolubilitySet, testPredictedSolubilitySet, report.getTestSetIndicator());
+        setReportTrainingSetGraph(report, trainSolubilitySet, trainingPredictedSolubilitySet, report.getTrainSetIndicator());
+        setReportTestSetGraph(report, testSolubilitySet, testPredictedSolubilitySet, report.getTestSetIndicator());
 
         //******************************************************************
         //向report放入系统数据
@@ -257,6 +257,7 @@ public class ModelService extends BaseService<Report> {
         condition.addView("report");
 
         //执行查询逻辑，返回reportId
+        // 返回id是因为，这个查询结果里有图片和文本，不好一起返回给前端，所以给个id后面再查
         entityInfo.setCondition(condition);
         select();
     }
@@ -408,31 +409,43 @@ public class ModelService extends BaseService<Report> {
         return result;
     }
 
+    private void setReportTrainingSetGraph(Report report, Double[] experimental, Double[] prediction, Map<String,String> param){
+        report.setReportTrainingSetGraph(getReportGraph(report, experimental, prediction, param));
+    }
+
+    private void setReportTestSetGraph(Report report, Double[] experimental, Double[] prediction, Map<String,String> param){
+        report.setReportTestSetGraph(getReportGraph(report, experimental, prediction, param));
+    }
+
     /**
-     * 根据测试集和训练集的点位画图，并把图放入report中
+     * 根据测试集和训练集的点位画图，并返回该图片的字节数组
      * @param report 被操作实验报告
      * @param experimental 实验数据原本的实验（真实）溶度
      * @param prediction 实验数据经过建模方程得到的预测溶度
      * @param param 判断模型的指标
+     * @return 图片的字节数组
      */
-    private void setReportGraph(Report report, Double[] experimental, Double[] prediction, Map<String,String> param){
+    private byte[] getReportGraph(Report report, Double[] experimental, Double[] prediction, Map<String,String> param){
         Map<String,Object> trainPaintParam = new HashMap<>();
-        trainPaintParam.put("x",experimental);
-        trainPaintParam.put("y",prediction);
+        trainPaintParam.put("experimental",experimental);
+        trainPaintParam.put("predicted",prediction);
         trainPaintParam.put("equation",generateEquationWithKAndB(ModelUtil.getFiParameters(experimental,prediction)));
-        trainPaintParam.put("para",param);
+        trainPaintParam.put("param",param);
         PythonUtil.executePythonAlgorithmFile("paintReportGraph.py",trainPaintParam,"fig_"+report.getReportId()+".jpg");
         //获取生成的图片的流，并把文件删除
 
-        File file = new File("src/main/resources/image/fig_"+report.getReportId()+".jpg");
+        File file = new File(PythonUtil.IMAGE_PATH+"fig_"+report.getReportId()+".jpg");
+        byte[] bytes = null;
         try {
             FileInputStream fis = new FileInputStream(file);
-            byte[] bytes = ImageUtil.inputStreamToBytes(fis);
+            bytes = ImageUtil.inputStreamToBytes(fis);
             report.setReportTrainingSetGraph(bytes);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
             file.delete();
         }
+
+        return bytes;
     }
 }
