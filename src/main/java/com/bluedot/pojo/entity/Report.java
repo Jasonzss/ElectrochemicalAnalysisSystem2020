@@ -37,7 +37,7 @@ public class Report {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Timestamp reportLastUpdateTime; //系统设置
     private User user;  //当前操作用户
-    private String trainingSetData;     //系统设置
+    private String trainingSetData;     //系统设置，data[i][0]放实浓度，data[i][1]放电流，data[i][2]留着后面放预测值
     private String testSetData;     //系统设置
     private Double rc2;     //系统计算
     private Double rmsec;   //系统计算
