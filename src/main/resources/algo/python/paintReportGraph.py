@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 # 算法内容
 def main(data):
-    x = data.get("expermental")
+    x = data.get("experimental")
     y = data.get("predicted")
     equation = data.get("equation")
     para = data.get("param")
@@ -34,7 +34,7 @@ def main(data):
     x_tail = max(x)
     y_tail = a * x_tail + b
 
-    plt.xlabel("Expermental/μM")
+    plt.xlabel("Experimental/μM")
     plt.ylabel("Predicted/μM")
 
     line = plt.plot([x_head, x_tail], [y_head, y_tail], "r", x, y, "k.")
