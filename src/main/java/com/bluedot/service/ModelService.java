@@ -153,7 +153,7 @@ public class ModelService extends BaseService<Report> {
 
         //将查询的数据放入report中
         //将expDataList中的所有电压电流取出来,data[i][0]放实浓度，data[i][1]放电流，data[i][2]留着后面放预测值
-        Double[][] data = new Double[expDataList.size()][3];
+        Double[][] data = new Double[expDataList.size()][2];
         for (int i = 0; i < expDataList.size(); i++) {
             ExpData expData = expDataList.get(i);
             data[i][0] = expDataList.get(i).getExpMaterialSolubility();
@@ -173,7 +173,10 @@ public class ModelService extends BaseService<Report> {
         //划分数据集，得到测试集和训练集，并分类放到report
         Map<String, Double[][]> stringMap = AlgoUtil.divideDataSet(preprocessData);
         Double[][] testSet = stringMap.get("test");
+        Double[][] testSetData = new Double[testSet.length][3];
         Double[][] trainSet = stringMap.get("train");
+        Double[][] trainSetData = new Double[trainSet.length][3];
+
         //获取测试集和训练集的真实溶度数据
         Double[] trainSolubilitySet = new Double[trainSet.length];
         Double[] testSolubilitySet = new Double[testSet.length];
@@ -190,7 +193,8 @@ public class ModelService extends BaseService<Report> {
         if (reportDataModel.getAlgorithmLanguage() == 0){
             modelData = AlgoUtil.modeling(reportDataModel, stringMap.get("train"));
         }else if (reportDataModel.getAlgorithmLanguage() == 2){
-            modelData = (Double[]) PythonUtil.executePythonAlgorithmFile("4.py",stringMap.get("train"));
+            List<Double> modelDataList = (List<Double>) PythonUtil.executePythonAlgorithmFile("4.py",stringMap.get("train"));
+            modelData = modelDataList.toArray(new Double[0]);
         }else {
             throw new UserException(CommonErrorCode.E_7005);
         }
@@ -207,11 +211,15 @@ public class ModelService extends BaseService<Report> {
         //将训练集和测试集的实际值带入方程算出训练集预测值和测试集预测值
         for (int i = 0; i < trainSet.length; i++) {
             trainingPredictedSolubilitySet[i] = executeEquation(equation, trainSet[i][1]);
-            trainSet[i][2] = trainingPredictedSolubilitySet[i];
+            trainSetData[i][0] = trainSet[i][0];
+            trainSetData[i][1] = trainSet[i][1];
+            trainSetData[i][2] = trainingPredictedSolubilitySet[i];
         }
         for (int i = 0; i < testSet.length; i++) {
             testPredictedSolubilitySet[i] = executeEquation(equation, testSet[i][1]);
-            testSet[i][2] = testPredictedSolubilitySet[i];
+            testSetData[i][0] = testSet[i][0];
+            testSetData[i][1] = testSet[i][1];
+            testSetData[i][2] = testPredictedSolubilitySet[i];
         }
         //将 【测试集的电流、预测溶度、真实溶度】 和 【训练集的电流、预测溶度、真实溶度】 放入report
         report.setTrainingSetData(Arrays.deepToString(trainSet));
