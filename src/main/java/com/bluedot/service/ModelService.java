@@ -294,15 +294,20 @@ public class ModelService extends BaseService<Report> {
 
     /**
      * 根据数据建模得到的Double数组生成一个数学方程式
-     * @param param 数据建模生成模型参数数组
+     * @param doubleParam 数据建模生成模型参数数组
      * @return 数学方程式
      */
-    private String generateEquation(Double[] param){
+    private String generateEquation(Double[] doubleParam){
         String subscripts = "₀₁₂₃₄₅₆₇₈₉";
         StringBuilder equation = new StringBuilder("y = ");
+        String[] param = new String[doubleParam.length];
+        for (int i = 0; i < doubleParam.length; i++) {
+            param[i] = String.format("%.8f",doubleParam[i]);
+        }
+
         equation.append(param[0]);
         for (int i = 1; i < param.length; i++) {
-            if (param[i] > 0){
+            if (Double.parseDouble(param[i]) > 0){
                 equation.append("+");
             }
             equation.append(param[i]);
@@ -439,11 +444,17 @@ public class ModelService extends BaseService<Report> {
         try {
             FileInputStream fis = new FileInputStream(file);
             bytes = ImageUtil.inputStreamToBytes(fis);
-            report.setReportTrainingSetGraph(bytes);
-        } catch (FileNotFoundException e) {
+            //关闭io流以方便后续删除图片
+            fis.close();
+        } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            file.delete();
+            boolean delete = file.delete();
+            if (delete){
+                System.out.println("-------------图片已删除---------------");
+            }else {
+                System.out.println("-------------图片未删除---------------");
+            }
         }
 
         return bytes;
