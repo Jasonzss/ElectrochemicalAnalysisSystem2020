@@ -51,7 +51,11 @@ public class PythonUtil {
     /**
      * 图片的默认生成路径
      */
-    private static final String IMAGE_PATH = "src/main/resources/image/";
+    public static final String IMAGE_PATH = Thread.currentThread().getContextClassLoader().getResource("")
+            .getPath()
+            .replaceAll( "%20"," ")
+            .substring(1)
+            + "image/";
 
     /**
      * 插入模板开始标志
