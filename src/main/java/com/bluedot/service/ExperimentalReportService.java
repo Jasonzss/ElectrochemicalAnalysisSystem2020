@@ -11,6 +11,7 @@ import com.bluedot.pojo.entity.Algorithm;
 import com.bluedot.pojo.entity.Application;
 import com.bluedot.pojo.entity.Report;
 import com.bluedot.pojo.entity.ReportPageVo;
+import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.ImageUtil;
 import com.bluedot.utils.ReflectUtil;
 import org.apache.commons.fileupload.FileItem;
@@ -195,37 +196,46 @@ public class ExperimentalReportService extends BaseService<Report>{
         entityInfo.setCondition(condition);
         select();
 
-        Report report = ((List<Report>) commonResult.getData()).get(0);
-
-        Integer pretreatmentAlgorithmId = report.getPretreatmentAlgorithmId();
-        Integer reportDataModelId = report.getReportDataModelId();
-
-        //查reportDataModelId
-        Map<String,Object> pretreatmentAlgorithmMap = new HashMap<>();
-        pretreatmentAlgorithmMap.put("algorithmId",pretreatmentAlgorithmId);
-        doOtherService(pretreatmentAlgorithmMap,"select");
-        Algorithm pretreatmentAlgorithm = ((List<Algorithm>)commonResult.getData()).get(0);
-
-        //查pretreatmentAlgorithmId
-        Map<String,Object> reportDataModelMap = new HashMap<>();
-        reportDataModelMap.put("algorithmId",reportDataModelId);
-        doOtherService(reportDataModelMap,"select");
-        Algorithm reportDataModelAlgorith = ((List<Algorithm>)commonResult.getData()).get(0);
+        List<Report> reports = (List<Report>) commonResult.getData();
+        List<ReportPageVo> reportPageVos = new ArrayList<>();
+        for (Report report : reports) {
+            Integer pretreatmentAlgorithmId = report.getPretreatmentAlgorithmId();
+            Integer reportDataModelId = report.getReportDataModelId();
 
 
-        ReportPageVo reportPageVo = new ReportPageVo();
-        reportPageVo.setUserEmail(report.getUser().getUserEmail());
-        reportPageVo.setReportDesc(report.getReportDesc());
-        reportPageVo.setReportTitle(report.getReportTitle());
-        reportPageVo.setReportCreateTime(report.getReportCreateTime());
-        reportPageVo.setReportLastUpdateTime(report.getReportLastUpdateTime());
-        reportPageVo.setReportResultModel(report.getReportResultModel());
-        reportPageVo.setReportMaterialName(report.getReportMaterialName());
-        reportPageVo.setReportId(report.getReportId());
-        reportPageVo.setPretreatmentAlgorithmName(pretreatmentAlgorithm.getAlgorithmName());
-        reportPageVo.setReportDataModelName(reportDataModelAlgorith.getAlgorithmName());
+            Condition condition1 = new Condition();
+            condition1.setReturnType("Algorithm");
+            entityInfo.setCondition(condition1);
 
-        commonResult.setData(reportPageVo);
+            //查reportDataModelId
+            Map<String,Object> pretreatmentAlgorithmMap = new HashMap<>();
+            pretreatmentAlgorithmMap.put("algorithmId",pretreatmentAlgorithmId);
+            CommonResult commonResult1 = new AlgorithmService(session, entityInfo).doOtherService(pretreatmentAlgorithmMap,"select");
+            String pretreatmentAlgorithmName = (String) ((List<Map<String,Object>>)commonResult1.getData()).get(0).get("algorithmName");
+
+            //查pretreatmentAlgorithmId
+            Map<String,Object> reportDataModelMap = new HashMap<>();
+            reportDataModelMap.put("algorithmId",reportDataModelId);
+            CommonResult commonResult2 = new AlgorithmService(session, entityInfo).doOtherService(reportDataModelMap,"select");
+            String reportDataModelAlgorithmName = (String) ((List<Map<String,Object>>)commonResult2.getData()).get(0).get("algorithmName");
+
+
+            ReportPageVo reportPageVo = new ReportPageVo();
+            reportPageVo.setUserEmail(report.getUser().getUserEmail());
+            reportPageVo.setReportDesc(report.getReportDesc());
+            reportPageVo.setReportTitle(report.getReportTitle());
+            reportPageVo.setReportCreateTime(report.getReportCreateTime());
+            reportPageVo.setReportLastUpdateTime(report.getReportLastUpdateTime());
+            reportPageVo.setReportResultModel(report.getReportResultModel());
+            reportPageVo.setReportMaterialName(report.getReportMaterialName());
+            reportPageVo.setReportId(report.getReportId());
+            reportPageVo.setPretreatmentAlgorithmName(pretreatmentAlgorithmName);
+            reportPageVo.setReportDataModelName(reportDataModelAlgorithmName);
+
+            reportPageVos.add(reportPageVo);
+        }
+
+        commonResult.setData(reportPageVos);
     }
 
 

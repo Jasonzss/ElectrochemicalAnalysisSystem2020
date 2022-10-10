@@ -41,7 +41,7 @@ public class PythonUtil {
     /**
      * py执行命令
      */
-    private static final String PYTHON_CMD = "python.exe";
+    private static final String PYTHON_CMD = "venv/Scripts/python.exe";
 
     /**
      * python模板文件路径
