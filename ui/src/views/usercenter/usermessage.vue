@@ -285,7 +285,7 @@ export default {
 }
 /* 用户姓名 */
 #userName {
-  font-size: 48px;
+  font-size: 30px;
   padding: 0 30px
 }
 #userName span{

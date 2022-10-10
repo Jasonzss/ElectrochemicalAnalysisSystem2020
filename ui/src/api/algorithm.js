@@ -59,9 +59,9 @@ export const listAlgorithmTypeFillCondition = (typeName, value) => {
   return api.simple(SELECT(param))
 }
 
-export const listAlgorithmBaseInfo = () => {
+export const listAlgorithmBaseInfo = (id) => {
   const param = {
-    'option': 'algorithmType'
+    'algorithmId': id
   }
   return api.simple(SELECT(param))
 }
