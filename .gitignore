@@ -54,6 +54,7 @@ ui/selenium-debug.log
 # Editor directories and files
 ui/.idea
 ui/.vscode
+ui/.vs
 ui/*.suo
 ui/*.ntvs*
 ui/*.njsproj
