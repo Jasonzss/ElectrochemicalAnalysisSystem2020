@@ -2,22 +2,13 @@ package com.bluedot.utils;
 
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
-import com.bluedot.pojo.entity.Algorithm;
-import com.bluedot.pojo.entity.ExpData;
-import com.bluedot.pojo.entity.Report;
-import com.bluedot.pojo.entity.User;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.fileupload.FileItem;
 import org.slf4j.Logger;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,9 +25,19 @@ public class PythonUtil {
     /**
      * 算法文件路径常量
      */
-    private static final String BASE_PATH = "src/main/resources/algo/python/";
+    private static final String BASE_PATH = Thread.currentThread().getContextClassLoader().getResource("")
+            .getPath()
+            .replaceAll( "%20"," ")
+            .substring(1)
+            + "algo/python/";
 
-
+    private static final String BASE_TEST_PATH = Thread.currentThread().getContextClassLoader().getResource("")
+            .getPath()
+            //去空格
+            .replaceAll( "%20"," ")
+            .substring(1)
+            .replace("test-classes","classes")
+            + "algo/python/";
     /**
      * py执行命令
      */
@@ -50,7 +51,11 @@ public class PythonUtil {
     /**
      * 图片的默认生成路径
      */
-    private static final String IMAGE_PATH = "src/main/resources/image/";
+    public static final String IMAGE_PATH = Thread.currentThread().getContextClassLoader().getResource("")
+            .getPath()
+            .replaceAll( "%20"," ")
+            .substring(1)
+            + "image/";
 
     /**
      * 插入模板开始标志
@@ -68,8 +73,8 @@ public class PythonUtil {
      * @param data 参数数据
      * @return 算法执行的结果数据
      */
-    public static Object executePythonAlgorithFile(String fileName,Object data){
-        return executePythonAlgorithFile(fileName,data,"");
+    public static Object executePythonAlgorithmFile(String fileName, Object data){
+        return executePythonAlgorithmFile(fileName,data,"");
     }
 
     /**
@@ -79,7 +84,7 @@ public class PythonUtil {
      * @param imageName 产生文件路径
      * @return 算法执行的结果数据
      */
-    public static Object executePythonAlgorithFile(String fileName, Object data, String imageName){
+    public static Object executePythonAlgorithmFile(String fileName, Object data, String imageName){
         // 自定义map，将数据信息放入map中
         HashMap<String, Object> param = new HashMap<>();
         param.put("data",data);
@@ -88,7 +93,15 @@ public class PythonUtil {
             param.put("path",IMAGE_PATH + imageName);
         }
 
-        return executePython(fileName, param).get("result");
+
+        File file=new File(".");
+        String path=file.getAbsolutePath();
+        if (path.contains("WEB-INF/classes")){
+            path = BASE_PATH;
+        }else {
+            path = BASE_TEST_PATH;
+        }
+        return executePython(path, fileName, param).get("result");
     }
 
     /**
@@ -96,7 +109,7 @@ public class PythonUtil {
      * @param param 传递的json参数
      * @return 返回处理完后的json格式数据
      */
-    private static Map<String,Object> executePython(String fileName, Map<String,Object> param){
+    private static Map<String,Object> executePython(String path, String fileName, Map<String,Object> param){
 
         try {
             // 将填充满数据信息的map转为json格式数据
@@ -111,7 +124,7 @@ public class PythonUtil {
             // 命令行参数: arg[0] python执行命令 , arg[1] base python程序路径 ,  arg[2] 算法文件路径
             String[] arg = new String[3];
             arg[0] = PYTHON_CMD;
-            arg[1] = BASE_PATH + fileName;
+            arg[1] = path + fileName;
             arg[2] = encoderJsonData;
 
             System.out.println("传入的python程序的参数:" + encoderJsonData);

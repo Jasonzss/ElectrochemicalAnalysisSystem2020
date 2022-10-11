@@ -19,4 +19,10 @@ public class Md5UtilTest {
         boolean b = Md5Util.verifySaltMd5("abc", "123", saltMd5);
         System.out.println(b);
     }
+
+    @Test
+    public void test1(){
+        System.out.println(Md5Util.transformToSaltMd5("123456","qPY)6o"));
+        System.out.println(Md5Util.verifySaltMd5("1234", "qPY)6o", "a9088749468789eb8dd0cb5547e35bc7"));
+    }
 }

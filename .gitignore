@@ -18,6 +18,7 @@
 *.tar.gz
 *.rar
 target/
+venv/
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
@@ -37,3 +38,29 @@ tem/
 
 #rebel
 *rebel.xml*
+
+.DS_Store
+ui/node_modules/
+ui/dist/
+ui/npm-debug.log*
+ui/yarn-debug.log*
+ui/yarn-error.log*
+**/*.log
+
+ui/tests/**/coverage/
+ui/tests/e2e/reports
+ui/selenium-debug.log
+
+# Editor directories and files
+ui/.idea
+ui/.vscode
+ui/.vs
+ui/*.suo
+ui/*.ntvs*
+ui/*.njsproj
+ui/*.sln
+ui/*.local
+
+ui/package-lock.json
+ui/yarn.lock
+

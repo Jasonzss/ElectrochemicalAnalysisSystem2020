@@ -3,18 +3,20 @@ package com.bluedot.service;
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.ErrorCode;
 import com.bluedot.exception.UserException;
-import com.bluedot.mapper.bean.Condition;
-import com.bluedot.mapper.bean.EntityInfo;
-import com.bluedot.mapper.bean.PageInfo;
+import com.bluedot.mapper.bean.*;
 import com.bluedot.monitor.impl.ServiceMapperMonitor;
 import com.bluedot.pojo.Dto.Data;
+import com.bluedot.pojo.entity.ExpData;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.queue.enterQueue.Impl.ServiceMapperQueue;
 import com.bluedot.queue.outQueue.impl.MapperServiceQueue;
 import com.bluedot.queue.outQueue.impl.ServiceControllerQueue;
+import com.bluedot.utils.ReflectUtil;
+import com.bluedot.utils.StringUtil;
 import com.bluedot.utils.constants.OperationConstants;
 
 import javax.servlet.http.HttpSession;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -50,6 +52,7 @@ public abstract class BaseService<T> {
                 //尝试抓取UserException
                 doService();
             }catch (UserException e){
+                e.printStackTrace();
                 commonResult = CommonResult.commonErrorCode(e.getErrorCode());
             }
         }else {
@@ -145,21 +148,20 @@ public abstract class BaseService<T> {
         // 查询当前页的对应数据
         entityInfo.setOperation(OperationConstants.SELECT);
         commonResult = doMapper();
-
         Condition condition = entityInfo.getCondition();
         // 设置pageInfo，并将查询到的数据填入
         PageInfo pageInfo = new PageInfo();
-        if (((ArrayList) commonResult.getData()).size() == 0){
+        if (((List) commonResult.getData()).size() == 0){
             commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
         }else {
             pageInfo.setDataList((List<Object>)commonResult.getData());
             pageInfo.setPageSize(condition.getSize());
+            pageInfo.setCurrentPageNo(Math.toIntExact(condition.getStartIndex() / condition.getSize() + 1));
             // 调用getCount查询数据总数量
             pageInfo.setTotalDataSize(getCount(condition));
             pageInfo.setTotalPageSize((pageInfo.getTotalDataSize() + pageInfo.getPageSize() - 1) / pageInfo.getPageSize());
-            pageInfo.setCurrentPageNo(Math.toIntExact(condition.getStartIndex() / condition.getSize() + 1));
 
-            commonResult = CommonResult.successResult("分页查询", pageInfo);
+            commonResult = CommonResult.successResult("", pageInfo);
         }
     }
 
@@ -171,8 +173,8 @@ public abstract class BaseService<T> {
         // 设置查询条件
         List<String> fieldList = new ArrayList<>();
         fieldList.add("count(*)");
+        condition.removeLimit();
         condition.setFields(fieldList);
-        condition.addView(entityInfo.getCondition().getViews().get(0));
         condition.setReturnType("Long");
 
         //进行查询逻辑

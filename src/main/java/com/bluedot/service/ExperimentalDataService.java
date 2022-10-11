@@ -2,24 +2,18 @@ package com.bluedot.service;
 
 import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
-import com.bluedot.mapper.bean.Condition;
-import com.bluedot.mapper.bean.EntityInfo;
-import com.bluedot.mapper.bean.Term;
-import com.bluedot.mapper.bean.TermType;
+import com.bluedot.mapper.bean.*;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.ExpData;
+import com.bluedot.pojo.entity.MaterialType;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.ExcelUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.constants.OperationConstants;
-import com.bluedot.utils.constants.SessionConstants;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author Jason
@@ -109,6 +103,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         }
 
         invokeMethod(methodName,this);
+
+
     }
 
     @Override
@@ -146,6 +142,30 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         //设置查询条件
         if (paramList.containsKey("pageSize") && paramList.containsKey("pageNo")){
             selectPage();
+            PageInfo pageInfo = (PageInfo) commonResult.getData();
+            List<Object> dataList = pageInfo.getDataList();
+            List<ExpData> expDataList = new ArrayList<>();
+            //查询外键属性MaterialType
+            for (Object o : dataList) {
+                //编写sql
+                ExpData expData = (ExpData) o;
+                Integer materialTypeId = expData.getMaterialType().getMaterialTypeId();
+                Condition condition1 = new Condition();
+                condition1.setReturnType("MaterialType");
+                condition1.addAndConditionWithView(new Term("material_type", "material_type_id", materialTypeId, TermType.EQUAL));
+                entityInfo.setCondition(condition1);
+                select();
+                List<Object> data = (List<Object>) commonResult.getData();
+
+                if (data.size() == 1) {
+                    expData.setMaterialType((MaterialType) data.get(0));
+                }
+
+                expDataList.add(expData);
+            }
+
+            pageInfo.setDataList(Collections.singletonList(expDataList));
+            commonResult = CommonResult.successResult("",pageInfo);
         }else if(paramList.containsKey("expData")){
             select();
         }
@@ -209,6 +229,7 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         Condition condition = new Condition();
         condition.addFields("DISTINCT(exp_material_name)");
         condition.addView("exp_data");
+        condition.setReturnType("ExpData");
 
         if (paramList.containsKey("userEmail")){
             condition.addOrConditionWithView(new Term("exp_data","user_email",paramList.get("userEmail"),TermType.EQUAL));
@@ -237,6 +258,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
             entityInfo.addEntity(expData);
         }
         update();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("修改实验数据"+data+"条",true);
     }
 
     /**
@@ -258,6 +281,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
             entityInfo.addEntity(expData);
         }
         update();
+        int data = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("修改实验数据"+data+"条",true);
     }
 
     /**
@@ -278,6 +303,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         }
 
         delete();
+        int deleteNum = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("修改实验数据"+deleteNum+"条",true);
     }
 
     /**
@@ -297,6 +324,8 @@ public class ExperimentalDataService extends BaseService<ExpData>{
         }
 
         delete();
+        int deleteNum = (int) commonResult.getData();
+        commonResult = CommonResult.successResult("修改实验数据"+deleteNum+"条",true);
     }
 
     /**

@@ -120,6 +120,9 @@ public class ExpData {
     public Double getExpOriginalCurrent() {
         return expOriginalCurrent;
     }
+    public String getExpOriginalCurrentAsScientificNotation(){
+        return simplifyScientificNotationDouble(expOriginalCurrent);
+    }
 
     public void setExpOriginalCurrent(Double expOriginalCurrent) {
         this.expOriginalCurrent = expOriginalCurrent;
@@ -135,6 +138,9 @@ public class ExpData {
 
     public Double getExpNewestCurrent() {
         return expNewestCurrent;
+    }
+    public String getExpNewestCurrentAsScientificNotation(){
+        return simplifyScientificNotationDouble(expNewestCurrent);
     }
 
     public void setExpNewestCurrent(Double expNewestCurrent) {
@@ -233,5 +239,34 @@ public class ExpData {
                 ", expLastUpdateTime=" + expLastUpdateTime +
                 ", expDeleteStatus=" + expDeleteStatus +
                 '}';
+    }
+
+    /**
+     * 将科学计数法的数字进行化简，小数点后面只保留三位有效数字
+     * @param doubleNum 待处理的数字
+     * @return 简化处理后的数字
+     */
+    public String simplifyScientificNotationDouble(Double doubleNum){
+        if (doubleNum == null){
+            return null;
+        }
+
+        String d = doubleNum.toString();
+        if (!d.contains("E")){
+            return d;
+        }
+
+        // 25.2E-7  25.2E5  0.01222E-7  0.0001E10
+        // 8E2 8E-3  888888E10  77777E-10
+
+        if (d.contains(".")){
+            int dotIndex = d.indexOf('.');
+            int eIndex = d.indexOf('E');
+
+            if (eIndex - dotIndex > 3){
+                return d.substring(0,dotIndex+4)+d.substring(eIndex);
+            }
+        }
+        return d;
     }
 }

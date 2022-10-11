@@ -6,8 +6,8 @@ import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author FireRain
@@ -27,7 +27,7 @@ public class PythonUtilTest {
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.001, 0.002, 0.003, 0.004, 0.005, 0.0123, 0.0089810,
                 0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
-        Object value = PythonUtil.executePythonAlgorithFile("3.py", data);
+        Object value = PythonUtil.executePythonAlgorithmFile("3.py", data);
         System.out.println(value);
     }
 
@@ -42,7 +42,7 @@ public class PythonUtilTest {
                 0.011, 0.012312, 0.012342, 0.01557, 0.02888, 0.0075686, 0.00980};
         String path = "images/imageResultTest";
 
-        Object result = PythonUtil.executePythonAlgorithFile("2.py", data, path);
+        Object result = PythonUtil.executePythonAlgorithmFile("2.py", data, path);
         System.out.println(result);
 
     }
@@ -68,7 +68,7 @@ public class PythonUtilTest {
 
         String path = "line.png";
 
-        Object result = PythonUtil.executePythonAlgorithFile("paintReportGraph.py", map, path);
+        Object result = PythonUtil.executePythonAlgorithmFile("paintReportGraph.py", map, path);
         System.out.println(result);
 
     }
@@ -143,6 +143,18 @@ public class PythonUtilTest {
         PythonUtil.uploadPythonFile("line.py",fileInputStream);
     }
 
+    @Test
+    public void modelTest() throws SQLException, IOException, ClassNotFoundException {
+        Double[][] d = new Double[10][2];
+        for (int i = 0; i < d.length; i++) {
+            d[i][1] = 1.0;
+            d[i][0] = 0.9;
+        }
+
+        Object o = PythonUtil.executePythonAlgorithmFile("4.py", d);
+        System.out.println(o);
+    }
+
     /**
      * python程序异常处理
      */
@@ -153,7 +165,7 @@ public class PythonUtilTest {
             data[i][0] = 1.9;
             data[i][1] = 1.0;
         }
-        Object result = PythonUtil.executePythonAlgorithFile("4.py",data);
+        Object result = PythonUtil.executePythonAlgorithmFile("4.py",data);
         System.out.println(result);
     }
 }
