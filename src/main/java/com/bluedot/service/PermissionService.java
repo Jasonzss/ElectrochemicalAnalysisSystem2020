@@ -85,6 +85,10 @@ public class PermissionService extends BaseService<Permission>{
 
         Long pageNo = Long.valueOf(((Integer)paramList.get("pageNo")).longValue());
         Integer pageSize = (Integer) paramList.get("pageSize");
+        if(pageNo<0 || pageSize<=0){
+            commonResult=CommonResult.errorResult(400,"查询用户角色失败，分页参数不规范");
+            return;
+        }
 
         Condition condition1 = new Condition();
         condition1.setReturnType("User");
@@ -201,14 +205,20 @@ public class PermissionService extends BaseService<Permission>{
      * 新增角色
      */
     private void insertRole(){
+        ArrayList<Integer> permissionIds = (ArrayList<Integer>) paramList.get("permissionIds");
+        if(permissionIds.size()==0){
+            commonResult=CommonResult.errorResult(400,"新增角色失败，权限未指定");
+            return;
+        }
         String roleName = (String) paramList.get("roleName");
+        if(roleName==null || "".equals(roleName) || roleName.length()>10){
+            commonResult=CommonResult.errorResult(400,"新增角色失败，角色名称不符合规范");
+            return;
+        }
         String roleDesc = (String) paramList.get("roleDesc");
-        Role role=new Role();
-        role.setRoleName(roleName);
-        role.setRoleDesc(roleDesc);
-        paramList.put("role",role);
-        new RoleService(session,entityInfo).doOtherService(paramList,"insert");
-
+        Role role11=new Role();
+        role11.setRoleName(roleName);
+        paramList.put("role",role11);
         // 封装Condition
         Condition condition = new Condition();
         condition.setReturnType("Role");
@@ -221,13 +231,27 @@ public class PermissionService extends BaseService<Permission>{
         condition.setViews(views);
         condition.setFields(fields);
         condition.setAndCondition(andCondition);
+
+        entityInfo.setCondition(condition);
+        select();
+        if(((ArrayList<Role>) commonResult.getData()).size()!=0){
+            commonResult=CommonResult.errorResult(400,"新增角色失败，角色已存在");
+            return;
+        }
+        Role role=new Role();
+        role.setRoleName(roleName);
+        role.setRoleDesc(roleDesc);
+        paramList.put("role",role);
+        new RoleService(session,entityInfo).doOtherService(paramList,"insert");
+
+
         entityInfo.setCondition(condition);
         select();
         ArrayList<Role> roleArrayList= (ArrayList<Role>) commonResult.getData();
         Role role1= roleArrayList.get(roleArrayList.size()-1);
         Integer roleId = role1.getRoleId();
 
-        ArrayList<Integer> permissionIds = (ArrayList<Integer>) paramList.get("permissionIds");
+
         ArrayList<RolePermission> rolePermissionArrayList = new ArrayList<>();
         for (int permissionId : permissionIds) {
             RolePermission rolePermission1 = new RolePermission();
@@ -235,7 +259,6 @@ public class PermissionService extends BaseService<Permission>{
             rolePermission1.setPermissionId(permissionId);
             rolePermissionArrayList.add(rolePermission1);
         }
-
         paramList.put("rolePermissionArrayList",rolePermissionArrayList);
         try{
             new RolePermissionService(session,entityInfo).doOtherService(paramList,"insert");
@@ -249,23 +272,61 @@ public class PermissionService extends BaseService<Permission>{
      * 修改角色权限
      */
     private void updateRolePermissions(){
+        Integer roleId = (Integer) paramList.get("roleId");
+        // 封装Condition
+        Condition condition = new Condition();
+        condition.setReturnType("Role");
+        List<String> views = new ArrayList<>();
+        views.add("`role`");
+        List<String> fields = new ArrayList<>();
+        fields.add("role.role_id");
+        List<Term> andCondition=new ArrayList<>();
+        andCondition.add(new Term("role","role_id",roleId, TermType.EQUAL));
+        condition.setViews(views);
+        condition.setFields(fields);
+        condition.setAndCondition(andCondition);
+
+        entityInfo.setCondition(condition);
+        select();
+        if(((ArrayList<Role>) commonResult.getData()).size()==0){
+            commonResult=CommonResult.errorResult(400,"修改角色权限失败，该角色不存在");
+            return;
+        }
+
         RolePermissionService rolePermissionService = new RolePermissionService(session, entityInfo);
-        rolePermissionService.doOtherService(paramList,"delete");
+        commonResult=rolePermissionService.doOtherService(paramList,"delete");
         commonResult=rolePermissionService.doOtherService(paramList,"insert");
         commonResult= CommonResult.successResult("修改角色权限成功",commonResult.getData());
+
     }
     /**
      * 修改用户角色
      */
     private void updateUserRoles(){
+//        Integer roleId = (Integer) paramList.get("userEmail");
+//        // 封装Condition
+//        Condition condition = new Condition();
+//        condition.setReturnType("User");
+//        List<String> views = new ArrayList<>();
+//        views.add("`user`");
+//        List<String> fields = new ArrayList<>();
+//        fields.add("*");
+//        List<Term> andCondition=new ArrayList<>();
+//        andCondition.add(new Term("user","userEmail",roleId, TermType.EQUAL));
+//        condition.setViews(views);
+//        condition.setFields(fields);
+//        condition.setAndCondition(andCondition);
+//
+//        entityInfo.setCondition(condition);
+//        select();
+//        if(((ArrayList<Role>) commonResult.getData()).size()==0){
+//            commonResult=CommonResult.errorResult(400,"修改用户角色失败，该用户不存在");
+//            return;
+//        }
+
         UserRoleService userRoleService = new UserRoleService(session, entityInfo);
         commonResult=userRoleService.doOtherService(paramList,"delete");
-        if((Integer)commonResult.getData()==0){
-            commonResult= CommonResult.errorResult(400,"用户邮箱号不存在");
-        }else{
-            commonResult=userRoleService.doOtherService(paramList,"insert");
-            commonResult= CommonResult.successResult("修改用户角色成功",commonResult.getData());
-        }
-
+        commonResult=userRoleService.doOtherService(paramList,"insert");
+        commonResult= CommonResult.successResult("修改用户角色成功",commonResult.getData());
     }
 }
