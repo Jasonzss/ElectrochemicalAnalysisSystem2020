@@ -4,6 +4,8 @@ import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
+import com.bluedot.mapper.bean.Term;
+import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Algorithm;
 import com.bluedot.pojo.entity.ExpData;
@@ -114,6 +116,22 @@ public class AnalysisService extends BaseService<ExpData> {
         //执行查询逻辑
         entityInfo.setCondition(condition);
         select();
+
+        //查询新增的实验数据
+        List<Integer> data = (List<Integer>) commonResult.getData();
+        if (data.size() == 0){
+            throw new UserException(CommonErrorCode.E_6001);
+        }
+        int expDataId = data.get(0);
+        condition = new Condition();
+        condition.setReturnType("ExpData");
+        condition.addAndConditionWithView(new Term("exp_data","exp_data_id",expDataId, TermType.EQUAL));
+
+        //查询后包装返回前端
+        entityInfo.setCondition(condition);
+        select();
+        List<ExpData> expDataList = (List<ExpData>) commonResult.getData();
+        commonResult = CommonResult.successResult("",expDataList.get(0));
     }
 
     /**
