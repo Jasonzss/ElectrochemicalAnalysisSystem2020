@@ -68,12 +68,6 @@
             >编辑</el-button>
             <el-button
               size="mini"
-              type="primary"
-              icon="el-icon-view"
-              @click="openDrawer('查看', 'view', scope.row)"
-            >查看</el-button>
-            <el-button
-              size="mini"
               type="danger"
               icon="el-icon-delete"
               @click="deletedata(scope.row)"
