@@ -6,6 +6,7 @@
         icon="el-icon-plus"
         type="primary"
         class="upload"
+        @click="upload"
       >新建算法</el-button>
       <el-dropdown :hide-on-click="false" @command="handleCommand">
         <span class="el-dropdown-link list">
@@ -58,8 +59,12 @@
         @selection-change="selectionChange"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column label="用户ID" width="135" prop="user.userName" />
-        <el-table-column label="算法审核状态" width="150" prop="algorithmStatus.label" sortable />
+        <el-table-column label="用户邮箱" width="175" prop="user.userEmail" />
+        <el-table-column label="算法审核状态" width="100" sortable >
+          <template slot-scope="scope">
+            <el-tag :type="scope.row.algorithmStatus.label === '公开' ? 'sucess' : 'warning'">{{ scope.row.algorithmStatus.label }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="算法名称" width="135" prop="algorithmName" />
         <el-table-column label="算法类型" width="135" prop="algorithmType.label" />
         <el-table-column label="算法语言" width="100" prop="algorithmLanguage.label" />
@@ -92,6 +97,17 @@
     </div>
     <!-- 抽屉 -->
     <Drawer :infos="toDrawer" @sendInfo="getNewInfo" />
+    <!-- 弹窗 -->
+    <el-dialog title="上传算法" :visible.sync="visable">
+      <el-input  placeholder="算法名称"></el-input>
+      <el-input  placeholder="算法类型"></el-input>
+      <el-input  placeholder="算法语言"></el-input>
+      <el-upload>
+
+      </el-upload>
+      <el-input  placeholder="算法描述" type="textarea"></el-input>
+      <el-button type="success">确定</el-button>
+    </el-dialog>
   </div>
 </template>
 
@@ -106,6 +122,7 @@ export default {
   },
   data() {
     return {
+      visable: false,
       desdatas: [],
       serachinput: {
         type: false,
@@ -144,7 +161,7 @@ export default {
     }
   },
   created() {
-    listAlgorithm(this.$store.getters.userEmail, 0, 10).then(res => {
+    listAlgorithm(undefined, 0, 10).then(res => {
       this.desdatas = res.data.data
     })
   },
@@ -196,9 +213,12 @@ export default {
       }
     },
     search() {
-      listAlgorithm(this.$store.getters.userEmail, 0, 10, this.searchValue.name, this.searchValue.type, this.searchValue.lang).then(res => {
+      listAlgorithm(undefined, 0, 10, this.searchValue.name, this.searchValue.type, this.searchValue.lang).then(res => {
         this.desdatas = res.data.data
       })
+    },
+    upload() {
+
     }
   }
 }
