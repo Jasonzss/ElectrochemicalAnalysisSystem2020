@@ -37,6 +37,7 @@ export default {
   },
   data() {
     return {
+      algorithmMsg: ''
     }
   },
   computed: {
@@ -108,9 +109,15 @@ export default {
     },
     algorithm() {
       const val = JSON.parse(this.message.applicationContent)
-      const id = val.applicationId
-      this.selectAlgorithm(id)
-      // return '算法名:' + name + '   缓冲溶液描述:' + desc
+      const id = val.algorithmId
+      let data
+      this.selectAlgorithm(id).then(res => {
+        data = res.data.data[0]
+        const name = data.algorithmName
+        const status = data.algorithmStatus.label
+        const type = data.algorithmType.label
+        this.algorithmMsg = '算法名:' + name + '   算法类型:' + type + '    算法状态:' + status
+      })
     },
     // user() {
     //
@@ -122,7 +129,7 @@ export default {
         case 1:
           return this.materialType
         case 2:
-          return this.algorithm
+          return this.algorithm === undefined ? this.algorithmMsg : ''
         case 3:
           return this.bufferSolution
       }
@@ -132,10 +139,8 @@ export default {
     deletemsg() {
       this.$emit('deletemsg', this.message.id)
     },
-    async selectAlgorithm(id) {
-      await listAlgorithmBaseInfo(id).then(res => {
-
-      })
+    selectAlgorithm(id) {
+      return listAlgorithmBaseInfo(id)
     }
   }
 }

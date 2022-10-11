@@ -197,7 +197,6 @@ export default {
             } else if (roleIdList[0] === 1) {
               this.$router.push('/datacontrol')
             } else if (roleIdList[0] === 2) {
-              console.log('fasdfasdfa')
               this.$router.push('/system')
             }
           })
