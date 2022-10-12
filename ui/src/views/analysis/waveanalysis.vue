@@ -203,17 +203,14 @@ export default {
         return k.bufferSolutionName === this.eddata.buffer
       })[0].bufferSolutionId
       waveAnalysis(file, value, bufferSolutionId, this.eddata.ph, materialTypeId, this.eddata.name, this.eddata.detail).then(res => {
-        let expId = res.data.data
-        if (expId.length === 1) {
-          expId = expId[0]
-        }
-        listExperimentalDataById(expId).then(res => {
-          let expData = res.data.data
-          if (expData.length === 1) {
-            expData = expData[0]
-          }
-          this.expData = expData
-        })
+        this.expData = res.data.data
+        // listExperimentalDataById(expId).then(res => {
+        //   let expData = res.data.data
+        //   if (expData.length === 1) {
+        //     expData = expData[0]
+        //   }
+        //   this.expData = expData
+        // })
       })
     }
   }

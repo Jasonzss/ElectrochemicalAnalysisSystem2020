@@ -152,7 +152,7 @@ public abstract class BaseService<T> {
         // 设置pageInfo，并将查询到的数据填入
         PageInfo pageInfo = new PageInfo();
         if (((List) commonResult.getData()).size() == 0){
-            commonResult = CommonResult.commonErrorCode(CommonErrorCode.E_1009);
+            throw new UserException(CommonErrorCode.E_1009);
         }else {
             pageInfo.setDataList((List<Object>)commonResult.getData());
             pageInfo.setPageSize(condition.getSize());

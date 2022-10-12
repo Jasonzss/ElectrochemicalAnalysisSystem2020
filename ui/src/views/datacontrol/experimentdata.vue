@@ -148,7 +148,7 @@ export default {
     const condition = {
       'expDeleteStatus': 0
     }
-    listUserExperimentalData(this.$store.getters.userEmail, 1, 10, condition).then(res => {
+    listUserExperimentalData(undefined, 1, 10, condition).then(res => {
       this.desdatas = res.data.data.dataList
     })
   },
