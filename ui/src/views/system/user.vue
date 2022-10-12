@@ -70,7 +70,7 @@
               size="mini"
               type="primary"
               icon="el-icon-edit"
-              @click="deletedata(scope.row)"
+              @click="(scope.row)"
             >编辑</el-button>
             <el-button
               size="mini"
