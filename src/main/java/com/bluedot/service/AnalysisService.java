@@ -4,11 +4,14 @@ import com.bluedot.exception.CommonErrorCode;
 import com.bluedot.exception.UserException;
 import com.bluedot.mapper.bean.Condition;
 import com.bluedot.mapper.bean.EntityInfo;
+import com.bluedot.mapper.bean.Term;
+import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Algorithm;
 import com.bluedot.pojo.entity.ExpData;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.AlgoUtil;
+import com.bluedot.utils.JsonUtil;
 import com.bluedot.utils.ReflectUtil;
 import com.bluedot.utils.constants.SessionConstants;
 import org.apache.commons.fileupload.FileItem;
@@ -17,11 +20,9 @@ import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author Jason
@@ -73,7 +74,6 @@ public class AnalysisService extends BaseService<ExpData> {
     private void analysis(){
         ExpData expData = new ExpData();
         paramList.put("userEmail",session.getAttribute(SessionConstants.USER_EMAIL));
-        //TODO expCreateTime时间该怎么搞
         paramList.put("expDeleteStatus",0);
 
         //将其他实验数据信息填充进expData
@@ -114,6 +114,22 @@ public class AnalysisService extends BaseService<ExpData> {
         //执行查询逻辑
         entityInfo.setCondition(condition);
         select();
+
+        //查询新增的实验数据
+        List<Integer> data = (List<Integer>) commonResult.getData();
+        if (data.size() == 0){
+            throw new UserException(CommonErrorCode.E_6001);
+        }
+        int expDataId = data.get(0);
+        condition = new Condition();
+        condition.setReturnType("ExpData");
+        condition.addAndConditionWithView(new Term("exp_data","exp_data_id",expDataId, TermType.EQUAL));
+
+        //查询后包装返回前端
+        entityInfo.setCondition(condition);
+        select();
+        List<ExpData> expDataList = (List<ExpData>) commonResult.getData();
+        commonResult = CommonResult.successResult("",expDataList.get(0));
     }
 
     /**
@@ -236,8 +252,10 @@ public class AnalysisService extends BaseService<ExpData> {
      */
     private void deal(){
         //获取点位数据
-        List<Double> expPotentialPointData = (List<Double>) paramList.get("expPotentialPointData");
-        List<Double> expOriginalCurrentPointData = (List<Double>) paramList.get("expOriginalCurrentPointData");
+        String expPotentialPointDataStr = (String) paramList.get("expPotentialPointData");
+        String expOriginalCurrentPointDataStr = (String) paramList.get("expOriginalCurrentPointData");
+        List<Double> expPotentialPointData = stringParseToDoubleArray(expPotentialPointDataStr);
+        List<Double> expOriginalCurrentPointData = stringParseToDoubleArray(expOriginalCurrentPointDataStr);
 
         if (expOriginalCurrentPointData == null || expPotentialPointData == null){
             throw new UserException(CommonErrorCode.E_1014);
@@ -298,5 +316,19 @@ public class AnalysisService extends BaseService<ExpData> {
         analysisData.put("expNewestCurrentPointData",expNewestCurrentPointData);
 
         this.commonResult = CommonResult.successResult("处理成功",analysisData);
+    }
+
+    public List<Double> stringParseToDoubleArray(String json){
+        if (json == null){
+            throw new RuntimeException();
+        }
+
+        List<String> list = Arrays.asList(json.substring(1, json.length() - 1).split(","));
+        List<Double> doubleList = new ArrayList<>();
+        list.forEach((l) -> {
+            doubleList.add(Double.parseDouble(l));
+        });
+
+        return doubleList;
     }
 }

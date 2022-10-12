@@ -64,3 +64,4 @@ ui/*.local
 ui/package-lock.json
 ui/yarn.lock
 
+/package-lock.json
