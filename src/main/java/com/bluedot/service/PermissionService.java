@@ -11,11 +11,11 @@ import com.bluedot.pojo.entity.*;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.pojo.vo.RoleWithCountNum;
 import com.bluedot.utils.LogUtil;
+import com.bluedot.utils.constants.OperationConstants;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author zlj
@@ -82,24 +82,21 @@ public class PermissionService extends BaseService<Permission>{
      * 查询所有用户的角色
      */
     private void listUserRoles(){
-
-        Long pageNo = Long.valueOf(((Integer)paramList.get("pageNo")).longValue());
+        Integer pageNo = (Integer) paramList.get("pageNo");
         Integer pageSize = (Integer) paramList.get("pageSize");
 
-        Condition condition1 = new Condition();
-        condition1.setReturnType("User");
-        condition1.addView("user");
-        condition1.addFields("user_email");
-        entityInfo.setCondition(condition1);
-        select();
-        ArrayList<User> arrayList= (ArrayList<User>) commonResult.getData();
-        int start= (int) ((pageNo-1)*pageSize);
-        int end=start+pageSize;
-        end= end>arrayList.size() ? arrayList.size():end;
-        List<String> list=new ArrayList<>();
-        for (int i = start; i < end; i++) {
-            list.add(arrayList.get(i).getUserEmail());
-        }
+        Map<String,Object> map = new HashMap<>();
+        map.put("pageSize",pageSize);
+        map.put("pageNo",pageNo);
+        CommonResult userList = new UserService(session, entityInfo).doOtherService(map, OperationConstants.SELECT);
+        PageInfo userPageInfo = (PageInfo) userList.getData();
+        List<Object> dataList = userPageInfo.getDataList();
+        List<User> users = new ArrayList<>();
+        dataList.forEach((data) -> {
+            users.add((User) data);
+        });
+        List<String> userEmailList = users.stream().map(User::getUserEmail).collect(Collectors.toList());
+
 
         // 封装Condition
         Condition condition = new Condition();
@@ -118,19 +115,43 @@ public class PermissionService extends BaseService<Permission>{
         fields.add("role.*");
         condition.setFields(fields);
 
-        condition.addAndConditionWithView(new Term("`user_role`","user_email",list,TermType.IN));
+        condition.addAndConditionWithView(new Term("`user_role`","user_email",userEmailList,TermType.IN));
         entityInfo.setCondition(condition);
         select();
         // 设置pageInfo，并将查询到的数据填入
-        PageInfo pageInfo = new PageInfo();
-        pageInfo.setDataList((List<Object>) commonResult.getData());
-        pageInfo.setPageSize(pageSize);
+        List<UserRole> userRoleList = (List<UserRole>) this.commonResult.getData();
+//        pageInfo.setPageSize(pageSize);
+//
+//        pageInfo.setTotalDataSize((long) arrayList.size());
+//        pageInfo.setTotalPageSize(pageInfo.getTotalDataSize() /pageInfo.getPageSize());
+//        pageInfo.setCurrentPageNo(Math.toIntExact(pageNo));
 
-        pageInfo.setTotalDataSize((long) arrayList.size());
-        pageInfo.setTotalPageSize(pageInfo.getTotalDataSize() /pageInfo.getPageSize());
-        pageInfo.setCurrentPageNo(Math.toIntExact(pageNo));
+        //查询目标idList的所有目标用户信息
+//        List<String> emailList = new ArrayList<>();
+//        List<Object> dataList = pageInfo.getDataList();
+//        dataList.forEach((u) -> {
+//            emailList.add(((UserRole)u).getUserEmail());
+//        });
+//        condition = new Condition();
+//        condition.setReturnType("User");
+//        condition.addAndConditionWithView(new Term("user","user_email",emailList,TermType.IN));
+//
+//        //执行查询
+//        entityInfo.setCondition(condition);
+//        select();
 
-        commonResult = CommonResult.successResult("分页查询",pageInfo);
+        //获得查询到的user
+        Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getUserEmail, user -> user));
+        userPageInfo.setDataList(null);
+        //将user放入pageInfo中
+        userRoleList.forEach((userRole -> {
+            userRole.setUser(userMap.getOrDefault(userRole.getUserEmail(),userRole.getUser()));
+        }));
+
+        //将数据放入pageInfo
+        userRoleList.forEach((userPageInfo::addData));
+
+        this.commonResult = CommonResult.successResult("",userPageInfo);
         LogUtil.insertUserLog("error","详情",userLogMap);
     }
     /**
