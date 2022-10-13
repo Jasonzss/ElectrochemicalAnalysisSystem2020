@@ -149,7 +149,7 @@ export default {
     // 获取用户基本信息
     await getUserInfo(userEmail).then(res => {
       const data = res.data.data
-      this.userInfo.sex = data.userSex
+      this.userInfo.sex = data.userSex === 0 ? '男' : '女'
       this.userInfo.name = data.userName
       this.userInfo.age = data.userAge
       this.userInfo.email = data.userEmail
