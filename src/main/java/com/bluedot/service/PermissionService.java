@@ -120,25 +120,6 @@ public class PermissionService extends BaseService<Permission>{
         select();
         // 设置pageInfo，并将查询到的数据填入
         List<UserRole> userRoleList = (List<UserRole>) this.commonResult.getData();
-//        pageInfo.setPageSize(pageSize);
-//
-//        pageInfo.setTotalDataSize((long) arrayList.size());
-//        pageInfo.setTotalPageSize(pageInfo.getTotalDataSize() /pageInfo.getPageSize());
-//        pageInfo.setCurrentPageNo(Math.toIntExact(pageNo));
-
-        //查询目标idList的所有目标用户信息
-//        List<String> emailList = new ArrayList<>();
-//        List<Object> dataList = pageInfo.getDataList();
-//        dataList.forEach((u) -> {
-//            emailList.add(((UserRole)u).getUserEmail());
-//        });
-//        condition = new Condition();
-//        condition.setReturnType("User");
-//        condition.addAndConditionWithView(new Term("user","user_email",emailList,TermType.IN));
-//
-//        //执行查询
-//        entityInfo.setCondition(condition);
-//        select();
 
         //获得查询到的user
         Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getUserEmail, user -> user));
