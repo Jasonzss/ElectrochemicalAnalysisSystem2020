@@ -11,11 +11,11 @@ import com.bluedot.pojo.entity.*;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.pojo.vo.RoleWithCountNum;
 import com.bluedot.utils.LogUtil;
+import com.bluedot.utils.constants.OperationConstants;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author zlj
@@ -53,7 +53,7 @@ public class PermissionService extends BaseService<Permission>{
                 if (paramList.containsKey("roleName")&&paramList.containsKey("roleDesc")&&paramList.containsKey("permissionIds")){
                     methodName="insertRole";
                 }else {
-                    throw new UserException(CommonErrorCode.E_4001);
+                    throw new UserException(CommonErrorCode.E_5001);
                 }
                 break;
             case "update":
@@ -62,11 +62,11 @@ public class PermissionService extends BaseService<Permission>{
                 }else if(paramList.containsKey("roleId")&&paramList.containsKey("permissionIds")){
                     methodName="updateRolePermissions";
                 }else {
-                    throw new UserException(CommonErrorCode.E_4001);
+                    throw new UserException(CommonErrorCode.E_5001);
                 }
                 break;
             default:
-                throw new UserException(CommonErrorCode.E_4001);
+                throw new UserException(CommonErrorCode.E_5002);
         }
         userLogMap.put("userLogClassMethodName",userLogMap.get("userLogClassMethodName")+methodName);
         invokeMethod(methodName,this);
@@ -82,24 +82,21 @@ public class PermissionService extends BaseService<Permission>{
      * 查询所有用户的角色
      */
     private void listUserRoles(){
-
-        Long pageNo = Long.valueOf(((Integer)paramList.get("pageNo")).longValue());
+        Integer pageNo = (Integer) paramList.get("pageNo");
         Integer pageSize = (Integer) paramList.get("pageSize");
 
-        Condition condition1 = new Condition();
-        condition1.setReturnType("User");
-        condition1.addView("user");
-        condition1.addFields("user_email");
-        entityInfo.setCondition(condition1);
-        select();
-        ArrayList<User> arrayList= (ArrayList<User>) commonResult.getData();
-        int start= (int) ((pageNo-1)*pageSize);
-        int end=start+pageSize;
-        end= end>arrayList.size() ? arrayList.size():end;
-        List<String> list=new ArrayList<>();
-        for (int i = start; i < end; i++) {
-            list.add(arrayList.get(i).getUserEmail());
-        }
+        Map<String,Object> map = new HashMap<>();
+        map.put("pageSize",pageSize);
+        map.put("pageNo",pageNo);
+        CommonResult userList = new UserService(session, entityInfo).doOtherService(map, OperationConstants.SELECT);
+        PageInfo userPageInfo = (PageInfo) userList.getData();
+        List<Object> dataList = userPageInfo.getDataList();
+        List<User> users = new ArrayList<>();
+        dataList.forEach((data) -> {
+            users.add((User) data);
+        });
+        List<String> userEmailList = users.stream().map(User::getUserEmail).collect(Collectors.toList());
+
 
         // 封装Condition
         Condition condition = new Condition();
@@ -118,20 +115,25 @@ public class PermissionService extends BaseService<Permission>{
         fields.add("role.*");
         condition.setFields(fields);
 
-        condition.addAndConditionWithView(new Term("`user_role`","user_email",list,TermType.IN));
+        condition.addAndConditionWithView(new Term("`user_role`","user_email",userEmailList,TermType.IN));
         entityInfo.setCondition(condition);
         select();
         // 设置pageInfo，并将查询到的数据填入
-        PageInfo pageInfo = new PageInfo();
-        pageInfo.setDataList((List<Object>) commonResult.getData());
-        pageInfo.setPageSize(pageSize);
+        List<UserRole> userRoleList = (List<UserRole>) this.commonResult.getData();
 
-        pageInfo.setTotalDataSize((long) arrayList.size());
-        pageInfo.setTotalPageSize(pageInfo.getTotalDataSize() /pageInfo.getPageSize());
-        pageInfo.setCurrentPageNo(Math.toIntExact(pageNo));
+        //获得查询到的user
+        Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getUserEmail, user -> user));
+        userPageInfo.setDataList(null);
+        //将user放入pageInfo中
+        userRoleList.forEach((userRole -> {
+            userRole.setUser(userMap.getOrDefault(userRole.getUserEmail(),userRole.getUser()));
+        }));
 
-        commonResult = CommonResult.successResult("分页查询",pageInfo);
-        LogUtil.insertUserLog("error","详情",userLogMap);
+        //将数据放入pageInfo
+        userRoleList.forEach((userPageInfo::addData));
+
+        this.commonResult = CommonResult.successResult("",userPageInfo);
+        LogUtil.insertUserLog("info","查询所有用户的角色",userLogMap);
     }
     /**
      * 查询所有角色
@@ -198,6 +200,7 @@ public class PermissionService extends BaseService<Permission>{
         condition.setFields(fields);
         entityInfo.setCondition(condition);
         select();
+        commonResult=CommonResult.successResult("查询所有角色的权限",commonResult.getData());
     }
     /**
      * 查询所有权限
@@ -215,20 +218,27 @@ public class PermissionService extends BaseService<Permission>{
         condition.setFields(fields);
         entityInfo.setCondition(condition);
         select();
+        commonResult=CommonResult.successResult("查询所有权限",commonResult.getData());
     }
 
     /**
      * 新增角色
      */
     private void insertRole(){
+        ArrayList<Integer> permissionIds = (ArrayList<Integer>) paramList.get("permissionIds");
+        if(permissionIds.size()==0){
+            commonResult=CommonResult.errorResult(400,"新增角色失败，权限未指定");
+            return;
+        }
         String roleName = (String) paramList.get("roleName");
+        if(roleName==null || "".equals(roleName) || roleName.length()>10){
+            commonResult=CommonResult.errorResult(400,"新增角色失败，角色名称不符合规范");
+            return;
+        }
         String roleDesc = (String) paramList.get("roleDesc");
-        Role role=new Role();
-        role.setRoleName(roleName);
-        role.setRoleDesc(roleDesc);
-        paramList.put("role",role);
-        new RoleService(session,entityInfo).doOtherService(paramList,"insert");
-
+        Role role11=new Role();
+        role11.setRoleName(roleName);
+        paramList.put("role",role11);
         // 封装Condition
         Condition condition = new Condition();
         condition.setReturnType("Role");
@@ -241,13 +251,27 @@ public class PermissionService extends BaseService<Permission>{
         condition.setViews(views);
         condition.setFields(fields);
         condition.setAndCondition(andCondition);
+
+        entityInfo.setCondition(condition);
+        select();
+        if(((ArrayList<Role>) commonResult.getData()).size()!=0){
+            commonResult=CommonResult.errorResult(400,"新增角色失败，角色已存在");
+            return;
+        }
+        Role role=new Role();
+        role.setRoleName(roleName);
+        role.setRoleDesc(roleDesc);
+        paramList.put("role",role);
+        new RoleService(session,entityInfo).doOtherService(paramList,"insert");
+
+
         entityInfo.setCondition(condition);
         select();
         ArrayList<Role> roleArrayList= (ArrayList<Role>) commonResult.getData();
         Role role1= roleArrayList.get(roleArrayList.size()-1);
         Integer roleId = role1.getRoleId();
 
-        ArrayList<Integer> permissionIds = (ArrayList<Integer>) paramList.get("permissionIds");
+
         ArrayList<RolePermission> rolePermissionArrayList = new ArrayList<>();
         for (int permissionId : permissionIds) {
             RolePermission rolePermission1 = new RolePermission();
@@ -255,27 +279,73 @@ public class PermissionService extends BaseService<Permission>{
             rolePermission1.setPermissionId(permissionId);
             rolePermissionArrayList.add(rolePermission1);
         }
-
         paramList.put("rolePermissionArrayList",rolePermissionArrayList);
-
-        new RolePermissionService(session,entityInfo).doOtherService(paramList,"insert");
-        LogUtil.insertUserLog("error","详情",userLogMap);
+        try{
+            new RolePermissionService(session,entityInfo).doOtherService(paramList,"insert");
+        }catch (Exception e){
+            LogUtil.insertUserLog("error",e.getMessage(),userLogMap);
+            commonResult= CommonResult.errorResult(500,e.getMessage());
+        }
+       commonResult=CommonResult.successResult("新增角色成功",role);
     }
     /**
      * 修改角色权限
      */
     private void updateRolePermissions(){
+        Integer roleId = (Integer) paramList.get("roleId");
+        // 封装Condition
+        Condition condition = new Condition();
+        condition.setReturnType("Role");
+        List<String> views = new ArrayList<>();
+        views.add("`role`");
+        List<String> fields = new ArrayList<>();
+        fields.add("role.role_id");
+        List<Term> andCondition=new ArrayList<>();
+        andCondition.add(new Term("role","role_id",roleId, TermType.EQUAL));
+        condition.setViews(views);
+        condition.setFields(fields);
+        condition.setAndCondition(andCondition);
+
+        entityInfo.setCondition(condition);
+        select();
+        if(((ArrayList<Role>) commonResult.getData()).size()==0){
+            commonResult=CommonResult.errorResult(400,"修改角色权限失败，该角色不存在");
+            return;
+        }
+
         RolePermissionService rolePermissionService = new RolePermissionService(session, entityInfo);
-        rolePermissionService.doOtherService(paramList,"delete");
+        commonResult=rolePermissionService.doOtherService(paramList,"delete");
         commonResult=rolePermissionService.doOtherService(paramList,"insert");
         commonResult= CommonResult.successResult("修改角色权限成功",commonResult.getData());
+
     }
     /**
      * 修改用户角色
      */
     private void updateUserRoles(){
+//        Integer roleId = (Integer) paramList.get("userEmail");
+//        // 封装Condition
+//        Condition condition = new Condition();
+//        condition.setReturnType("User");
+//        List<String> views = new ArrayList<>();
+//        views.add("`user`");
+//        List<String> fields = new ArrayList<>();
+//        fields.add("*");
+//        List<Term> andCondition=new ArrayList<>();
+//        andCondition.add(new Term("user","userEmail",roleId, TermType.EQUAL));
+//        condition.setViews(views);
+//        condition.setFields(fields);
+//        condition.setAndCondition(andCondition);
+//
+//        entityInfo.setCondition(condition);
+//        select();
+//        if(((ArrayList<Role>) commonResult.getData()).size()==0){
+//            commonResult=CommonResult.errorResult(400,"修改用户角色失败，该用户不存在");
+//            return;
+//        }
+
         UserRoleService userRoleService = new UserRoleService(session, entityInfo);
-        userRoleService.doOtherService(paramList,"delete");
+        commonResult=userRoleService.doOtherService(paramList,"delete");
         commonResult=userRoleService.doOtherService(paramList,"insert");
         commonResult= CommonResult.successResult("修改用户角色成功",commonResult.getData());
     }

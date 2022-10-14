@@ -8,7 +8,9 @@ import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
 import com.bluedot.pojo.entity.Algorithm;
+import com.bluedot.pojo.entity.BufferSolution;
 import com.bluedot.pojo.entity.ExpData;
+import com.bluedot.pojo.entity.MaterialType;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.AlgoUtil;
 import com.bluedot.utils.JsonUtil;
@@ -121,15 +123,44 @@ public class AnalysisService extends BaseService<ExpData> {
             throw new UserException(CommonErrorCode.E_6001);
         }
         int expDataId = data.get(0);
-        condition = new Condition();
-        condition.setReturnType("ExpData");
-        condition.addAndConditionWithView(new Term("exp_data","exp_data_id",expDataId, TermType.EQUAL));
 
-        //查询后包装返回前端
+        expData.setExpDataId(expDataId);
+//        condition = new Condition();
+//        condition.setReturnType("ExpData");
+//        condition.addAndConditionWithView(new Term("exp_data","exp_data_id",expDataId, TermType.EQUAL));
+//
+//        //查询后包装返回前端
+//        entityInfo.setCondition(condition);
+//        select();
+//        List<ExpData> expDataList = (List<ExpData>) commonResult.getData();
+//        ExpData expData = expDataList.get(0);
+
+        //查询expData的物质类型和缓冲溶液属性
+        condition = new Condition();
+        condition.setReturnType("MaterialType");
+        condition.addAndConditionWithView(new Term("material_type","material_type_id",expData.getMaterialType().getMaterialTypeId(),TermType.EQUAL));
         entityInfo.setCondition(condition);
         select();
-        List<ExpData> expDataList = (List<ExpData>) commonResult.getData();
-        commonResult = CommonResult.successResult("",expDataList.get(0));
+
+        //封装结果
+        List<MaterialType> materialTypes = (List<MaterialType>) commonResult.getData();
+        if (materialTypes.size() > 0){
+            expData.setMaterialType(materialTypes.get(0));
+        }
+
+        condition = new Condition();
+        condition.setReturnType("BufferSolution");
+        condition.addAndConditionWithView(new Term("buffer_solution","buffer_solution_id",expData.getBufferSolution().getBufferSolutionId(),TermType.EQUAL));
+        entityInfo.setCondition(condition);
+        select();
+
+        //封装结果
+        List<BufferSolution> bufferSolutions = (List<BufferSolution>) commonResult.getData();
+        if (bufferSolutions.size() > 0){
+            expData.setBufferSolution(bufferSolutions.get(0));
+        }
+
+        commonResult = CommonResult.successResult("",expData);
     }
 
     /**

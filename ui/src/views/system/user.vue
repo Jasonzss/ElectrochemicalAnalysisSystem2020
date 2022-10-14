@@ -68,6 +68,12 @@
           <template slot-scope="scope">
             <el-button
               size="mini"
+              type="primary"
+              icon="el-icon-edit"
+              @click="(scope.row)"
+            >编辑</el-button>
+            <el-button
+              size="mini"
               type="danger"
               icon="el-icon-delete"
               @click="deletedata(scope.row)"

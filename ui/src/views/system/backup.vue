@@ -1,14 +1,13 @@
 <template>
   <div class="app-container">
     <div class="top">
-      <div class="backswitch">
-        <span class="switchtext">自动备份</span>
-        <el-switch
-          v-model="backauto"
-          active-color="#13ce66"
-          inactive-color="grey"
-        />
-      </div>
+      <el-button
+        size="medium"
+        icon="el-icon-circle-plus-outline"
+        type="primary"
+        class="upload"
+        @click="openAddDrawer('添加', 'add')"
+      >新增备份</el-button>
       <el-dropdown :hide-on-click="false" @command="handleCommand">
         <span class="el-dropdown-link list">
           <span class="listtext">多选搜索</span><i class="el-icon-arrow-down el-icon--right" />
@@ -16,21 +15,16 @@
         <el-dropdown-menu slot="dropdown" class="dropmenu">
           <el-dropdown-item id="defaultFrame" ref="name" command="name">
             <i class="el-icon-check el-icon--right" />
-            算法名称</el-dropdown-item>
-          <el-dropdown-item ref="type" command="type">
-            <i v-show="!serachinput.type" class="el-icon-close el-icon--right" />
-            <i v-show="serachinput.type" class="el-icon-check el-icon--right" />
-            算法类型</el-dropdown-item>
+            备份类型</el-dropdown-item>
           <el-dropdown-item ref="lang" command="lang">
             <i v-show="!serachinput.lang" class="el-icon-close el-icon--right" />
             <i v-show="serachinput.lang" class="el-icon-check el-icon--right" />
-            算法语言</el-dropdown-item>
+            备份时间</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
       <div class="listofinput">
-        <el-input class="search" placeholder="请输入算法名称">'' </el-input>
-        <el-input v-show="serachinput.type" class="search" placeholder="请输入算法类型">'' </el-input>
-        <el-input v-show="serachinput.lang" class="search" placeholder="请输入算法语言">'' </el-input>
+        <el-input class="search" placeholder="请输入备份类型">'' </el-input>
+        <el-input v-show="serachinput.lang" class="search" placeholder="请输入备份时间">'' </el-input>
         <el-button size="mini" icon="el-icon-search" />
       </div>
       <el-button
@@ -53,19 +47,17 @@
         @selection-change="selectionChange"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column label="算法名称" width="135" prop="name" sortable />
-        <el-table-column label="算法类型" width="135" prop="type" />
-        <el-table-column label="算法语言" width="135" prop="lang" />
-        <el-table-column label="用户ID" width="135" prop="userId" />
-        <el-table-column label="算法介绍" width="235" prop="intro" />
-        <el-table-column label="操作">
+        <el-table-column label="备份类型" width="200" prop="type" sortable />
+        <el-table-column label="备份文件名" width="300" prop="filename" />
+        <el-table-column label="备份时间" width="300" prop="operateTime" />
+        <el-table-column label="操作" width="300" >
           <template slot-scope="scope">
             <el-button
               size="mini"
               type="primary"
-              icon="el-icon-view"
+              icon="el-icon-refresh-left"
               @click="openDrawer('查看', 'view', scope.row)"
-            >查看</el-button>
+            >还原</el-button>
             <el-button
               size="mini"
               type="danger"
