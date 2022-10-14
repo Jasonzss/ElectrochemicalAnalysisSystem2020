@@ -20,7 +20,7 @@ public class MyDataSourceImpl implements MyDataSource {
     private static  String PASSWORD;
     private static int initCount = 5;
     private static int minCount = 5;
-    private static int maxCount = 15;
+    private static int maxCount = 100;
     private static int createdCount;
     private static int increasingCount = 2;
     private static int maxWaitingTime = 500;

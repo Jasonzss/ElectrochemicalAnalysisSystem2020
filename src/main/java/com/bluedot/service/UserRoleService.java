@@ -52,7 +52,6 @@ public class UserRoleService extends BaseService<UserRole>{
             userRoleArrayList1.add(userRole1);
         }
         entityInfo.setEntity(userRoleArrayList1);
-        System.out.println(userRoleArrayList1.toString());
         insert();
     }
 
