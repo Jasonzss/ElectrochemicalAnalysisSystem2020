@@ -66,15 +66,14 @@ export const listAlgorithmBaseInfo = (id) => {
   return api.simple(SELECT(param))
 }
 
-export const insertAlgorithm = () => {
+export const insertAlgorithm = (form) => {
   formData.append('viewName', Algorithm.viewName)
   formData.append('operation', Algorithm.operationType.INSERT)
-  formData.append('algorithmName')
-  formData.append('algorithmFile')
-  formData.append('algorithmLanguage')
-  formData.append('algorithmType')
-  formData.append('algorithmDesc')
-  formData.append('algorithmStatus')
+  formData.append('algorithmName', form.algorithmName)
+  formData.append('algorithmFile', form.algorithmFile)
+  formData.append('algorithmLanguage', form.algorithmLanguage)
+  formData.append('algorithmType', form.algorithmType)
+  formData.append('algorithmDesc', form.algorithmDesc)
   return api.form(formData)
 }
 
