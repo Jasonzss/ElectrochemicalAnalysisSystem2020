@@ -75,7 +75,6 @@ public class PermissionService extends BaseService<Permission>{
 
     @Override
     protected boolean check() {
-
         return true;
     }
 
