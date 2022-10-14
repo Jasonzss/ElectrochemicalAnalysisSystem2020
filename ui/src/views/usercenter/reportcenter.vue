@@ -157,7 +157,6 @@ export default {
     },
     async openDrawer(title, plugin, data) {
       if (title === '查看') {
-
         await selectImage(data.reportId, 'train').then(res => {
           data.trainImg = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data)
         })

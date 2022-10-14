@@ -29,14 +29,26 @@
         <el-table-column type="selection" width="55" />
         <el-table-column label="角色" width="135" prop="role.roleName" sortable />
         <el-table-column label="角色数量" width="135" prop="count" sortable />
-        <el-table-column label="角色描述" prop="role.roleDesc" />
-        <el-table-column label="操作" width="265">
+        <el-table-column label="角色描述" width="400" prop="role.roleDesc" />
+        <el-table-column label="操作">
           <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="primary"
+              icon="el-icon-view"
+              @click="openDrawer('查看', 'view', scope.row)"
+            >查看角色权限</el-button>
             <el-button
               size="mini"
               icon="el-icon-edit"
               @click="openDrawer('编辑', 'edit', scope.row)"
-            >编辑</el-button>
+            >修改角色权限</el-button>
+            <el-button
+              size="mini"
+              type="danger"
+              icon="el-icon-delete"
+              @click="deletedata(scope.row)"
+            >删除角色权限</el-button>
           </template>
         </el-table-column>
       </el-table>

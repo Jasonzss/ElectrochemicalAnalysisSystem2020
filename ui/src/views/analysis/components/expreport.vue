@@ -16,14 +16,14 @@
       <div class="expintro">
         实验说明:<span>1</span>
       </div>
-      <el-divider>training series</el-divider>
+      <el-divider>训练集数据</el-divider>
       <el-table
         stripe
         border
         :cell-style="{ textAlign: 'center' }"
         :header-cell-style="{ textAlign: 'center' }"
         :default-sort="{prop: 'date', order: 'descending'}"
-        :data="reportdata.traindata"
+        :data="reportData.trainingSetData"
       >
         <el-table-column width="55" prop="name" />
         <el-table-column v-for="i in 7" :key="i" width="55" :label="i+''" :prop="i+''" />
@@ -40,20 +40,20 @@
         :header-cell-style="{ textAlign: 'center' }"
         :default-sort="{prop: 'date', order: 'descending'}"
       >
-        <el-table-column width="165" label="Rp\^2" />
-        <el-table-column width="165" label="RMSEc" />
-        <el-table-column width="165" label="MAEc" />
+        <el-table-column width="165" label="Rp\^2" prop="rp2"/>
+        <el-table-column width="165" label="RMSEc" prop="rmsec"/>
+        <el-table-column width="165" label="MAEc"  prop="maec"/>
       </el-table>
     </div>
     <div class="test">
-      <el-divider>testing series</el-divider>
+      <el-divider>测试集数据</el-divider>
       <el-table
         stripe
         border
         :cell-style="{ textAlign: 'center' }"
         :header-cell-style="{ textAlign: 'center' }"
         :default-sort="{prop: 'date', order: 'descending'}"
-        :data="reportdata.traindata"
+        :data="reportData.traindata"
       >
         <el-table-column width="55" prop="name" />
         <el-table-column v-for="i in 7" :key="i" width="55" :label="i+''" :prop="i+''" />
@@ -70,34 +70,29 @@
         :header-cell-style="{ textAlign: 'center' }"
         :default-sort="{prop: 'date', order: 'descending'}"
       >
-        <el-table-column width="123" label="Rp\^2" />
-        <el-table-column width="123" label="RMSEp" />
-        <el-table-column width="123" label="MAEp" />
-        <el-table-column width="125" label="RPD" />
+        <el-table-column width="123" label="Rp\^2" prop="report.rp2"/>
+        <el-table-column width="123" label="RMSEp" prop="report.rmsep"/>
+        <el-table-column width="123" label="MAEp"  prop="report.maep"/>
+        <el-table-column width="125" label="RPD"   prop="report.rpd"/>
       </el-table>
     </div>
     <div>
-      <el-divider>result map</el-divider>
+      <el-divider>结果数据</el-divider>
       <div class="charts">
         <div class="chart">
-          <LineChart :chart-data="chartData" />
+          <img :src="report.trainImg" style="width: 320px" alt=""/>
         </div>
         <div class="chart">
-          <LineChart :chart-data="chartData" />
+          <img :src="report.testImg" style="width: 320px;margin-left: 70px;" alt=""/>
         </div>
       </div>
-      <div> 结果模型 </div>
     </div>
     <el-divider>report time: 2022-01-01 17:55:53</el-divider>
   </div>
 </template>
 
 <script>
-import LineChart from './LineChart.vue'
 export default {
-  components: {
-    LineChart
-  },
   props: {
     reportData: {
       type: Object,
@@ -116,11 +111,12 @@ export default {
         {
           name: '预测浓度', '1': 0.1, '2': 0.22, '3': 0.42, '4': 0.33, '5': 0.75, '6': 0.88, '7': 0.34 }
         ]
-      },
-      chartData: {
-        expectedData: [1, 2, 3, 2, 3, 1, 6],
-        actualData: [2, 3, 1, 1, 2, 3, 5]
       }
+    }
+  },
+  computed: {
+    report() {
+      return this.reportData
     }
   }
 
@@ -130,7 +126,7 @@ export default {
 <style scoped>
 /* 总报告容器 */
 .body {
-  width: 510px;
+  width: 650px;
   box-sizing: border-box;
   border: 3px solid rgb(148, 145, 145);
 }

@@ -47,3 +47,4 @@ export const listUserMaterialType = (pageNo, pageSize, typeName) => {
   return api.simple(SELECT(param))
 }
 
+

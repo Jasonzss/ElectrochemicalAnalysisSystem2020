@@ -34,7 +34,7 @@ export const deal = (id, potential, current) => {
 // 调点
 export const point = (potential, current) => {
   const param = {
-    'expPotentialPointData  ': potential,
+    'expPotentialPointData': potential,
     'expNewestCurrentPointData': current
   }
   return api.simple(UPDATE(param))

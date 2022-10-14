@@ -211,7 +211,7 @@ export default {
         'expMaterialName': this.searchValue.name,
         'materialTypeId': id === '' ? undefined : id
       }
-      listUserExperimentalData(this.$store.getters.userEmail, 1, 10, condition).then(res => {
+      listUserExperimentalData(undefined, 1, 10, condition).then(res => {
         this.desdatas = res.data.data.dataList
       })
     }
