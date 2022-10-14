@@ -1,5 +1,8 @@
 package com.bluedot.mapper.bean;
 
+import com.bluedot.pojo.entity.UserRole;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class PageInfo {
@@ -58,6 +61,13 @@ public class PageInfo {
 
     public void setDataList(List<Object> dataList) {
         this.dataList = dataList;
+    }
+
+    public void addData(UserRole userRole){
+        if (this.dataList == null){
+            this.dataList = new ArrayList<>();
+        }
+        dataList.add(userRole);
     }
 
     @Override
