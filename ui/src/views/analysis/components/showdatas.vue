@@ -46,10 +46,7 @@
             <p class="datatext">新数据</p>
             <el-card class="box-card">
               <div class="text item">
-                {{ '新电流 ' + expData.expNewestCurrentAsScientificNotation == null ? '' : expData.expNewestCurrentAsScientificNotation }}
-              </div>
-              <div class="text item">
-                {{ '新电位 ' + expData.expNewestPotential == null ? '' : expData.expNewestPotential }}
+                {{ '新电流 ' + expData.expNewestCurrent == null ? '无' : expData.expNewestCurrent }}
               </div>
             </el-card>
           </div>
@@ -95,7 +92,8 @@ export default {
       },
       dataAlgorithms: [],
       ifShowDialog: false,
-      selectValue: undefined
+      selectValue: undefined,
+      newCurrent: []
     }
   },
   computed: {
@@ -113,7 +111,8 @@ export default {
     chartData() {
       return {
         potential: this.expData.expPotentialPointDataAsDouble,
-        current: this.expData.expOriginalCurrentPointDataAsDouble
+        current: this.expData.expOriginalCurrentPointDataAsDouble,
+        newCurrent: this.newCurrent
       }
     }
   },
@@ -141,8 +140,8 @@ export default {
         lock: true
       })
       deal(id, this.expData.expPotentialPointData, this.expData.expOriginalCurrentPointData).then(res => {
-        this.expData.expPotentialPointDataAsDouble = res.data.data.expPotentialPointDataAsDouble
-        this.expData.expOriginalCurrentPointDataAsDouble = res.data.data.expOriginalCurrentPointDataAsDouble
+        this.newCurrent = res.data.data.expNewestCurrentPointData
+        this.expData.expNewestCurrent = res.data.data.expNewestCurrent
         load.close()
       })
       load.close()

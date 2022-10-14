@@ -102,7 +102,6 @@ import showdatas from './components/showdatas.vue'
 import { waveAnalysis } from '@/api/analysis'
 import { listUserMaterialType } from '@/api/materialType'
 import { listUserBufferSolution } from '@/api/bufferSolution'
-import { listExperimentalDataById } from '@/api/experimentalData'
 
 export default {
   components: { showdatas },

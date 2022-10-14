@@ -48,6 +48,8 @@ import { listMaterialNameFillCondition, listUserExperimentalData } from '@/api/e
 import { listAlgorithmTypeFillCondition } from '@/api/algorithm'
 import { model } from '@/api/model'
 import SimpleDialog from '@/views/analysis/components/SimpleDialog'
+import {listReport, selectImage, selectReportInfo} from "@/api/experimentalReport";
+import {arrayBufferToBase64} from "@/utils/tools";
 export default {
   components: {
     SimpleDialog,
@@ -113,6 +115,10 @@ export default {
   },
   methods: {
     async createReport() {
+      if (this.ifSelectExpData !== true || this.selectExpDataIds == null) {
+        this.$message.warning('请选择需要进行建模分析的实验数据!')
+        return
+      }
       if (this.selectValue.materialName === '') {
         this.$message.warning('请选择实验物质')
         return
@@ -141,11 +147,19 @@ export default {
         background: 'rgba(0, 0, 0, 0.7)'
       })
 
-      model(this.selectExpDataIds, pid, mid, this.selectValue.materialName).then(res => {
-        this.reportData = res.data.data
+      await model(this.selectExpDataIds, pid, mid, this.selectValue.materialName).then(async res => {
+        const id = res.data.data[0]
+        await selectReportInfo(id).then(res => {
+          this.reportData = res.data.data[0]
+        })
+        await selectImage(id, 'train').then(res => {
+          this.reportData.trainImg = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data)
+        })
+        await selectImage(id, 'test').then(res => {
+          this.reportData.testImg = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data)
+        })
         loading.close()
       })
-      loading.close()
       this.ifShow = !this.ifShow
     },
     async selectExpDatas(title, width) {
@@ -166,7 +180,7 @@ export default {
           'expDeleteStatus': 0,
           'expMaterialName': this.selectValue.materialName
         }
-        await listUserExperimentalData(this.$store.getters.userEmail, 1, 100, condition).then(res => {
+        await listUserExperimentalData(this.$store.getters.userEmail, 1, 10, condition).then(res => {
           this.dialog.data = res.data.data.dataList[0]
         })
         loading.close()
@@ -207,7 +221,7 @@ export default {
   width: 600px;
   position: absolute;
   top: 70px;
-  left: 400px;
+  left: 300px;
   /*filter: blur(1.5px)*/
 }
 .title2 {
