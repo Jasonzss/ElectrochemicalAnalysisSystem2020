@@ -152,12 +152,12 @@ export default {
         await selectReportInfo(id).then(res => {
           this.reportData = res.data.data[0]
         })
-        await selectImage(id, 'train').then(res => {
-          this.reportData.trainImg = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data)
-        })
-        await selectImage(id, 'test').then(res => {
-          this.reportData.testImg = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data)
-        })
+        // await selectImage(id, 'train').then(res => {
+        //   this.reportData.trainImg = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data)
+        // })
+        // await selectImage(id, 'test').then(res => {
+        //   this.reportData.testImg = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data)
+        // })
         loading.close()
       })
       this.ifShow = !this.ifShow
