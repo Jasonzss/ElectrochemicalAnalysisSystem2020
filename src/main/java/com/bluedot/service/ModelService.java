@@ -222,8 +222,8 @@ public class ModelService extends BaseService<Report> {
             testSetData[i][2] = testPredictedSolubilitySet[i];
         }
         //将 【测试集的电流、预测溶度、真实溶度】 和 【训练集的电流、预测溶度、真实溶度】 放入report
-        report.setTrainingSetData(Arrays.deepToString(trainSet));
-        report.setTestSetData(Arrays.deepToString(testSet));
+        report.setTrainingSetData(Arrays.deepToString(trainSetData));
+        report.setTestSetData(Arrays.deepToString(testSetData));
 
         //分析模型，并将分析的七个数据放入report
         analysisReport(report,trainingPredictedSolubilitySet,testPredictedSolubilitySet);
@@ -415,11 +415,11 @@ public class ModelService extends BaseService<Report> {
     }
 
     private void setReportTrainingSetGraph(Report report, Double[] experimental, Double[] prediction, Map<String,String> param){
-        report.setReportTrainingSetGraph(getReportGraph(report, experimental, prediction, param));
+        report.setReportTrainingSetGraph(getReportGraph(report, experimental, prediction, param,"train"));
     }
 
     private void setReportTestSetGraph(Report report, Double[] experimental, Double[] prediction, Map<String,String> param){
-        report.setReportTestSetGraph(getReportGraph(report, experimental, prediction, param));
+        report.setReportTestSetGraph(getReportGraph(report, experimental, prediction, param,"test"));
     }
 
     /**
@@ -430,16 +430,17 @@ public class ModelService extends BaseService<Report> {
      * @param param 判断模型的指标
      * @return 图片的字节数组
      */
-    private byte[] getReportGraph(Report report, Double[] experimental, Double[] prediction, Map<String,String> param){
+    private byte[] getReportGraph(Report report, Double[] experimental, Double[] prediction, Map<String,String> param, String fileName){
         Map<String,Object> trainPaintParam = new HashMap<>();
         trainPaintParam.put("experimental",experimental);
         trainPaintParam.put("predicted",prediction);
         trainPaintParam.put("equation",generateEquationWithKAndB(ModelUtil.getFiParameters(experimental,prediction)));
         trainPaintParam.put("param",param);
-        PythonUtil.executePythonAlgorithmFile("paintReportGraph.py",trainPaintParam,"fig_"+report.getReportId()+".jpg");
+        PythonUtil.executePythonAlgorithmFile("paintReportGraph.py",trainPaintParam,"fig_"+fileName+".jpg");
         //获取生成的图片的流，并把文件删除
 
-        File file = new File(PythonUtil.IMAGE_PATH+"fig_"+report.getReportId()+".jpg");
+        File file = new File(PythonUtil.IMAGE_PATH+"fig_"+fileName+".jpg");
+        System.out.println(PythonUtil.IMAGE_PATH);
         byte[] bytes = null;
         try {
             FileInputStream fis = new FileInputStream(file);
