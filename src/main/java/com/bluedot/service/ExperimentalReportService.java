@@ -7,10 +7,7 @@ import com.bluedot.mapper.bean.EntityInfo;
 import com.bluedot.mapper.bean.Term;
 import com.bluedot.mapper.bean.TermType;
 import com.bluedot.pojo.Dto.Data;
-import com.bluedot.pojo.entity.Algorithm;
-import com.bluedot.pojo.entity.Application;
-import com.bluedot.pojo.entity.Report;
-import com.bluedot.pojo.entity.ReportPageVo;
+import com.bluedot.pojo.entity.*;
 import com.bluedot.pojo.vo.CommonResult;
 import com.bluedot.utils.ImageUtil;
 import com.bluedot.utils.ReflectUtil;
@@ -253,21 +250,16 @@ public class ExperimentalReportService extends BaseService<Report>{
         Condition condition = new Condition();
         condition.addAndConditionWithView(new Term("report","report_id",paramList.get("reportId"), TermType.EQUAL));
 
-        condition.addFields("training_set_data");
-        condition.addFields("test_set_data");
-        condition.addFields("rc2");
-        condition.addFields("rmsec");
-        condition.addFields("maec");
-        condition.addFields("rp2");
-        condition.addFields("rmsep");
-        condition.addFields("maep");
-        condition.addFields("rpd");
+        condition.setFieldsWithoutClasses(Report.class,byte[].class, User.class);
+        condition.addFields("user_email");
 
-        condition.setReturnType("ReportInfoVo");
+
+        condition.setReturnType("Report");
 
         entityInfo.setCondition(condition);
         select();
     }
+
 
     /**
      * 获取实验报告测试集图片

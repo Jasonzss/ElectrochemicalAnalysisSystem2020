@@ -88,6 +88,7 @@ public class AnalysisService extends BaseService<ExpData> {
             // 读取用户上传的文件，获得相关分析数据
             analysisFile(expData, fileItem);
         }catch (NullPointerException e){
+            e.printStackTrace();
             throw new UserException(CommonErrorCode.E_1013);
         }
 
@@ -174,35 +175,59 @@ public class AnalysisService extends BaseService<ExpData> {
             InputStreamReader isr = new InputStreamReader(fileItem.getInputStream(),"GBK");
             BufferedReader br = new BufferedReader(isr);
 
+            //将所有的点位数据读取到ExpData中
+            List<Double> potentialList = null;
+            List<Double> currentList = null;
+
             //先读取第一行
             String line = br.readLine();
+            boolean flag = false;
 
-            while (!"Potential/V, Current/A".equals(line)){
-                //读取txt文件直到点位数据之前
+            while (line != null){
+                if (flag){
+                    String[] split = line.split(", ");
+                    //设置电压的数值
+                    potentialList.add(Double.valueOf(split[0]));
+                    //设置电流的数值
+                    currentList.add(Double.valueOf(split[1]));
+                }
+                if ("Potential/V, Current/A".equals(line)){
+                    flag = true;
+                    potentialList = new ArrayList<>();
+                    currentList = new ArrayList<>();
+                }
+
+                //不断读取每一行
                 line = br.readLine();
             }
-            String s = br.readLine();
-            //第一行电流电压数据
-            s = br.readLine();
 
-            //将所有的点位数据读取到ExpData中
-            List<Double> potentialList = new ArrayList<>();
-            List<Double> currentList = new ArrayList<>();
+//            while (!"Potential/V, Current/A".equals(line)){
+//                //读取txt文件直到点位数据之前
+//                line = br.readLine();
+//            }
+//            String s = br.readLine();
+//            //第一行电流电压数据
+//            s = br.readLine();
+
+
 
             //读取每一行的电压电流数据
-            while (s != null){
-                String[] split = s.split(", ");
-                //设置电压的数值
-                potentialList.add(Double.valueOf(split[0]));
-
-                //设置电流的数值
-                currentList.add(Double.valueOf(split[1]));
-
-                //读下一行
-                s = br.readLine();
-            }
+//            while (s != null){
+//                String[] split = s.split(", ");
+//                //设置电压的数值
+//                potentialList.add(Double.valueOf(split[0]));
+//
+//                //设置电流的数值
+//                currentList.add(Double.valueOf(split[1]));
+//
+//                //读下一行
+//                s = br.readLine();
+//            }
 
             //将电压电流放入ExpData中
+            if (potentialList == null || currentList == null){
+                throw new UserException(CommonErrorCode.E_1013);
+            }
             expData.setExpPotentialPointData(potentialList.toString());
             expData.setExpOriginalCurrentPointData(currentList.toString());
         } catch (IOException e) {

@@ -142,7 +142,7 @@ public class Report {
         return trainingSetData;
     }
     public Double[][] getTrainingSetDataAsDoubles() {
-        return stringToDoublesArray(this.trainingSetData);
+        return simplifyDoubles(stringToDoublesArray(this.trainingSetData));
     }
 
     public void setTrainingSetData(String trainingSetData) {
@@ -156,7 +156,7 @@ public class Report {
         return testSetData;
     }
     public Double[][] getTestSetDataAsDoubles() {
-        return stringToDoublesArray(this.testSetData);
+        return simplifyDoubles(stringToDoublesArray(this.testSetData));
     }
 
     public void setTestSetData(String testSetData) {
@@ -243,6 +243,29 @@ public class Report {
     }
 
     /**
+     *  以map形式返回测试集的指标
+     */
+    public Map<String,String> getTestSetIndicatorAsDouble(){
+        Map<String,String> map = new HashMap<>();
+        map.put("rp2",String.format("%.2f",this.rp2));
+        map.put("rmsep",String.format("%.2f",this.rmsep));
+        map.put("maep",String.format("%.2f",this.maep));
+        map.put("rpd",String.format("%.2f",this.rpd));
+        return map;
+    }
+
+    /**
+     * 以map形式返回测试集的指标
+     */
+    public Map<String,String> getTrainSetIndicatorAsDouble(){
+        Map<String,String> map = new HashMap<>();
+        map.put("rc2",String.format("%.2f",this.rc2));
+        map.put("rmsec",String.format("%.2f",this.rmsec));
+        map.put("maec",String.format("%.2f",this.maec));
+        return map;
+    }
+
+    /**
      * 以map形式返回测试集的指标
      */
     public Map<String,String> getTrainSetIndicator(){
@@ -270,8 +293,22 @@ public class Report {
             String[] split = array[i].split(", ");
             doubles[i][0] = Double.parseDouble(split[0]);
             doubles[i][1] = Double.parseDouble(split[1]);
+            doubles[i][2] = Double.parseDouble(split[2]);
         }
 
+        return doubles;
+    }
+
+    private Double[][] simplifyDoubles(Double[][] doubles){
+        for (int i = 0; i < doubles.length; i++) {
+            for (int j = 0; j < doubles[i].length; j++) {
+                if (doubles[i][j] == null){
+                    continue;
+                }
+                String  str = String.format("%.2f",doubles[i][j]);
+                doubles[i][j] = Double.parseDouble(str);
+            }
+        }
         return doubles;
     }
 }
